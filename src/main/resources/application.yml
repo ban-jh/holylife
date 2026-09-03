@@ -7,11 +7,12 @@ spring:
   application:
     name: holylife
 
-  # H2 Console (개발용)
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  # MariaDB DataSource
+  datasource:
+    url: jdbc:mariadb://localhost:3306/holylife
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: shaloman
+    password: 123321
 
   # JPA / Hibernate
   jpa:
@@ -21,14 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-
-  # DataSource (H2 인메모리 - 개발용)
-  datasource:
-    url: jdbc:h2:mem:holylife
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+        dialect: org.hibernate.dialect.MariaDBDialect
 
 # Logging
 logging:
