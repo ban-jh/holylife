@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>성경 콘텐츠</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f6f8;
+            color: #222;
+            font-family: Arial, "Noto Sans KR", sans-serif;
+        }
+
+        /* =========================
+           전체
+        ========================= */
+
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .page-title {
+            margin-bottom: 22px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .page-title p {
+            margin: 8px 0 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* =========================
+           카드
+        ========================= */
+
+        .card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* =========================
+           상단 기본정보
+        ========================= */
+
+        .basic-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input,
+        select,
+        textarea {
+            border: 1px solid #d6d9dd;
+            border-radius: 6px;
+            padding: 11px 12px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #555;
+        }
+
+        /* =========================
+           성경 구절
+        ========================= */
+
+        .bible-reference {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bible-reference .arrow {
+            text-align: center;
+            color: #999;
+        }
+
+        /* =========================
+           중앙 영역
+        ========================= */
+
+        .middle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .middle-card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .middle-header {
+            padding: 20px 24px 0;
+        }
+
+        .middle-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* =========================
+           성경 탭
+        ========================= */
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tab {
+            border: 0;
+            background: transparent;
+            padding: 13px 22px;
+            font-size: 14px;
+            color: #777;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            color: #222;
+        }
+
+        .tab.active {
+            color: #222;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+        }
+
+        .bible-content {
+            padding: 24px;
+            min-height: 430px;
+            line-height: 2;
+            font-size: 16px;
+        }
+
+        .verse-number {
+            color: #777;
+            font-size: 13px;
+            margin-right: 5px;
+        }
+
+        /* =========================
+           내용 입력
+        ========================= */
+
+        .content-editor {
+            padding: 20px 24px 24px;
+        }
+
+        .content-editor input {
+            margin-bottom: 14px;
+        }
+
+        .content-editor textarea {
+            width: 100%;
+            height: 350px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+
+        /* =========================
+           하단 자료
+        ========================= */
+
+        .reference-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .reference-tab {
+            padding: 13px 22px;
+            border: 0;
+            background: transparent;
+            color: #777;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .reference-tab.active {
+            color: #222;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+        }
+
+        .reference-content {
+            padding: 24px 0 0;
+        }
+
+        .reference-panel {
+            display: none;
+        }
+
+        .reference-panel.active {
+            display: block;
+        }
+
+        /* URL */
+
+        .url-row {
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 10px;
+        }
+
+        /* 이미지 */
+
+        .upload-area {
+            border: 2px dashed #d5d8dc;
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: #fafafa;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        /* 문서 */
+
+        .document-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 7px;
+        }
+
+        .document-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .document-icon {
+            font-size: 28px;
+        }
+
+        /* 지도 */
+
+        .map-area {
+            height: 250px;
+            background:
+                linear-gradient(
+                    45deg,
+                    #f0f0f0 25%,
+                    transparent 25%
+                ),
+                linear-gradient(
+                    -45deg,
+                    #f0f0f0 25%,
+                    transparent 25%
+                ),
+                #fafafa;
+
+            background-size: 30px 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: #777;
+        }
+
+        .map-search {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        /* =========================
+           버튼
+        ========================= */
+
+        .bottom-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 6px;
+            padding: 11px 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-cancel {
+            background: #e9ecef;
+        }
+
+        .btn-save {
+            background: #333;
+            color: white;
+        }
+
+        /* =========================
+           반응형
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .page {
+                padding: 15px;
+            }
+
+            .basic-info {
+                grid-template-columns: 1fr;
+            }
+
+            .middle {
+                grid-template-columns: 1fr;
+            }
+
+            .bible-reference {
+                grid-template-columns: 1fr;
+            }
+
+            .bible-reference .arrow {
+                display: none;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="page">
+
+    <!-- =========================
+         제목
+    ========================== -->
+
+    <div class="page-title">
+
+        <h1>성경 콘텐츠</h1>
+
+        <p>
+            성경 말씀과 관련 콘텐츠를 등록합니다.
+        </p>
+
+    </div>
+
+
+    <!-- =========================
+         상단 기본정보
+    ========================== -->
+
+    <section class="card">
+
+        <div class="section-title">
+            기본 정보
+        </div>
+
+        <div class="basic-info">
+
+            <!-- 제목 -->
+
+            <div class="form-group">
+
+                <label>제목</label>
+
+                <input
+                    type="text"
+                    id="title"
+                    placeholder="콘텐츠 제목을 입력하세요"
+                    value="하나님이 세상을 창조하셨다">
+
+            </div>
+
+
+            <!-- 날짜 -->
+
+            <div class="form-group">
+
+                <label>날짜</label>
+
+                <input
+                    type="date"
+                    id="date"
+                    value="2026-08-12">
+
+            </div>
+
+
+            <!-- 성경 구절 -->
+
+            <div class="form-group">
+
+                <label>성경 구절</label>
+
+                <div class="bible-reference">
+
+                    <select id="bookFrom">
+
+                        <option>창세기</option>
+                        <option>출애굽기</option>
+                        <option>레위기</option>
+                        <option>민수기</option>
+                        <option>신명기</option>
+
+                    </select>
+
+                    <div class="arrow">~</div>
+
+                    <select id="bookTo">
+
+                        <option>창세기</option>
+                        <option>출애굽기</option>
+                        <option>레위기</option>
+                        <option>민수기</option>
+                        <option>신명기</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         중앙 영역
+    ========================== -->
+
+    <div class="middle">
+
+
+        <!-- =====================
+             왼쪽 : 성경
+        ====================== -->
+
+        <section class="middle-card">
+
+            <div class="middle-header">
+
+                <div class="middle-title">
+                    성경
+                </div>
+
+
+                <div class="tabs">
+
+                    <button
+                        class="tab active"
+                        onclick="changeBible('new', this)">
+                        새번역
+                    </button>
+
+                    <button
+                        class="tab"
+                        onclick="changeBible('english', this)">
+                        영어
+                    </button>
+
+                    <button
+                        class="tab"
+                        onclick="changeBible('modern', this)">
+                        현대인
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="bibleContent"
+                class="bible-content">
+
+                <span class="verse-number">1</span>
+                태초에 하나님이 천지를 창조하셨다.
+                <br>
+
+                <span class="verse-number">2</span>
+                땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고
+                하나님의 영은 물 위에 움직이고 계셨다.
+                <br>
+
+                <span class="verse-number">3</span>
+                하나님이 말씀하시기를 "빛이 생겨라" 하시니,
+                빛이 생겼다.
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================
+             오른쪽 : 내용
+        ====================== -->
+
+        <section class="middle-card">
+
+            <div class="middle-header">
+
+                <div class="middle-title">
+                    내용
+                </div>
+
+            </div>
+
+
+            <div class="content-editor">
+
+                <input
+                    type="text"
+                    id="contentTitle"
+                    placeholder="내용 제목"
+                    value="창조에 대한 묵상">
+
+
+                <textarea
+                    id="contentText"
+                    placeholder="성경 말씀에 대한 설명이나 묵상 내용을 입력하세요.">하나님께서는 말씀으로 세상을 창조하셨습니다.
+
+창세기의 말씀을 통해 하나님의 창조와 질서를 묵상할 수 있습니다.
+
+우리가 살아가는 모든 순간에도 하나님의 말씀과 뜻을 생각하며 살아가는 것이 중요합니다.</textarea>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+
+    <!-- =========================
+         하단 참고자료
+    ========================== -->
+
+    <section class="card" style="margin-top:20px;">
+
+        <div class="section-title">
+            참고자료
+        </div>
+
+
+        <!-- 자료 탭 -->
+
+        <div class="reference-tabs">
+
+            <button
+                class="reference-tab active"
+                onclick="changeReference('url', this)">
+                🔗 URL
+            </button>
+
+            <button
+                class="reference-tab"
+                onclick="changeReference('image', this)">
+                🖼 이미지
+            </button>
+
+            <button
+                class="reference-tab"
+                onclick="changeReference('document', this)">
+                📄 문서
+            </button>
+
+            <button
+                class="reference-tab"
+                onclick="changeReference('map', this)">
+                🗺 지도
+            </button>
+
+        </div>
+
+
+
+        <!-- 자료 내용 -->
+
+        <div class="reference-content">
+
+
+            <!-- URL -->
+
+            <div
+                id="url"
+                class="reference-panel active">
+
+                <div class="form-group">
+
+                    <label>URL</label>
+
+                    <div class="url-row">
+
+                        <input
+                            type="url"
+                            placeholder="https://example.com">
+
+                        <button
+                            class="btn btn-cancel">
+                            + URL 추가
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 이미지 -->
+
+            <div
+                id="image"
+                class="reference-panel">
+
+                <div
+                    class="upload-area"
+                    onclick="document.getElementById('imageFile').click()">
+
+                    <div class="upload-icon">
+                        🖼
+                    </div>
+
+                    <div>
+                        이미지를 클릭하여 등록하세요
+                    </div>
+
+                    <small>
+                        JPG, PNG, WEBP
+                    </small>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="imageFile"
+                    accept="image/*"
+                    style="display:none">
+
+            </div>
+
+
+
+            <!-- 문서 -->
+
+            <div
+                id="document"
+                class="reference-panel">
+
+                <div
+                    class="document-row">
+
+                    <div class="document-info">
+
+                        <div class="document-icon">
+                            📄
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                참고자료.pdf
+                            </strong>
+
+                            <div
+                                style="
+                                font-size:12px;
+                                color:#999;
+                                margin-top:4px;">
+                                PDF · 2.4 MB
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <button class="btn btn-cancel">
+                        파일 선택
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 지도 -->
+
+            <div
+                id="map"
+                class="reference-panel">
+
+                <div class="map-search">
+
+                    <input
+                        type="text"
+                        placeholder="장소를 검색하세요">
+
+                    <button class="btn btn-cancel">
+                        검색
+                    </button>
+
+                </div>
+
+
+                <div class="map-area">
+
+                    🗺 지도 영역
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         저장 버튼
+    ========================== -->
+
+    <div class="bottom-buttons">
+
+        <button
+            class="btn btn-cancel"
+            onclick="cancelContent()">
+            취소
+        </button>
+
+        <button
+            class="btn btn-save"
+            onclick="saveContent()">
+            저장
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    /* =========================
+       성경 탭 변경
+    ========================== */
+
+    function changeBible(type, button) {
+
+        document
+            .querySelectorAll(".tab")
+            .forEach(tab => {
+                tab.classList.remove("active");
+            });
+
+        button.classList.add("active");
+
+
+        const content =
+            document.getElementById("bibleContent");
+
+
+        if (type === "new") {
+
+            content.innerHTML = `
+                <span class="verse-number">1</span>
+                태초에 하나님이 천지를 창조하셨다.
+                <br>
+                <span class="verse-number">2</span>
+                땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고
+                하나님의 영은 물 위에 움직이고 계셨다.
+                <br>
+                <span class="verse-number">3</span>
+                하나님이 말씀하시기를
+                "빛이 생겨라" 하시니, 빛이 생겼다.
+            `;
+
+        } else if (type === "english") {
+
+            content.innerHTML = `
+                <span class="verse-number">1</span>
+                In the beginning God created the heavens and the earth.
+                <br>
+                <span class="verse-number">2</span>
+                Now the earth was formless and empty,
+                darkness was over the surface of the deep.
+                <br>
+                <span class="verse-number">3</span>
+                And God said,
+                "Let there be light," and there was light.
+            `;
+
+        } else {
+
+            content.innerHTML = `
+                <span class="verse-number">1</span>
+                태초에 하나님께서 하늘과 땅을 만드셨습니다.
+                <br>
+                <span class="verse-number">2</span>
+                땅은 아직 형태가 없고 아무것도 없었으며
+                어둠이 깊은 물 위에 덮여 있었습니다.
+                <br>
+                <span class="verse-number">3</span>
+                하나님께서 "빛이 생겨라"라고 말씀하시자
+                빛이 생겼습니다.
+            `;
+
+        }
+
+    }
+
+
+
+    /* =========================
+       참고자료 탭
+    ========================== */
+
+    function changeReference(type, button) {
+
+        document
+            .querySelectorAll(".reference-tab")
+            .forEach(tab => {
+                tab.classList.remove("active");
+            });
+
+        button.classList.add("active");
+
+
+        document
+            .querySelectorAll(".reference-panel")
+            .forEach(panel => {
+                panel.classList.remove("active");
+            });
+
+
+        document
+            .getElementById(type)
+            .classList.add("active");
+
+    }
+
+
+
+    /* =========================
+       저장
+    ========================== */
+
+    function saveContent() {
+
+        const title =
+            document.getElementById("title").value;
+
+        const date =
+            document.getElementById("date").value;
+
+        const content =
+            document.getElementById("contentText").value;
+
+
+        console.log({
+            title,
+            date,
+            content
+        });
+
+
+        alert("저장되었습니다.");
+
+    }
+
+
+
+    /* =========================
+       취소
+    ========================== */
+
+    function cancelContent() {
+
+        if (confirm("작성한 내용을 취소하시겠습니까?")) {
+
+            location.reload();
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>

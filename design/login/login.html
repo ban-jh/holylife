@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faith Pathway - 로그인</title>
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f4f6f8;
+      /* 은은한 크로스 패턴 배경 (CSS SVG) */
+      background-image: radial-gradient(#d1d5db 0.75px, transparent 0.75px), radial-gradient(#d1d5db 0.75px, #f4f6f8 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* Container Card */
+    .login-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      padding: 40px 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Header & Logo Section */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      color: #2b4c7e;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: #2b4c7e;
+      box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
+    }
+
+    /* Utility Links */
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .forgot-link {
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Primary Button */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background-color: #2b4c7e;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: #1d355a;
+    }
+
+    /* Footer Section */
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .signup-link {
+      color: #2b4c7e;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 4px;
+    }
+
+    .signup-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Layer Popup / Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Layer Popup Box */
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 360px;
+      padding: 28px 24px 24px 24px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    /* Warning Icon Area */
+    .modal-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      background-color: #fef2f2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+    }
+
+    .warning-icon {
+      width: 28px;
+      height: 28px;
+      color: #ef4444;
+    }
+
+    /* Modal Text */
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .modal-message {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      word-break: keep-all;
+    }
+
+    /* Modal Close Button */
+    .btn-modal-close {
+      width: 100%;
+      padding: 12px;
+      background-color: #ef4444;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-modal-close:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <!-- 로고 및 헤더 -->
+    <div class="header">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v18M8 7h8"/>
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <h1 class="title">FAITH PATHWAY</h1>
+      <p class="subtitle">말씀과 독서로 자라나는 신앙의 길</p>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email" class="form-label">이메일 주소</label>
+        <input type="email" id="email" class="form-input" placeholder="example@church.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" id="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+      </div>
+
+      <div class="form-actions">
+        <a href="#" class="forgot-link">비밀번호를 잊으셨나요?</a>
+      </div>
+
+      <button type="submit" class="btn-submit">로그인</button>
+    </form>
+
+    <!-- 하단 링크 -->
+    <div class="footer">
+      계정이 없으신가요? <a href="#" class="signup-link">회원가입</a>
+    </div>
+  </div>
+
+  <!-- 레이어 팝업 (모달) -->
+  <div class="modal-overlay" id="errorModal">
+    <div class="modal-card">
+      <div class="modal-icon-wrapper">
+        <!-- 경고 아이콘 (SVG) -->
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="modal-title">로그인 실패</h3>
+      <p class="modal-message">아이디/패스워드 가 맞지 않습니다.<br>다시 확인해주세요.</p>
+      <button type="button" class="btn-modal-close" id="btnCloseModal">확인</button>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const errorModal = document.getElementById('errorModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+
+    // 로그인 폼 제출 시 레이어 팝업 띄우기
+    loginForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      errorModal.classList.add('active');
+    });
+
+    // 닫기(확인) 버튼 클릭 시 팝업 닫기
+    btnCloseModal.addEventListener('click', function() {
+      errorModal.classList.remove('active');
+    });
+
+    // 바깥 배경(오버레이) 클릭 시에도 팝업 닫기
+    errorModal.addEventListener('click', function(event) {
+      if (event.target === errorModal) {
+        errorModal.classList.remove('active');
+      }
+    });
+  </script>
+
+</body>
+</html>

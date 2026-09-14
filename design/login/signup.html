@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faith Pathway - 회원가입</title>
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f4f6f8;
+      /* 은은한 크로스 패턴 배경 */
+      background-image: radial-gradient(#d1d5db 0.75px, transparent 0.75px), radial-gradient(#d1d5db 0.75px, #f4f6f8 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      padding: 40px 20px;
+      position: relative;
+    }
+
+    /* Container Card */
+    .signup-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 460px;
+      padding: 40px 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Header & Logo Section */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 10px;
+      color: #2b4c7e;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: #2b4c7e;
+      box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.15);
+    }
+
+    /* Helper & Error Text */
+    .error-text {
+      display: none;
+      font-size: 12px;
+      color: #ef4444;
+      margin-top: 5px;
+    }
+
+    .form-group.has-error .form-input {
+      border-color: #ef4444;
+    }
+
+    .form-group.has-error .error-text {
+      display: block;
+    }
+
+    /* Primary Button */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background-color: #2b4c7e;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: #1d355a;
+    }
+
+    /* Footer Section */
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .login-link {
+      color: #2b4c7e;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 4px;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Layer Popup / Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Layer Popup Box */
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 360px;
+      padding: 28px 24px 24px 24px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    /* Warning Icon Area */
+    .modal-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      background-color: #fef2f2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+    }
+
+    .warning-icon {
+      width: 28px;
+      height: 28px;
+      color: #ef4444;
+    }
+
+    /* Modal Text */
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .modal-message {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      word-break: keep-all;
+    }
+
+    /* Modal Close Button */
+    .btn-modal-close {
+      width: 100%;
+      padding: 12px;
+      background-color: #ef4444;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-modal-close:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="signup-container">
+    <!-- 로고 및 헤더 -->
+    <div class="header">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v18M8 7h8"/>
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <h1 class="title">FAITH PATHWAY</h1>
+      <p class="subtitle">새로운 계정 생성하기</p>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <form id="signupForm" novalidate>
+      <!-- 이름 -->
+      <div class="form-group" id="groupName">
+        <label for="name" class="form-label">이름</label>
+        <input type="text" id="name" class="form-input" placeholder="홍길동" required>
+        <span class="error-text">이름을 입력해주세요.</span>
+      </div>
+
+      <!-- 이메일 -->
+      <div class="form-group" id="groupEmail">
+        <label for="email" class="form-label">이메일 주소</label>
+        <input type="email" id="email" class="form-input" placeholder="example@church.com" required>
+        <span class="error-text">올바른 이메일 형식을 입력해주세요.</span>
+      </div>
+
+      <!-- 전화번호 -->
+      <div class="form-group" id="groupPhone">
+        <label for="phone" class="form-label">전화번호</label>
+        <input type="tel" id="phone" class="form-input" placeholder="010-1234-5678" required>
+        <span class="error-text">올바른 전화번호 형식(예: 010-1234-5678)을 입력해주세요.</span>
+      </div>
+
+      <!-- 닉네임 -->
+      <div class="form-group" id="groupNickname">
+        <label for="nickname" class="form-label">닉네임</label>
+        <input type="text" id="nickname" class="form-input" placeholder="사용할 닉네임 입력" required>
+        <span class="error-text">닉네임을 입력해주세요.</span>
+      </div>
+
+      <!-- 비밀번호 -->
+      <div class="form-group" id="groupPassword">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" id="password" class="form-input" placeholder="8자 이상 입력" required>
+        <span class="error-text">비밀번호는 8자 이상이어야 합니다.</span>
+      </div>
+
+      <!-- 비밀번호 확인 -->
+      <div class="form-group" id="groupPasswordConfirm">
+        <label for="passwordConfirm" class="form-label">비밀번호 확인</label>
+        <input type="password" id="passwordConfirm" class="form-input" placeholder="비밀번호 재입력" required>
+        <span class="error-text" id="passwordConfirmError">비밀번호가 일치하지 않습니다.</span>
+      </div>
+
+      <button type="submit" class="btn-submit">가입하기</button>
+    </form>
+
+    <!-- 하단 링크 -->
+    <div class="footer">
+      이미 계정이 있으신가요? <a href="#" class="login-link">로그인</a>
+    </div>
+  </div>
+
+  <!-- 경고 레이어 팝업 (모달) -->
+  <div class="modal-overlay" id="warningModal">
+    <div class="modal-card">
+      <div class="modal-icon-wrapper">
+        <!-- 경고 아이콘 (SVG) -->
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="modal-title" id="modalTitle">입력 오류</h3>
+      <p class="modal-message" id="modalMessage">입력하신 정보를 다시 확인해 주세요.</p>
+      <button type="button" class="btn-modal-close" id="btnCloseModal">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById('signupForm');
+    const warningModal = document.getElementById('warningModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const modalMessage = document.getElementById('modalMessage');
+
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const nicknameInput = document.getElementById('nickname');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmInput = document.getElementById('passwordConfirm');
+
+    // 팝업 열기 함수
+    function showWarningModal(msg) {
+      modalMessage.innerHTML = msg;
+      warningModal.classList.add('active');
+    }
+
+    // 팝업 닫기 함수
+    function hideWarningModal() {
+      warningModal.classList.remove('active');
+    }
+
+    // 폼 제출 검증
+    signupForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      let hasError = false;
+      let errorMsg = '';
+
+      // 초기화
+      document.querySelectorAll('.form-group').forEach(g => g.classList.remove('has-error'));
+
+      // 1. 이름 검증
+      if (!nameInput.value.trim()) {
+        document.getElementById('groupName').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '이름을 입력해 주세요.';
+      }
+
+      // 2. 이메일 검증
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailInput.value.trim() || !emailPattern.test(emailInput.value.trim())) {
+        document.getElementById('groupEmail').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '올바른 이메일 주소를 입력해 주세요.';
+      }
+
+      // 3. 전화번호 검증 (010-1234-5678 또는 01012345678 형태 허용)
+      const phonePattern = /^01[016789]-?\d{3,4}-?\d{4}$/;
+      if (!phoneInput.value.trim() || !phonePattern.test(phoneInput.value.trim())) {
+        document.getElementById('groupPhone').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '올바른 전화번호 형식을 입력해 주세요.';
+      }
+
+      // 4. 닉네임 검증
+      if (!nicknameInput.value.trim()) {
+        document.getElementById('groupNickname').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '닉네임을 입력해 주세요.';
+      }
+
+      // 5. 비밀번호 검증 (8자 이상)
+      if (!passwordInput.value || passwordInput.value.length < 8) {
+        document.getElementById('groupPassword').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '비밀번호는 최소 8자 이상이어야 합니다.';
+      }
+
+      // 6. 비밀번호 확인 검증
+      if (passwordInput.value !== passwordConfirmInput.value) {
+        document.getElementById('groupPasswordConfirm').classList.add('has-error');
+        hasError = true;
+        if (!errorMsg) errorMsg = '비밀번호와 비밀번호 확인이 일치하지 않습니다.';
+      }
+
+      // 에러가 있을 경우 레이어 팝업 표시
+      if (hasError) {
+        showWarningModal(errorMsg);
+      } else {
+        alert('회원가입이 완료되었습니다!');
+      }
+    });
+
+    // 닫기 버튼 이벤트
+    btnCloseModal.addEventListener('click', hideWarningModal);
+
+    // 오버레이 클릭 시 닫기
+    warningModal.addEventListener('click', function(event) {
+      if (event.target === warningModal) {
+        hideWarningModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

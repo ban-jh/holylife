@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 대시보드</title>
+<style>
+  @import url('data:text/css,');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #faf7f2;
+    --cream-dark: #f2ece0;
+    --warm-white: #fffcf8;
+    --sand: #e8ddd0;
+    --sand-dark: #d4c5b0;
+    --brown-light: #c8b49a;
+    --brown: #8c6f56;
+    --brown-dark: #5e4a38;
+    --accent: #c97d4e;
+    --accent-light: #f0d4ba;
+    --accent-hover: #b06b3c;
+    --text-primary: #2d2118;
+    --text-secondary: #7a6655;
+    --text-muted: #a89585;
+    --sidebar-width: 240px;
+    --header-height: 64px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 4px rgba(100,70,40,0.07);
+    --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
+    --shadow-lg: 0 8px 32px rgba(100,70,40,0.13);
+    --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: var(--cream);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--brown-dark);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+    transition: transform var(--transition), width var(--transition);
+    overflow: hidden;
+  }
+
+  .sidebar-logo {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-logo-icon {
+    width: 34px;
+    height: 34px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.8;
+  }
+
+  .sidebar-logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .sidebar-logo-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 10px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  .sidebar-nav::-webkit-scrollbar { width: 4px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 16px 10px 6px;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    user-select: none;
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.92);
+  }
+
+  .nav-link.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .nav-link.parent-active {
+    background: rgba(201,125,78,0.18);
+    color: rgba(255,255,255,0.92);
+  }
+
+  .nav-link svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-link-label {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+
+  .nav-chevron {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+
+  .nav-chevron.open { transform: rotate(180deg); }
+
+  .nav-sub {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s;
+    opacity: 0;
+  }
+
+  .nav-sub.open {
+    max-height: 300px;
+    opacity: 1;
+  }
+
+  .nav-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px 7px 40px;
+    border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 400;
+    transition: background var(--transition), color var(--transition);
+    user-select: none;
+  }
+
+  .nav-sub-item::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    flex-shrink: 0;
+    transition: background var(--transition);
+  }
+
+  .nav-sub-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .nav-sub-item:hover::before { background: var(--accent); }
+
+  .nav-sub-item.active {
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+
+  .nav-sub-item.active::before { background: var(--accent); }
+
+  .sidebar-footer {
+    padding: 14px 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+
+  .sidebar-user:hover { background: rgba(255,255,255,0.07); }
+
+  .sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.38); }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--cream);
+  }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-height);
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--sand);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    z-index: 10;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: background var(--transition);
+  }
+
+  .mobile-menu-btn:hover { background: var(--cream-dark); }
+  .mobile-menu-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .breadcrumb-item {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .breadcrumb-item.current {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .breadcrumb-sep { color: var(--sand-dark); font-size: 12px; }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .header-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cream);
+    border: 1.5px solid var(--sand);
+    border-radius: 22px;
+    padding: 7px 14px;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    cursor: text;
+  }
+
+  .header-search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,125,78,0.12);
+  }
+
+  .header-search svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+
+  .header-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13px;
+    color: var(--text-primary);
+    width: 160px;
+    font-family: inherit;
+  }
+
+  .header-search input::placeholder { color: var(--text-muted); }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: background var(--transition), color var(--transition);
+    position: relative;
+  }
+
+  .icon-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 1.5px solid var(--warm-white);
+  }
+
+  .header-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity var(--transition);
+    margin-left: 4px;
+    border: 2px solid var(--accent-light);
+  }
+
+  .header-avatar:hover { opacity: 0.85; }
+
+  /* ── Content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 36px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sand) transparent;
+  }
+
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+  }
+
+  .page-desc {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--sand);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: box-shadow var(--transition);
+  }
+
+  .card:hover { box-shadow: var(--shadow-md); }
+
+  .card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--cream-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+
+  .card-subtitle {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 24px;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.2px;
+  }
+
+  .form-label .required {
+    color: var(--accent);
+    margin-left: 3px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--sand);
+    border-radius: var(--radius-sm);
+    background: var(--cream);
+    font-size: 13.5px;
+    color: var(--text-primary);
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    line-height: 1.5;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    background: var(--warm-white);
+    box-shadow: 0 0 0 3px rgba(201,125,78,0.10);
+  }
+
+  .form-input:hover:not(:focus) { border-color: var(--brown-light); }
+
+  .form-input::placeholder { color: var(--text-muted); }
+
+  textarea.form-input {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  select.form-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23a89585' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+
+  .form-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Toggle ── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+
+  .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .toggle-row:first-child { padding-top: 0; }
+
+  .toggle-info {}
+  .toggle-label { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+  .toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .toggle {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--sand);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform var(--transition);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+
+  .toggle input:checked + .toggle-track { background: var(--accent); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  /* ── Buttons ── */
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition), transform 0.1s;
+    letter-spacing: 0.1px;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(201,125,78,0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 4px 14px rgba(201,125,78,0.32);
+  }
+
+  .btn-secondary {
+    background: var(--warm-white);
+    color: var(--text-secondary);
+    border-color: var(--sand);
+  }
+
+  .btn-secondary:hover {
+    background: var(--cream-dark);
+    border-color: var(--brown-light);
+    color: var(--text-primary);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: transparent;
+  }
+
+  .btn-ghost:hover {
+    background: var(--cream-dark);
+    color: var(--text-secondary);
+  }
+
+  .btn-danger {
+    background: #fff3f0;
+    color: #c0392b;
+    border-color: #f5c6c1;
+  }
+
+  .btn-danger:hover {
+    background: #fde0da;
+    border-color: #e8968e;
+  }
+
+  /* ── Stats ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--warm-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--sand);
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), transform var(--transition);
+    cursor: default;
+  }
+
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .stat-icon.orange { background: #fde8d8; color: var(--accent); }
+  .stat-icon.brown { background: #ede0d4; color: var(--brown); }
+  .stat-icon.green { background: #d8ede1; color: #3a8c5f; }
+  .stat-icon.blue { background: #d8e8f0; color: #3a6f8c; }
+
+  .stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.8px; line-height: 1.2; }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+  .stat-change { font-size: 11.5px; color: #3a8c5f; font-weight: 600; margin-top: 4px; }
+
+  /* ── Tag ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .tag-orange { background: var(--accent-light); color: var(--accent-hover); }
+  .tag-green { background: #d8ede1; color: #2e7050; }
+  .tag-gray { background: var(--cream-dark); color: var(--text-muted); }
+
+  /* ── Overlay (mobile) ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45,33,24,0.45);
+    z-index: 90;
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .content > * {
+    animation: fadeSlideIn 0.4s cubic-bezier(.4,0,.2,1) both;
+  }
+
+  .content > *:nth-child(1) { animation-delay: 0.05s; }
+  .content > *:nth-child(2) { animation-delay: 0.10s; }
+  .content > *:nth-child(3) { animation-delay: 0.15s; }
+  .content > *:nth-child(4) { animation-delay: 0.20s; }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--cream-dark); margin: 20px 0; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+  }
+
+  @media (max-width: 680px) {
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transform: translateX(-100%);
+      z-index: 200;
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .overlay.active { display: block; }
+
+    .mobile-menu-btn { display: flex; }
+
+    .content { padding: 20px 18px; }
+
+    .header { padding: 0 16px; }
+
+    .header-search { display: none; }
+
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .page-title { font-size: 18px; }
+  }
+
+  @media (max-width: 400px) {
+    .stats-row { grid-template-columns: 1fr; }
+  }
+
+  /* ── Scrollbar ── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sand) transparent;
+  }
+
+  /* ── User List ── */
+  .list-toolbar { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .filter-row { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; flex:1; }
+  .filter-group { display:flex; flex-direction:column; gap:6px; min-width:145px; }
+  .filter-group.search { min-width:280px; flex:1; }
+  .filter-label { font-size:11.5px; font-weight:600; color:var(--text-secondary); }
+  .filter-input { width:100%; padding:9px 12px; border:1.5px solid var(--sand); border-radius:var(--radius-sm); background:var(--cream); color:var(--text-primary); font-family:inherit; font-size:13px; outline:none; }
+  .filter-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(201,125,78,.10); background:var(--warm-white); }
+  .table-wrap { overflow-x:auto; }
+  .user-table { width:100%; border-collapse:collapse; min-width:900px; }
+  .user-table th { padding:12px 14px; background:var(--cream); color:var(--text-secondary); font-size:11.5px; font-weight:700; text-align:left; border-top:1px solid var(--sand); border-bottom:1px solid var(--sand); white-space:nowrap; }
+  .user-table td { padding:14px; border-bottom:1px solid var(--cream-dark); font-size:13px; vertical-align:middle; }
+  .user-table tbody tr { transition:background var(--transition); cursor:pointer; }
+  .user-table tbody tr:hover { background:#fcf8f3; }
+  .user-no { width:55px; color:var(--text-muted); text-align:center; }
+  .user-cell { display:flex; align-items:center; gap:10px; }
+  .user-avatar { width:34px; height:34px; border-radius:50%; background:var(--accent-light); color:var(--brown-dark); display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+  .user-name { font-weight:700; color:var(--text-primary); }
+  .user-id { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .role-badge, .status-badge { display:inline-flex; align-items:center; padding:4px 9px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+  .role-admin { background:#f4e2d3; color:#9a5b34; }
+  .role-editor { background:#eee5d9; color:#765d46; }
+  .role-viewer { background:#ece8e2; color:#7a7066; }
+  .status-active { background:#e5f3ea; color:#4c8060; }
+  .status-inactive { background:#f0e8e1; color:#8c6f56; }
+  .status-pending { background:#f8edd9; color:#a87532; }
+  .last-login { color:var(--text-secondary); font-size:12px; }
+  .row-actions { display:flex; gap:4px; justify-content:flex-end; }
+  .table-action { border:1px solid transparent; background:transparent; color:var(--text-muted); border-radius:6px; padding:6px 8px; cursor:pointer; font-family:inherit; font-size:12px; }
+  .table-action:hover { background:var(--cream-dark); color:var(--text-primary); }
+  .table-action.delete:hover { color:#a05243; background:#f7e8e4; }
+  .table-footer { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; gap:12px; flex-wrap:wrap; }
+  .result-count { color:var(--text-muted); font-size:12px; }
+  .pagination { display:flex; align-items:center; gap:4px; }
+  .page-btn { width:30px; height:30px; border:1px solid var(--sand); background:var(--warm-white); color:var(--text-secondary); border-radius:6px; cursor:pointer; font-size:12px; }
+  .page-btn:hover { background:var(--cream-dark); }
+  .page-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+  .empty-state { text-align:center; padding:55px 20px; color:var(--text-muted); }
+  .empty-state-icon { font-size:34px; margin-bottom:8px; }
+  .quick-stat { color:var(--text-muted); font-size:12px; }
+  @media (max-width:800px) { .filter-group.search{min-width:100%;} .filter-group{flex:1;min-width:130px;} .list-toolbar .btn{width:100%;justify-content:center;} .table-footer{justify-content:center;} }
+
+</style>
+<style>
+.menu-card{background:var(--warm-white);border:1px solid var(--sand);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.menu-card-head,.detail-top,.sub-menu-head{display:flex;align-items:center;justify-content:space-between}
+.menu-card-head{padding:20px 22px;border-bottom:1px solid var(--sand)}
+.section-title{font-size:15px;font-weight:700;color:var(--text-primary)}.section-desc{font-size:12px;color:var(--text-muted);margin-top:4px}
+.head-actions,.tree-toolbar{display:flex;gap:7px}.warm-btn{border:1px solid var(--sand);border-radius:var(--radius-sm);padding:9px 13px;font-family:inherit;font-size:12px;cursor:pointer}.warm-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.warm-btn.primary:hover{background:var(--accent-hover)}.warm-btn.secondary{background:var(--warm-white);color:var(--text-secondary)}.warm-btn.secondary:hover{background:var(--cream-dark)}.warm-btn.small{padding:8px 10px}
+.menu-split{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:620px}.menu-tree-panel{padding:16px;border-right:1px solid var(--sand);background:rgba(250,247,242,.55)}.tree-toolbar{margin-bottom:12px}
+.warm-tree,.warm-tree ul{list-style:none;margin:0;padding:0}.warm-tree ul{margin-left:20px}.warm-tree-row{height:40px;display:flex;align-items:center;gap:5px;padding:0 9px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-secondary);font-size:13px}.warm-tree-row:hover{background:var(--cream-dark);color:var(--text-primary)}.warm-tree-row.selected{background:var(--accent-light);color:var(--brown-dark);font-weight:700}.tree-toggle{width:17px;text-align:center;color:var(--text-muted);font-size:10px}.tree-icon{width:22px}.tree-name{flex:1}.depth{font-size:9px;color:var(--text-muted)}
+.menu-detail-panel{padding:22px}.detail-top{padding-bottom:18px;border-bottom:1px solid var(--sand)}.depth-chip{background:var(--cream-dark);color:var(--brown);padding:5px 9px;border-radius:14px;font-size:10px;font-weight:600}
+.menu-form{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;padding-top:20px}.menu-field{display:flex;flex-direction:column;gap:7px}.menu-field label{font-size:11px;font-weight:700;color:var(--text-secondary)}.menu-field input{height:40px;border:1px solid var(--sand-dark);background:var(--warm-white);border-radius:var(--radius-sm);padding:0 11px;font-family:inherit;font-size:13px;color:var(--text-primary);outline:none}.menu-field input:focus{border-color:var(--accent)}.menu-field input[readonly]{background:var(--cream);color:var(--text-muted)}
+.warm-switch-row{height:40px;display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-secondary)}.warm-switch{width:42px;height:24px;position:relative;display:inline-block}.warm-switch input{display:none}.warm-switch span{position:absolute;inset:0;background:var(--sand-dark);border-radius:20px;cursor:pointer}.warm-switch span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.warm-switch input:checked+span{background:var(--accent)}.warm-switch input:checked+span:before{transform:translateX(18px)}
+.sub-menu-block{margin-top:28px;padding-top:20px;border-top:1px solid var(--sand)}.warm-table-wrap{border:1px solid var(--sand);border-radius:var(--radius-sm);overflow:auto;margin-top:13px}.warm-table{width:100%;border-collapse:collapse;font-size:11px}.warm-table th{background:var(--cream);color:var(--text-secondary);font-weight:700}.warm-table th,.warm-table td{padding:11px 9px;border-bottom:1px solid var(--cream-dark);text-align:left;white-space:nowrap}.warm-table tbody tr{cursor:pointer}.warm-table tbody tr:hover{background:var(--cream)}.menu-status{display:inline-block;padding:4px 8px;border-radius:12px;font-size:9px}.menu-status.on{background:var(--accent-light);color:var(--brown-dark)}.menu-status.off{background:var(--cream-dark);color:var(--text-muted)}.menu-empty{text-align:center!important;padding:28px!important;color:var(--text-muted)}
+.menu-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:20px;padding-top:18px;border-top:1px solid var(--sand)}
+@media(max-width:900px){.menu-split{grid-template-columns:250px 1fr}.menu-form{grid-template-columns:1fr}}@media(max-width:700px){.menu-card-head,.sub-menu-head{flex-direction:column;align-items:flex-start;gap:12px}.menu-split{grid-template-columns:1fr}.menu-tree-panel{border-right:0;border-bottom:1px solid var(--sand)}}
+</style>
+
+<style>
+.permission-card{background:var(--warm-white);border:1px solid var(--sand);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}
+.permission-head{padding:20px 22px;border-bottom:1px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
+.head-actions{display:flex;gap:7px}
+.permission-split{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:650px}
+.permission-group-panel{padding:18px;border-right:1px solid var(--sand);background:rgba(250,247,242,.55)}
+.panel-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.count-badge{min-width:24px;height:24px;padding:0 7px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--cream-dark);color:var(--brown);font-size:10px;font-weight:700}
+.group-search{margin-bottom:12px}
+.group-search input,.menu-search input{width:100%;height:38px;box-sizing:border-box;border:1px solid var(--sand-dark);border-radius:var(--radius-sm);padding:0 11px;background:var(--warm-white);font-family:inherit;font-size:12px;color:var(--text-primary);outline:none}
+.group-search input:focus,.menu-search input:focus{border-color:var(--accent)}
+.group-list{display:flex;flex-direction:column;gap:5px}
+.permission-group{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition)}
+.permission-group:hover{background:var(--cream-dark)}
+.permission-group.selected{background:var(--accent-light);color:var(--brown-dark)}
+.group-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cream-dark);color:var(--brown);font-size:12px;font-weight:700;flex-shrink:0}
+.permission-group.selected .group-icon{background:var(--accent);color:#fff}
+.group-info{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.group-info strong{font-size:13px;color:var(--text-primary)}
+.group-info span{font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.group-count{font-size:10px;color:var(--text-muted);background:var(--cream);padding:4px 7px;border-radius:10px}
+.permission-menu-panel{padding:22px;min-width:0}
+.selected-group-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--sand)}
+.selected-group-name{font-size:17px;font-weight:700;color:var(--text-primary)}
+.selected-group-desc{font-size:11px;color:var(--text-muted);margin-top:5px}
+.permission-summary{font-size:12px;color:var(--text-muted);background:var(--cream);border:1px solid var(--sand);padding:8px 11px;border-radius:var(--radius-sm)}
+.permission-summary strong{color:var(--brown-dark);font-size:14px}
+.menu-search-row{display:flex;align-items:center;gap:15px;margin:18px 0 12px}
+.menu-search{flex:1;max-width:360px}
+.only-checked{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-secondary);cursor:pointer}
+.permission-table-wrap{border:1px solid var(--sand);border-radius:var(--radius-sm);overflow:auto}
+.permission-table{width:100%;border-collapse:collapse;font-size:11px}
+.permission-table th{background:var(--cream);color:var(--text-secondary);font-weight:700}
+.permission-table th,.permission-table td{padding:11px 10px;border-bottom:1px solid var(--cream-dark);text-align:left;white-space:nowrap}
+.permission-table tbody tr:hover{background:var(--cream)}
+.permission-table tbody tr.depth-1{background:rgba(247,240,230,.35)}
+.permission-table tbody tr.depth-1 td:nth-child(2){font-weight:700;color:var(--text-primary)}
+.permission-table tbody tr.depth-2 td:nth-child(2){padding-left:31px;color:var(--text-secondary)}
+.check-col{width:42px;text-align:center!important}
+.permission-table input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.menu-depth-badge{font-size:9px;padding:4px 7px;border-radius:10px;background:var(--cream-dark);color:var(--brown)}
+.menu-depth-badge.d2{background:var(--accent-light)}
+.permission-guide{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;background:var(--cream);border-radius:var(--radius-sm);font-size:10px;color:var(--text-muted)}
+.guide-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--sand-dark);color:#fff;font-size:10px;font-weight:700}
+.permission-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:20px;padding-top:18px;border-top:1px solid var(--sand)}
+.hidden-menu{display:none!important}
+@media(max-width:900px){.permission-split{grid-template-columns:260px 1fr}}
+@media(max-width:700px){.permission-head{align-items:flex-start;gap:12px;flex-direction:column}.permission-split{grid-template-columns:1fr}.permission-group-panel{border-right:0;border-bottom:1px solid var(--sand)}.selected-group-head{align-items:flex-start;gap:12px;flex-direction:column}.menu-search-row{align-items:flex-start;flex-direction:column}.menu-search{max-width:none;width:100%}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7L12 2z"/><path d="M12 22V12"/><path d="M3 7l9 5 9-5"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">말씀 관리자</div>
+        <div class="sidebar-logo-sub">Word Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">메인 메뉴</div>
+
+      <!-- PBS -->
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this, 'pbs')">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="nav-link-label">P.B.S</span>
+        </div>
+      </div>
+
+      <!-- QT -->
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this, 'qt')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="nav-link-label">Q.T</span>
+        </div>
+      </div>
+
+      <!-- Sermon -->
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this, 'sermon')">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-link-label">설교</span>
+        </div>
+      </div>
+
+      <!-- Reading -->
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this, 'reading')">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-link-label">독서</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">관리</div>
+
+      <!-- System (with submenu) -->
+      <div class="nav-item">
+        <div class="nav-link parent-active" id="system-parent" onclick="toggleSystem()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+          <span class="nav-link-label">시스템</span>
+          <svg class="nav-chevron open" id="system-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-sub open" id="system-sub">
+          <div class="nav-sub-item" onclick="setSubActive(this)">사용자</div>
+          <div class="nav-sub-item active" onclick="setSubActive(this)">메뉴</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">메뉴-권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">공통코드</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">박</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">박성민 관리자</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+        <svg style="width:14px;height:14px;stroke:rgba(255,255,255,0.3);fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <button class="mobile-menu-btn" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">시스템</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-item current">권한별 권한별 메뉴 관리</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="검색어를 입력하세요">
+        </div>
+
+        <button class="icon-btn" title="알림">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge"></span>
+        </button>
+
+        <button class="icon-btn" title="설정">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        </button>
+
+        <div class="header-avatar" title="내 프로필">박</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+  <div class="page-header">
+    <div class="page-title">권한별 메뉴 관리</div>
+    <div class="page-desc">권한 그룹을 선택하고 해당 그룹에서 사용할 수 있는 메뉴를 설정합니다.</div>
+  </div>
+
+  <div class="permission-card">
+    <div class="permission-head">
+      <div>
+        <div class="section-title">권한별 메뉴 설정</div>
+        <div class="section-desc">왼쪽 권한 그룹을 선택한 후 오른쪽 메뉴에서 접근 권한을 선택하세요.</div>
+      </div>
+      <div class="head-actions">
+        <button class="warm-btn secondary" onclick="checkAll()">전체 선택</button>
+        <button class="warm-btn secondary" onclick="uncheckAll()">전체 해제</button>
+      </div>
+    </div>
+
+    <div class="permission-split">
+      <!-- LEFT : Permission Groups -->
+      <aside class="permission-group-panel">
+        <div class="panel-title-row">
+          <div>
+            <div class="section-title">권한 그룹</div>
+            <div class="section-desc">메뉴 권한을 설정할 그룹을 선택합니다.</div>
+          </div>
+          <span class="count-badge" id="groupCount">5</span>
+        </div>
+
+        <div class="group-search">
+          <input id="groupSearch" type="text" placeholder="권한 그룹 검색" oninput="filterGroups()">
+        </div>
+
+        <div class="group-list" id="groupList">
+          <div class="permission-group selected" data-group="ADMIN" onclick="selectGroup('ADMIN',this)">
+            <div class="group-icon">A</div>
+            <div class="group-info">
+              <strong>관리자</strong>
+              <span>전체 메뉴 접근</span>
+            </div>
+            <span class="group-count">12</span>
+          </div>
+          <div class="permission-group" data-group="MANAGER" onclick="selectGroup('MANAGER',this)">
+            <div class="group-icon">M</div>
+            <div class="group-info">
+              <strong>운영 관리자</strong>
+              <span>콘텐츠·사용자 관리</span>
+            </div>
+            <span class="group-count">8</span>
+          </div>
+          <div class="permission-group" data-group="EDITOR" onclick="selectGroup('EDITOR',this)">
+            <div class="group-icon">E</div>
+            <div class="group-info">
+              <strong>콘텐츠 관리자</strong>
+              <span>콘텐츠 관리</span>
+            </div>
+            <span class="group-count">4</span>
+          </div>
+          <div class="permission-group" data-group="USER" onclick="selectGroup('USER',this)">
+            <div class="group-icon">U</div>
+            <div class="group-info">
+              <strong>일반 사용자</strong>
+              <span>기본 메뉴 접근</span>
+            </div>
+            <span class="group-count">2</span>
+          </div>
+          <div class="permission-group" data-group="GUEST" onclick="selectGroup('GUEST',this)">
+            <div class="group-icon">G</div>
+            <div class="group-info">
+              <strong>게스트</strong>
+              <span>공개 메뉴만 접근</span>
+            </div>
+            <span class="group-count">1</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT : Menu Permissions -->
+      <section class="permission-menu-panel">
+        <div class="selected-group-head">
+          <div>
+            <div class="selected-group-name" id="selectedGroupName">관리자</div>
+            <div class="selected-group-desc" id="selectedGroupDesc">전체 메뉴 접근 권한을 설정합니다.</div>
+          </div>
+          <div class="permission-summary">
+            선택 메뉴 <strong id="checkedCount">0</strong> / <span id="totalCount">12</span>
+          </div>
+        </div>
+
+        <div class="menu-search-row">
+          <div class="menu-search">
+            <input id="menuSearch" type="text" placeholder="메뉴명 검색" oninput="filterMenus()">
+          </div>
+          <label class="only-checked">
+            <input type="checkbox" id="onlyChecked" onchange="filterMenus()">
+            선택된 메뉴만 보기
+          </label>
+        </div>
+
+        <div class="permission-table-wrap">
+          <table class="permission-table">
+            <thead>
+              <tr>
+                <th class="check-col">
+                  <input type="checkbox" id="masterCheck" onchange="toggleVisibleMenus(this.checked)">
+                </th>
+                <th>메뉴</th>
+                <th>메뉴 코드</th>
+                <th>URL</th>
+                <th>Depth</th>
+              </tr>
+            </thead>
+            <tbody id="permissionMenuBody"></tbody>
+          </table>
+        </div>
+
+        <div class="permission-guide">
+          <span class="guide-icon">i</span>
+          <span>1Depth 메뉴를 선택하면 해당 메뉴의 하위 2Depth 메뉴도 함께 표시됩니다.</span>
+        </div>
+
+        <div class="permission-actions">
+          <button class="warm-btn secondary" onclick="resetPermissions()">취소</button>
+          <button class="warm-btn primary" onclick="savePermissions()">저장</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--brown-dark);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+">
+  <svg style="width:16px;height:16px;stroke:#a8d8bc;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  // Nav active state
+  function setActive(el, id) {
+    document.querySelectorAll('.nav-link').forEach(l => {
+      l.classList.remove('active');
+      if (!l.id) l.classList.remove('parent-active');
+    });
+    el.classList.add('active');
+  }
+
+  // System submenu toggle
+  var systemOpen = true;
+  function toggleSystem() {
+    systemOpen = !systemOpen;
+    var sub = document.getElementById('system-sub');
+    var chevron = document.getElementById('system-chevron');
+    var parent = document.getElementById('system-parent');
+    if (systemOpen) {
+      sub.classList.add('open');
+      chevron.classList.add('open');
+      parent.classList.add('parent-active');
+    } else {
+      sub.classList.remove('open');
+      chevron.classList.remove('open');
+      parent.classList.remove('parent-active');
+    }
+  }
+
+  // Sub active
+  function setSubActive(el) {
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    var parent = document.getElementById('system-parent');
+    parent.classList.add('parent-active');
+    parent.classList.remove('active');
+  }
+
+  // Mobile sidebar
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('active');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    showToast('사용자 정보가 저장되었습니다.');
+  }
+
+  // Toggle handler
+  function handleToggle(el, name) {
+    showToast(name + (el.checked ? ' 활성화되었습니다.' : ' 비활성화되었습니다.'));
+  }
+
+  // Toast
+  var toastTimer;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    var toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    toastTimer = setTimeout(function() {
+      toast.style.transform = 'translateY(80px)';
+      toast.style.opacity = '0';
+    }, 2800);
+  }
+
+  function filterUsers() {
+    var q=(document.getElementById('userSearch').value||'').toLowerCase().trim();
+    var role=document.getElementById('roleFilter').value;
+    var status=document.getElementById('statusFilter').value;
+    var rows=document.querySelectorAll('#userTableBody tr');
+    var count=0;
+    rows.forEach(function(row){
+      var text=(row.dataset.name+' '+row.dataset.id+' '+row.dataset.email).toLowerCase();
+      var ok=(!q || text.includes(q)) && (!role || row.dataset.role===role) && (!status || row.dataset.status===status);
+      row.style.display=ok?'':'none'; if(ok) count++;
+    });
+    document.getElementById('visibleCount').textContent=count;
+    document.getElementById('emptyState').style.display=count?'none':'block';
+  }
+  function resetFilters(){
+    document.getElementById('userSearch').value='';
+    document.getElementById('roleFilter').value='';
+    document.getElementById('statusFilter').value='';
+    filterUsers();
+  }
+  function addUser(){ showToast('사용자 등록 화면으로 이동합니다.'); }
+  function editUser(e,btn){ e.stopPropagation(); var row=btn.closest('tr'); showToast(row.dataset.name+' 사용자를 수정합니다.'); }
+  function deleteUser(e,btn){ e.stopPropagation(); var row=btn.closest('tr'); if(confirm(row.dataset.name+' 사용자를 삭제하시겠습니까?')){ row.remove(); filterUsers(); showToast('사용자가 삭제되었습니다.'); } }
+  document.querySelectorAll('#userTableBody tr').forEach(function(row){
+    row.addEventListener('click',function(){ showToast(this.dataset.name+' 사용자를 선택했습니다.'); });
+  });
+</script>
+<script>
+const menuData={1:{parent:"-",name:"콘텐츠 관리",code:"CONTENT",url:"/content",use:true,display:true},11:{parent:"콘텐츠 관리",name:"성경 콘텐츠",code:"BIBLE_CONTENT",url:"/content/bible",use:true,display:true},12:{parent:"콘텐츠 관리",name:"참고자료",code:"REFERENCE",url:"/content/reference",use:true,display:false},2:{parent:"-",name:"사용자 관리",code:"USER",url:"/user",use:true,display:true},21:{parent:"사용자 관리",name:"사용자 목록",code:"USER_LIST",url:"/user/list",use:true,display:true},22:{parent:"사용자 관리",name:"권한 관리",code:"AUTHORITY",url:"/user/authority",use:true,display:true},3:{parent:"-",name:"시스템 관리",code:"SYSTEM",url:"/system",use:true,display:true}};
+function selectMenu(id,e){if(e)e.stopPropagation();document.querySelectorAll(".warm-tree-row").forEach(x=>x.classList.remove("selected"));let r=document.querySelector('.warm-tree-row[data-id="'+id+'"]');if(r)r.classList.add("selected");let m=menuData[id];if(!m)return;parentMenu.value=m.parent;menuName.value=m.name;menuCode.value=m.code;menuUrl.value=m.url;useYn.checked=m.use;displayYn.checked=m.display;depthLabel.textContent=m.parent==="-"?"1Depth":"2Depth";updateSwitch();renderChildren(id)}
+function renderChildren(id){let m=menuData[id],t=document.getElementById("subMenuTable");if(!m||m.parent!=="-"){t.innerHTML='<tr><td colspan="7" class="menu-empty">2Depth 메뉴에는 하위 메뉴를 등록할 수 없습니다.</td></tr>';return}let c=Object.entries(menuData).filter(([k,v])=>v.parent===m.name);if(!c.length){t.innerHTML='<tr><td colspan="7" class="menu-empty">등록된 하위 메뉴가 없습니다.</td></tr>';return}t.innerHTML=c.map(([k,v],i)=>`<tr onclick="selectMenu(${k},event)"><td>${i+1}</td><td>${v.name}</td><td>${v.code}</td><td>${v.url}</td><td><span class="menu-status ${v.use?'on':'off'}">${v.use?'사용':'미사용'}</span></td><td><span class="menu-status ${v.display?'on':'off'}">${v.display?'노출':'미노출'}</span></td><td><button class="warm-btn secondary small" onclick="event.stopPropagation();selectMenu(${k},event)">수정</button></td></tr>`).join("")}
+function toggleTree(e,x){e.stopPropagation();let u=x.closest("li").querySelector(":scope>ul");if(!u)return;u.style.display=u.style.display==="none"?"":"none";x.textContent=u.style.display==="none"?"▶":"▼"}
+function expandAll(){document.querySelectorAll(".warm-tree ul ul").forEach(x=>x.style.display="");document.querySelectorAll(".warm-tree .tree-toggle").forEach(x=>{if(x.nextElementSibling&&x.nextElementSibling.textContent==="📁")x.textContent="▼"})}
+function collapseAll(){document.querySelectorAll(".warm-tree ul ul").forEach(x=>x.style.display="none");document.querySelectorAll(".warm-tree .tree-toggle").forEach(x=>{if(x.nextElementSibling&&x.nextElementSibling.textContent==="📁")x.textContent="▶"})}
+function addRootMenu(){showToast("1Depth 신규 메뉴 등록 화면으로 이동합니다.")}
+function addChildMenu(){let r=document.querySelector(".warm-tree-row.selected");if(!r){showToast("상위 메뉴를 선택해주세요.");return}let m=menuData[r.dataset.id];if(m.parent!=="-"){showToast("2Depth 메뉴에는 하위 메뉴를 등록할 수 없습니다.");return}showToast("["+m.name+"] 하위 메뉴 등록 화면으로 이동합니다.")}
+function deleteMenu(){if(confirm("선택한 메뉴를 삭제하시겠습니까?"))showToast("메뉴가 삭제되었습니다.")}
+function saveMenu(){showToast("메뉴 정보가 저장되었습니다.")}
+function resetMenu(){let r=document.querySelector(".warm-tree-row.selected");if(r)selectMenu(r.dataset.id)}
+function updateSwitch(){useText.textContent=useYn.checked?"사용":"미사용";displayText.textContent=displayYn.checked?"노출":"미노출"}
+useYn.addEventListener("change",updateSwitch);displayYn.addEventListener("change",updateSwitch);renderChildren(1)
+</script>
+
+<script>
+const permissionMenus=[
+  {id:1,parentId:null,name:"콘텐츠 관리",code:"CONTENT",url:"/content",depth:1},
+  {id:11,parentId:1,name:"성경 콘텐츠",code:"BIBLE_CONTENT",url:"/content/bible",depth:2},
+  {id:12,parentId:1,name:"참고자료",code:"REFERENCE",url:"/content/reference",depth:2},
+  {id:2,parentId:null,name:"사용자 관리",code:"USER",url:"/user",depth:1},
+  {id:21,parentId:2,name:"사용자 목록",code:"USER_LIST",url:"/user/list",depth:2},
+  {id:22,parentId:2,name:"권한 관리",code:"AUTHORITY",url:"/user/authority",depth:2},
+  {id:3,parentId:null,name:"시스템 관리",code:"SYSTEM",url:"/system",depth:1},
+  {id:31,parentId:3,name:"메뉴 관리",code:"MENU",url:"/system/menu",depth:2},
+  {id:32,parentId:3,name:"권한별 메뉴 관리",code:"MENU_PERMISSION",url:"/system/menu-permission",depth:2},
+  {id:4,parentId:null,name:"대시보드",code:"DASHBOARD",url:"/dashboard",depth:1},
+  {id:5,parentId:null,name:"마이페이지",code:"MYPAGE",url:"/mypage",depth:1},
+  {id:6,parentId:null,name:"공지사항",code:"NOTICE",url:"/notice",depth:1}
+];
+
+const groupData={
+  ADMIN:{name:"관리자",desc:"전체 메뉴 접근 권한을 설정합니다.",checked:[1,11,12,2,21,22,3,31,32,4,5,6]},
+  MANAGER:{name:"운영 관리자",desc:"콘텐츠 및 사용자 관리 메뉴를 설정합니다.",checked:[1,11,12,2,21,4,5,6]},
+  EDITOR:{name:"콘텐츠 관리자",desc:"콘텐츠 관련 메뉴를 설정합니다.",checked:[1,11,12,4,5,6]},
+  USER:{name:"일반 사용자",desc:"일반 사용자에게 제공할 메뉴를 설정합니다.",checked:[4,5,6]},
+  GUEST:{name:"게스트",desc:"비회원에게 공개할 메뉴를 설정합니다.",checked:[4,6]}
+};
+
+let currentGroup="ADMIN";
+let savedState=JSON.parse(JSON.stringify(groupData));
+
+function selectGroup(group,el){
+  currentGroup=group;
+  document.querySelectorAll(".permission-group").forEach(x=>x.classList.remove("selected"));
+  if(el)el.classList.add("selected");
+  document.getElementById("selectedGroupName").textContent=groupData[group].name;
+  document.getElementById("selectedGroupDesc").textContent=groupData[group].desc;
+  document.getElementById("groupSearch").value="";
+  document.getElementById("menuSearch").value="";
+  document.getElementById("onlyChecked").checked=false;
+  renderPermissionMenus();
+}
+
+function renderPermissionMenus(){
+  const body=document.getElementById("permissionMenuBody");
+  const checked=new Set(groupData[currentGroup].checked);
+  body.innerHTML=permissionMenus.map(m=>{
+    const checkedAttr=checked.has(m.id)?"checked":"";
+    const cls=m.depth===1?"depth-1":"depth-2";
+    return `<tr class="${cls}" data-menu-id="${m.id}" data-menu-name="${m.name.toLowerCase()}">
+      <td class="check-col"><input type="checkbox" class="menu-check" value="${m.id}" ${checkedAttr} onchange="menuChanged(${m.id},this.checked)"></td>
+      <td>${m.depth===2?"└ ":""}${m.name}</td>
+      <td>${m.code}</td>
+      <td>${m.url}</td>
+      <td><span class="menu-depth-badge ${m.depth===2?"d2":""}">${m.depth}Depth</span></td>
+    </tr>`;
+  }).join("");
+  updateCount();
+  filterMenus();
+}
+
+function menuChanged(id,isChecked){
+  const set=new Set(groupData[currentGroup].checked);
+  const menu=permissionMenus.find(x=>x.id===id);
+  if(isChecked){
+    set.add(id);
+    if(menu&&menu.depth===1){
+      permissionMenus.filter(x=>x.parentId===id).forEach(x=>set.add(x.id));
+    }else if(menu&&menu.depth===2&&menu.parentId){
+      set.add(menu.parentId);
+    }
+  }else{
+    set.delete(id);
+    if(menu&&menu.depth===1){
+      permissionMenus.filter(x=>x.parentId===id).forEach(x=>set.delete(x.id));
+    }
+  }
+  groupData[currentGroup].checked=[...set];
+  renderPermissionMenus();
+}
+
+function checkAll(){
+  groupData[currentGroup].checked=permissionMenus.map(x=>x.id);
+  renderPermissionMenus();
+}
+function uncheckAll(){
+  groupData[currentGroup].checked=[];
+  renderPermissionMenus();
+}
+function toggleVisibleMenus(flag){
+  const visible=[...document.querySelectorAll("#permissionMenuBody tr:not(.hidden-menu) .menu-check")];
+  const set=new Set(groupData[currentGroup].checked);
+  visible.forEach(cb=>flag?set.add(Number(cb.value)):set.delete(Number(cb.value)));
+  groupData[currentGroup].checked=[...set];
+  renderPermissionMenus();
+}
+function updateCount(){
+  document.getElementById("checkedCount").textContent=groupData[currentGroup].checked.length;
+  document.getElementById("totalCount").textContent=permissionMenus.length;
+}
+function filterGroups(){
+  const q=document.getElementById("groupSearch").value.toLowerCase().trim();
+  document.querySelectorAll(".permission-group").forEach(el=>{
+    el.style.display=(!q||el.textContent.toLowerCase().includes(q))?"":"none";
+  });
+}
+function filterMenus(){
+  const q=document.getElementById("menuSearch").value.toLowerCase().trim();
+  const only=document.getElementById("onlyChecked").checked;
+  const checked=new Set(groupData[currentGroup].checked);
+  document.querySelectorAll("#permissionMenuBody tr").forEach(row=>{
+    const id=Number(row.dataset.menuId);
+    const name=row.dataset.menuName;
+    const matchName=!q||name.includes(q);
+    const matchChecked=!only||checked.has(id);
+    row.classList.toggle("hidden-menu",!(matchName&&matchChecked));
+  });
+}
+function savePermissions(){
+  savedState=JSON.parse(JSON.stringify(groupData));
+  showToast(groupData[currentGroup].name+" 메뉴 권한이 저장되었습니다.");
+}
+function resetPermissions(){
+  groupData[currentGroup]=JSON.parse(JSON.stringify(savedState[currentGroup]));
+  renderPermissionMenus();
+  showToast("변경사항을 취소했습니다.");
+}
+renderPermissionMenus();
+</script>
+</body>
+</html>
