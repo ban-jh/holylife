@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>설교 작성</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #faf7f2;
+    --cream-dark: #f2ece0;
+    --warm-white: #fffcf8;
+    --sand: #e8ddd0;
+    --sand-dark: #d4c5b0;
+    --brown-light: #c8b49a;
+    --brown: #8c6f56;
+    --brown-dark: #5e4a38;
+    --accent: #c97d4e;
+    --accent-light: #f0d4ba;
+    --accent-hover: #b06b3c;
+    --text-primary: #2d2118;
+    --text-secondary: #7a6655;
+    --text-muted: #a89585;
+    --sidebar-width: 240px;
+    --header-height: 64px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 4px rgba(100,70,40,0.07);
+    --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
+    --shadow-lg: 0 8px 32px rgba(100,70,40,0.13);
+    --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: var(--cream);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--brown-dark);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+    transition: transform var(--transition), width var(--transition);
+    overflow: hidden;
+  }
+
+  .sidebar-logo {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-logo-icon {
+    width: 34px;
+    height: 34px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.8;
+  }
+
+  .sidebar-logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .sidebar-logo-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 10px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  .sidebar-nav::-webkit-scrollbar { width: 4px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 16px 10px 6px;
+  }
+
+  .nav-item { position: relative; }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    user-select: none;
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.92);
+  }
+
+  .nav-link.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .nav-link.parent-active {
+    background: rgba(201,125,78,0.18);
+    color: rgba(255,255,255,0.92);
+  }
+
+  .nav-link svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .nav-link-label { flex: 1; font-size: 13.5px; font-weight: 500; }
+
+  .nav-chevron {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+
+  .nav-chevron.open { transform: rotate(180deg); }
+
+  .nav-sub {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s;
+    opacity: 0;
+  }
+
+  .nav-sub.open {
+    max-height: 300px;
+    opacity: 1;
+  }
+
+  .nav-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px 7px 40px;
+    border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 400;
+    transition: background var(--transition), color var(--transition);
+    user-select: none;
+  }
+
+  .nav-sub-item::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    flex-shrink: 0;
+    transition: background var(--transition);
+  }
+
+  .nav-sub-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .nav-sub-item:hover::before { background: var(--accent); }
+
+  .nav-sub-item.active {
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+
+  .nav-sub-item.active::before { background: var(--accent); }
+
+  .sidebar-footer {
+    padding: 14px 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+
+  .sidebar-user:hover { background: rgba(255,255,255,0.07); }
+
+  .sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.38); }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--cream);
+  }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-height);
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--sand);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    z-index: 10;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: background var(--transition);
+  }
+
+  .mobile-menu-btn:hover { background: var(--cream-dark); }
+  .mobile-menu-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .breadcrumb-item { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+  .breadcrumb-item.current { color: var(--text-primary); font-weight: 600; }
+  .breadcrumb-sep { color: var(--sand-dark); font-size: 12px; }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .header-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cream);
+    border: 1.5px solid var(--sand);
+    border-radius: 22px;
+    padding: 7px 14px;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .header-search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,125,78,0.12);
+  }
+
+  .header-search svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .header-search input {
+    border: none; background: transparent; outline: none; font-size: 13px; color: var(--text-primary); width: 160px; font-family: inherit;
+  }
+  .header-search input::placeholder { color: var(--text-muted); }
+
+  .icon-btn {
+    width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition), color var(--transition); position: relative;
+  }
+  .icon-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .badge {
+    position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; border: 1.5px solid var(--warm-white);
+  }
+
+  .header-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: opacity var(--transition); margin-left: 4px; border: 2px solid var(--accent-light);
+  }
+  .header-avatar:hover { opacity: 0.85; }
+
+  /* ── Content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 36px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sand) transparent;
+  }
+
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.3; }
+  .page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--sand);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: box-shadow var(--transition);
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+
+  .card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--cream-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+  .card-body { padding: 24px; }
+
+  /* ── Form Controls ── */
+  .basic-info {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 2fr;
+    gap: 20px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+
+  .form-input, input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--sand);
+    border-radius: var(--radius-sm);
+    background: var(--cream);
+    font-size: 13.5px;
+    color: var(--text-primary);
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    line-height: 1.5;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: var(--warm-white);
+    box-shadow: 0 0 0 3px rgba(201,125,78,0.10);
+  }
+
+  select { cursor: pointer; }
+
+  /* ── Tag Input ── */
+  .tag-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--sand);
+    border-radius: var(--radius-sm);
+    background: var(--cream);
+    min-height: 42px;
+    align-items: center;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  }
+
+  .tag-input-container:focus-within {
+    border-color: var(--accent);
+    background: var(--warm-white);
+    box-shadow: 0 0 0 3px rgba(201,125,78,0.10);
+  }
+
+  .tag-input-container input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    flex: 1;
+    min-width: 80px;
+    padding: 4px 6px;
+  }
+
+  .tag-input-container input:focus {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: var(--accent-light);
+    color: var(--brown-dark);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tag-chip-remove {
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .tag-chip-remove:hover { opacity: 1; }
+
+  /* ── Middle Split ── */
+  .middle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 20px;
+  }
+
+  .middle-card {
+    background: var(--warm-white);
+    border: 1px solid var(--sand);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .middle-header { padding: 20px 24px 0; }
+  .middle-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+
+  /* ── Tabs ── */
+  .tabs, .reference-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--sand);
+  }
+
+  .tab, .reference-tab {
+    border: 0;
+    background: transparent;
+    padding: 10px 18px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+    transition: all var(--transition);
+  }
+
+  .tab:hover, .reference-tab:hover { color: var(--text-primary); }
+  .tab.active, .reference-tab.active {
+    color: var(--accent);
+    font-weight: 700;
+    border-bottom-color: var(--accent);
+  }
+
+  .bible-content {
+    padding: 24px;
+    min-height: 380px;
+    line-height: 2;
+    font-size: 15px;
+    color: var(--text-primary);
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .verse-number {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+
+  .content-editor {
+    padding: 20px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .content-editor textarea {
+    width: 100%;
+    height: 310px;
+    resize: vertical;
+    line-height: 1.8;
+  }
+
+  /* ── Reference Panels ── */
+  .reference-content { padding: 20px 24px 24px; }
+  .reference-panel { display: none; }
+  .reference-panel.active { display: block; }
+
+  .url-row {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 10px;
+  }
+
+  .upload-area {
+    border: 2px dashed var(--sand-dark);
+    border-radius: var(--radius-md);
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+
+  .upload-area:hover { background: var(--cream); }
+  .upload-icon { font-size: 28px; margin-bottom: 4px; }
+
+  .document-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--sand);
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    background: var(--cream);
+  }
+
+  .document-info { display: flex; align-items: center; gap: 12px; }
+  .document-icon { font-size: 24px; }
+
+  .map-area {
+    height: 200px;
+    background: linear-gradient(45deg, #f2ece0 25%, transparent 25%), linear-gradient(-45deg, #f2ece0 25%, transparent 25%), var(--cream);
+    background-size: 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sand);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+  }
+
+  .map-search {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Buttons ── */
+  .bottom-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all var(--transition);
+  }
+
+  .btn-cancel {
+    background: var(--warm-white);
+    color: var(--text-secondary);
+    border-color: var(--sand);
+  }
+
+  .btn-cancel:hover {
+    background: var(--cream-dark);
+    color: var(--text-primary);
+  }
+
+  .btn-save {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(201,125,78,0.25);
+  }
+
+  .btn-save:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  /* ── Overlay & Mobile ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45,33,24,0.45);
+    z-index: 90;
+    backdrop-filter: blur(2px);
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .content > * { animation: fadeSlideIn 0.35s cubic-bezier(.4,0,.2,1) both; }
+
+  @media (max-width: 900px) {
+    .basic-info { grid-template-columns: 1fr 1fr; }
+    .middle { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 680px) {
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); z-index: 200; }
+    .sidebar.open { transform: translateX(0); }
+    .overlay.active { display: block; }
+    .mobile-menu-btn { display: flex; }
+    .content { padding: 20px 18px; }
+    .header { padding: 0 16px; }
+    .header-search { display: none; }
+    .basic-info { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7L12 2z"/><path d="M12 22V12"/><path d="M3 7l9 5 9-5"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">말씀 관리자</div>
+        <div class="sidebar-logo-sub">Word Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">메인 메뉴</div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="nav-link-label">P.B.S (성경공부)</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="nav-link-label">Q.T</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link active" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-link-label">설교</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-link-label">독서</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">관리</div>
+
+      <div class="nav-item">
+        <div class="nav-link" id="system-parent" onclick="toggleSystem()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+          <span class="nav-link-label">시스템</span>
+          <svg class="nav-chevron" id="system-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-sub" id="system-sub">
+          <div class="nav-sub-item" onclick="setSubActive(this)">사용자</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">메뉴</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">공통코드</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">박</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">박성민 관리자</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main Area -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <button class="mobile-menu-btn" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">설교</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-item current">설교 작성</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="검색어를 입력하세요">
+        </div>
+
+        <button class="icon-btn" title="알림">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge"></span>
+        </button>
+
+        <div class="header-avatar">박</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <div class="page-header">
+        <div class="page-title">설교 작성</div>
+        <div class="page-desc">설교 말씀과 내용을 작성하고 등록합니다.</div>
+      </div>
+
+      <!-- 상단 기본정보 -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">기본 정보</div>
+        </div>
+        <div class="card-body">
+          <div class="basic-info">
+            <div class="form-group">
+              <label>제목</label>
+              <input type="text" id="title" placeholder="설교 제목을 입력하세요" value="십자가의 길을 따라서">
+            </div>
+
+            <div class="form-group">
+              <label>날짜</label>
+              <input type="date" id="date" value="2026-09-14">
+            </div>
+
+            <div class="form-group">
+              <label>설교자</label>
+              <input type="text" id="preacher" placeholder="설교자를 입력하세요" value="박성민 목사">
+            </div>
+
+            <div class="form-group">
+              <label>태그</label>
+              <div class="tag-input-container" id="tagContainer">
+                <span class="tag-chip">십자가<span class="tag-chip-remove" onclick="removeTag(this)">×</span></span>
+                <span class="tag-chip">순종<span class="tag-chip-remove" onclick="removeTag(this)">×</span></span>
+                <input type="text" id="tagInput" placeholder="태그 입력 후 Enter" onkeydown="addTag(event)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 중앙 영역 (성경 말씀 / 설교 내용) -->
+      <div class="middle">
+        <!-- 왼쪽: 성경 말씀 -->
+        <section class="middle-card">
+          <div class="middle-header">
+            <div class="middle-title">성경 말씀</div>
+            <div class="tabs">
+              <button class="tab active" onclick="changeBible('new', this)">새번역</button>
+              <button class="tab" onclick="changeBible('english', this)">영어 (NIV)</button>
+              <button class="tab" onclick="changeBible('modern', this)">현대인</button>
+            </div>
+          </div>
+          <div id="bibleContent" class="bible-content">
+            <span class="verse-number">1</span> 십자가의 말씀은 멸망하는 자들에게는 어리석음이지만, 구원을 얻는 우리에게는 하나님의 능력입니다.<br>
+            <span class="verse-number">2</span> 유대인은 표적을 구하고 헬라인은 지혜를 찾으나,<br>
+            <span class="verse-number">3</span> 우리는 십자가에 못 박히신 그리스도를 전합니다. 이는 유대인에게는 거리낌이요, 이방인에게는 어리석음이지만,<br>
+            <span class="verse-number">4</span> 부르심을 입은 자들에게는 유대인이나 헬라인이나 그리스도는 하나님의 능력이요 하나님의 지혜입니다.
+          </div>
+        </section>
+
+        <!-- 오른쪽: 설교 내용 입력 -->
+        <section class="middle-card">
+          <div class="middle-header">
+            <div class="middle-title">설교 내용</div>
+          </div>
+          <div class="content-editor">
+            <textarea id="contentText" placeholder="설교 내용을 입력하세요.">십자가는 우리 신앙의 중심입니다.
+
+바울 사도는 고린도전서 1장에서 십자가의 말씀이 세상 사람들에게는 어리석음으로 보이지만, 구원을 얻는 우리에게는 하나님의 능력이라고 선포합니다.
+
+유대인은 표적을 구하고 헬라인은 지혜를 찾았지만, 우리가 전하는 것은 십자가에 못 박히신 그리스도입니다. 이것이 세상 기준으로는 거리낌이요 어리석음이지만, 믿는 자에게는 생명의 길입니다.
+
+십자가의 길을 따라간다는 것은 무엇을 의미할까요?
+
+첫째, 자기를 부인하는 것입니다. 예수님께서 "누구든지 나를 따라오려거든 자기를 부인하고 자기 십자가를 지고 나를 따를 것이니라"라고 말씀하셨습니다.
+
+둘째, 순종하는 것입니다. 빌립보서 2장에서 그리스도는 죽기까지, 십자가의 죽으심까지 순종하셨다고 말합니다.
+
+셋째, 사랑하는 것입니다. 십자가는 하나님의 사랑을 보여주는 가장 분명한 증거입니다.
+
+우리도 이 십자가의 길을 따라, 자기를 부인하고 순종하며 사랑으로 살아가는 성도가 되기를 소망합니다.</textarea>
+          </div>
+        </section>
+      </div>
+
+      <!-- 하단 버튼 -->
+      <div class="bottom-buttons">
+        <button class="btn btn-cancel" onclick="cancelContent()">취소</button>
+        <button class="btn btn-save" onclick="saveContent()">저장하기</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--brown-dark);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+">
+  <svg style="width:16px;height:16px;stroke:#a8d8bc;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  // Navigation
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  var systemOpen = false;
+  function toggleSystem() {
+    systemOpen = !systemOpen;
+    var sub = document.getElementById('system-sub');
+    var chevron = document.getElementById('system-chevron');
+    var parent = document.getElementById('system-parent');
+    if (systemOpen) {
+      sub.classList.add('open');
+      chevron.classList.add('open');
+      parent.classList.add('parent-active');
+    } else {
+      sub.classList.remove('open');
+      chevron.classList.remove('open');
+      parent.classList.remove('parent-active');
+    }
+  }
+
+  function setSubActive(el) {
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('active');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  // Bible Tab Change
+  function changeBible(type, button) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    button.classList.add('active');
+
+    var content = document.getElementById('bibleContent');
+    if (type === 'new') {
+      content.innerHTML =
+        '<span class="verse-number">1</span> 십자가의 말씀은 멸망하는 자들에게는 어리석음이지만, 구원을 얻는 우리에게는 하나님의 능력입니다.<br>' +
+        '<span class="verse-number">2</span> 유대인은 표적을 구하고 헬라인은 지혜를 찾으나,<br>' +
+        '<span class="verse-number">3</span> 우리는 십자가에 못 박히신 그리스도를 전합니다. 이는 유대인에게는 거리낌이요, 이방인에게는 어리석음이지만,<br>' +
+        '<span class="verse-number">4</span> 부르심을 입은 자들에게는 유대인이나 헬라인이나 그리스도는 하나님의 능력이요 하나님의 지혜입니다.';
+    } else if (type === 'english') {
+      content.innerHTML =
+        '<span class="verse-number">1</span> For the message of the cross is foolishness to those who are perishing, but to us who are being saved it is the power of God.<br>' +
+        '<span class="verse-number">2</span> Jews demand signs and Greeks look for wisdom,<br>' +
+        '<span class="verse-number">3</span> but we preach Christ crucified: a stumbling block to Jews and foolishness to Gentiles,<br>' +
+        '<span class="verse-number">4</span> but to those whom God has called, both Jews and Greeks, Christ the power of God and the wisdom of God.';
+    } else {
+      content.innerHTML =
+        '<span class="verse-number">1</span> 십자가의 말씀은 멸망해 가는 사람들에게는 어리석어 보이지만, 구원을 얻는 우리에게는 하나님의 능력입니다.<br>' +
+        '<span class="verse-number">2</span> 유대인은 기적을 구하고, 헬라인은 지혜를 찾습니다.<br>' +
+        '<span class="verse-number">3</span> 그러나 우리는 십자가에 못 박히신 그리스도를 전합니다. 이것은 유대인에게는 걸려 넘어지게 하는 것이요, 이방인에게는 어리석어 보이는 것이지만,<br>' +
+        '<span class="verse-number">4</span> 하나님께서 부르신 사람들에게는, 유대인이나 헬라인이나 다 같이 그리스도가 하나님의 능력이요, 하나님의 지혜가 됩니다.';
+    }
+  }
+
+  // Reference Tab Change
+  function changeReference(type, button) {
+    document.querySelectorAll('.reference-tab').forEach(tab => tab.classList.remove('active'));
+    button.classList.add('active');
+
+    document.querySelectorAll('.reference-panel').forEach(panel => panel.classList.remove('active'));
+    document.getElementById(type).classList.add('active');
+  }
+
+  // Tag Input
+  function addTag(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      var input = document.getElementById('tagInput');
+      var value = input.value.trim();
+      if (value) {
+        var container = document.getElementById('tagContainer');
+        var chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.innerHTML = value + '<span class="tag-chip-remove" onclick="removeTag(this)">×</span>';
+        container.insertBefore(chip, input);
+        input.value = '';
+      }
+    }
+  }
+
+  function removeTag(el) {
+    el.parentElement.remove();
+  }
+
+  // Toast Handler
+  var toastTimer;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    var toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    toastTimer = setTimeout(function() {
+      toast.style.transform = 'translateY(80px)';
+      toast.style.opacity = '0';
+    }, 2800);
+  }
+
+  function saveContent() {
+    showToast('설교가 성공적으로 저장되었습니다.');
+  }
+
+  function cancelContent() {
+    if (confirm('작성 중인 내용이 초기화됩니다. 계속하시겠습니까?')) {
+      location.reload();
+    }
+  }
+</script>
+</body>
+</html>
