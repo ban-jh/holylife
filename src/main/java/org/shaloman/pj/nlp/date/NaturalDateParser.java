@@ -98,6 +98,11 @@ public class NaturalDateParser {
         "(이번\\s*주|다음\\s*주|저번\\s*주|지난\\s*주)\\s*" +
         "(월요일|화요일|수요일|목요일|금요일|토요일|일요일|월|화|수|목|금|토|일)");
 
+    // "N주 후/전 + 요일" — "3주 후 월요일", "2주 전 금요일"
+    private static final Pattern N_WEEKS_WEEKDAY_PATTERN = Pattern.compile(
+        "(\\d+)\\s*주\\s*(전|후)\\s*" +
+        "(월요일|화요일|수요일|목요일|금요일|토요일|일요일|월|화|수|목|금|토|일)");
+
     // 복합: "다음 달 15일", "내년 3월 15일"
     private static final Pattern COMPOUND_MONTH_DAY = Pattern.compile(
         "(내년|작년|올해|다음\\s*달|저번\\s*달|지난\\s*달|이번\\s*달)\\s*" +
@@ -115,6 +120,14 @@ public class NaturalDateParser {
     private static final Pattern START_END_PATTERN = Pattern.compile(
         "(이번\\s*주|다음\\s*주|저번\\s*주|지난\\s*주|이번\\s*달|다음\\s*달|저번\\s*달|지난\\s*달|올해|내년|작년)\\s*" +
         "(시작|끝|마지막)");
+
+    // "특정 날짜 이후/후 가장 빠른/첫 번째/첫번째 요일"
+    // "2026년 9월 30일 후 가장 빠른 금요일", "9월 30일 이후 첫 번째 금요일"
+    private static final Pattern AFTER_DATE_NEAREST_WEEKDAY = Pattern.compile(
+        "(?:(\\d{4})\\s*년\\s*)?(\\d{1,2})\\s*월\\s*(\\d{1,2})\\s*일\\s*" +
+        "(?:이후|후)\\s*" +
+        "(?:가장\\s*빠른|가장\\s*빠른|첫\\s*번째|첫번째|첫)\\s*" +
+        "(월요일|화요일|수요일|목요일|금요일|토요일|일요일|월|화|수|목|금|토|일)");
 
     /** 기본 생성자: 현재 날짜를 기준으로 함 */
     public NaturalDateParser() {
@@ -145,6 +158,10 @@ public class NaturalDateParser {
         DateParseResult result = tryBetween(normalized);
         if (result != null) return result;
 
+        // 11. 특정 날짜 이후 가장 빠른 요일 (명시적 날짜보다 먼저 체크)
+        result = tryAfterDateNearestWeekday(normalized);
+        if (result != null) return result;
+
         // 10. 복합 표현
         result = tryCompoundNthWeekday(normalized);
         if (result != null) return result;
@@ -161,6 +178,9 @@ public class NaturalDateParser {
         if (result != null) return result;
 
         // 5. 요일 기반 표현
+        result = tryNWeeksWeekday(normalized);
+        if (result != null) return result;
+
         result = tryWeekdayRelative(normalized);
         if (result != null) return result;
 
@@ -388,7 +408,37 @@ public class NaturalDateParser {
     }
 
     // ══════════════════════════════════════════════════════════
-    // 5. 요일 기반 표현 (Weekday-based)
+    // 5-1. N주 + 요일 표현 (N Weeks + Weekday)
+    // ══════════════════════════════════════════════════════════
+
+    private DateParseResult tryNWeeksWeekday(String text) {
+        Matcher m = N_WEEKS_WEEKDAY_PATTERN.matcher(text);
+        if (!m.find()) return null;
+
+        int n = Integer.parseInt(m.group(1));
+        String direction = m.group(2); // 전 or 후
+        String weekdayStr = m.group(3);
+        DayOfWeek targetDay = WEEKDAY_MAP.get(weekdayStr);
+        if (targetDay == null) return null;
+
+        matchedKeywords.add(n + "주 " + direction + " " + weekdayStr);
+
+        LocalDate weekBase;
+        if (direction.equals("후")) {
+            weekBase = baseDate.plusWeeks(n);
+        } else {
+            weekBase = baseDate.minusWeeks(n);
+        }
+
+        // 해당 주의 지정 요일 계산
+        LocalDate mondayOfWeek = weekBase.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate result = mondayOfWeek.with(TemporalAdjusters.nextOrSame(targetDay));
+
+        return new DateParseResult(DateExpressionType.WEEKDAY_THIS, result, text, matchedKeywords);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // 5-2. 요일 기반 표현 (Weekday-based)
     // ══════════════════════════════════════════════════════════
 
     private DateParseResult tryWeekdayRelative(String text) {
@@ -626,6 +676,45 @@ public class NaturalDateParser {
         }
 
         return null;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // 11. 특정 날짜 이후 가장 빠른 요일 (After Date Nearest Weekday)
+    // ══════════════════════════════════════════════════════════
+
+    private DateParseResult tryAfterDateNearestWeekday(String text) {
+        Matcher m = AFTER_DATE_NEAREST_WEEKDAY.matcher(text);
+        if (!m.find()) return null;
+
+        String yearStr = m.group(1); // 연도 (선택)
+        String monthStr = m.group(2);
+        String dayStr = m.group(3);
+        String weekdayStr = m.group(4);
+
+        DayOfWeek targetDay = WEEKDAY_MAP.get(weekdayStr);
+        if (targetDay == null) return null;
+
+        int year = yearStr != null ? Integer.parseInt(yearStr) : baseDate.getYear();
+        int month = Integer.parseInt(monthStr);
+        int day = Integer.parseInt(dayStr);
+
+        LocalDate base;
+        try {
+            base = LocalDate.of(year, month, day);
+        } catch (Exception e) {
+            return null;
+        }
+
+        matchedKeywords.add(year + "년 " + month + "월 " + day + "일 이후 가장 빠른 " + weekdayStr);
+
+        // 기준일 이후(포함하지 않음) 가장 가까운 targetDay 찾기
+        // "후"이므로 기준일 다음 날부터 검색
+        LocalDate candidate = base.plusDays(1);
+        while (candidate.getDayOfWeek() != targetDay) {
+            candidate = candidate.plusDays(1);
+        }
+
+        return new DateParseResult(DateExpressionType.AFTER_DATE_NEAREST_WEEKDAY, candidate, text, matchedKeywords);
     }
 
     // ══════════════════════════════════════════════════════════

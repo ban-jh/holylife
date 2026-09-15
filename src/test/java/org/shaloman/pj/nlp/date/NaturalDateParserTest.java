@@ -126,7 +126,7 @@ class NaturalDateParserTest {
     @DisplayName("2주 전")
     void testWeeksAgo() {
         DateParseResult r = parser.parse("2주 전");
-        assertEquals(LocalDate.of(2026, 9, 1) // minus 2 weeks from 9/15 → 9/1 is Monday of that week? No: base minus 2 weeks = 9/1, Monday of that week
+        assertEquals(LocalDate.of(2026, 8, 31) // minus 2 weeks from 9/15 → 9/1 is Mon of that week? No: 8/31 is Mon
                 .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)),
                 r.getStartDate());
     }

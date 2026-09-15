@@ -69,7 +69,10 @@ public enum DateExpressionType {
     BETWEEN("명시적 기간", null),
 
     // ── 10. 복합 표현 (Compound) ──
-    COMPOUND("복합 표현", null);
+    COMPOUND("복합 표현", null),
+
+    // ── 11. 특정 날짜 이후 가장 가까운 요일 (After Date Nearest Weekday) ──
+    AFTER_DATE_NEAREST_WEEKDAY("특정 날짜 이후 가장 빠른 요일", null);
 
     private final String primaryLabel;
     private final String secondaryLabel;
