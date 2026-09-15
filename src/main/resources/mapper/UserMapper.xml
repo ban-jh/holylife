@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.UserMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="userResultMap" type="org.shaloman.pj.domain.User">
+        <id property="userId" column="user_id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="nickname" column="nickname"/>
+        <result property="phone" column="phone"/>
+        <result property="roleGroup" column="role_group"/>
+        <result property="accountStatus" column="account_status"/>
+        <result property="memo" column="memo"/>
+        <result property="emailNotification" column="email_notification"/>
+        <result property="twoFactorAuth" column="two_factor_auth"/>
+        <result property="sessionAutoExpiry" column="session_auto_expiry"/>
+        <result property="activityLog" column="activity_log"/>
+        <result property="lastLogin" column="last_login"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        user_id, email, password, name, nickname, phone, role_group, account_status,
+        memo, email_notification, two_factor_auth, session_auto_expiry, activity_log,
+        last_login, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="userResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM users
+        ORDER BY user_id
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="userResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 이메일로 조회 -->
+    <select id="findByEmail" resultMap="userResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.User" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+            email, password, name, nickname, phone, role_group, account_status,
+            memo, email_notification, two_factor_auth, session_auto_expiry, activity_log
+        ) VALUES (
+            #{email}, #{password}, #{name}, #{nickname}, #{phone},
+            <choose>
+                <when test="roleGroup != null">#{roleGroup}</when>
+                <otherwise>'USER'</otherwise>
+            </choose>,
+            <choose>
+                <when test="accountStatus != null">#{accountStatus}</when>
+                <otherwise>'ACTIVE'</otherwise>
+            </choose>,
+            #{memo},
+            <choose>
+                <when test="emailNotification != null">#{emailNotification}</when>
+                <otherwise>false</otherwise>
+            </choose>,
+            <choose>
+                <when test="twoFactorAuth != null">#{twoFactorAuth}</when>
+                <otherwise>false</otherwise>
+            </choose>,
+            <choose>
+                <when test="sessionAutoExpiry != null">#{sessionAutoExpiry}</when>
+                <otherwise>false</otherwise>
+            </choose>,
+            <choose>
+                <when test="activityLog != null">#{activityLog}</when>
+                <otherwise>false</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="org.shaloman.pj.domain.User">
+        UPDATE users
+        <set>
+            <if test="email != null">email = #{email},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="roleGroup != null">role_group = #{roleGroup},</if>
+            <if test="accountStatus != null">account_status = #{accountStatus},</if>
+            <if test="memo != null">memo = #{memo},</if>
+            <if test="emailNotification != null">email_notification = #{emailNotification},</if>
+            <if test="twoFactorAuth != null">two_factor_auth = #{twoFactorAuth},</if>
+            <if test="sessionAutoExpiry != null">session_auto_expiry = #{sessionAutoExpiry},</if>
+            <if test="activityLog != null">activity_log = #{activityLog},</if>
+            <if test="lastLogin != null">last_login = #{lastLogin},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM users WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 총 수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
+</mapper>
