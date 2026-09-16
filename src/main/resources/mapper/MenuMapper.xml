@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.MenuMapper">
+
+    <!-- ResultMap (children은 서비스 계층에서 조립) -->
+    <resultMap id="menuResultMap" type="org.shaloman.pj.domain.Menu">
+        <id property="menuId" column="menu_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="parentName" column="parent_name"/>
+        <result property="menuName" column="menu_name"/>
+        <result property="menuCode" column="menu_code"/>
+        <result property="menuUrl" column="menu_url"/>
+        <result property="depth" column="depth"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="icon" column="icon"/>
+        <result property="useYn" column="use_yn"/>
+        <result property="displayYn" column="display_yn"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        menu_id, parent_id, parent_name, menu_name, menu_code, menu_url,
+        depth, sort_order, icon, use_yn, display_yn, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="menuResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM menus
+        ORDER BY depth, sort_order, menu_id
+    </select>
+
+    <!-- 검색 조회 -->
+    <select id="findByKeyword" resultMap="menuResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM menus
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (menu_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR menu_code LIKE CONCAT('%', #{keyword}, '%')
+                 OR menu_url LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY depth, sort_order, menu_id
+    </select>
+
+    <!-- 상위 메뉴 ID로 하위 메뉴 조회 -->
+    <select id="findByParentId" resultMap="menuResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM menus
+        WHERE parent_id = #{parentId}
+        ORDER BY sort_order, menu_id
+    </select>
+
+    <!-- 루트 메뉴 조회 (1Depth) -->
+    <select id="findRootMenus" resultMap="menuResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM menus
+        WHERE parent_id IS NULL
+        ORDER BY sort_order, menu_id
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="menuResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM menus
+        WHERE menu_id = #{menuId}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.Menu" useGeneratedKeys="true" keyProperty="menuId">
+        INSERT INTO menus (
+            parent_id, parent_name, menu_name, menu_code, menu_url,
+            depth, sort_order, icon, use_yn, display_yn
+        ) VALUES (
+            #{parentId}, #{parentName}, #{menuName}, #{menuCode}, #{menuUrl},
+            <choose>
+                <when test="depth != null">#{depth}</when>
+                <otherwise>1</otherwise>
+            </choose>,
+            <choose>
+                <when test="sortOrder != null">#{sortOrder}</when>
+                <otherwise>0</otherwise>
+            </choose>,
+            #{icon},
+            <choose>
+                <when test="useYn != null">#{useYn}</when>
+                <otherwise>true</otherwise>
+            </choose>,
+            <choose>
+                <when test="displayYn != null">#{displayYn}</when>
+                <otherwise>true</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="org.shaloman.pj.domain.Menu">
+        UPDATE menus
+        <set>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="parentName != null">parent_name = #{parentName},</if>
+            <if test="menuName != null">menu_name = #{menuName},</if>
+            <if test="menuCode != null">menu_code = #{menuCode},</if>
+            <if test="menuUrl != null">menu_url = #{menuUrl},</if>
+            <if test="depth != null">depth = #{depth},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="displayYn != null">display_yn = #{displayYn},</if>
+        </set>
+        WHERE menu_id = #{menuId}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM menus WHERE menu_id = #{menuId}
+    </delete>
+
+    <!-- 총 수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM menus
+    </select>
+
+</mapper>

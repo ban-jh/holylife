@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.RoleMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="roleResultMap" type="org.shaloman.pj.domain.Role">
+        <id property="roleId" column="role_id"/>
+        <result property="groupCode" column="group_code"/>
+        <result property="groupName" column="group_name"/>
+        <result property="groupDesc" column="group_desc"/>
+        <result property="useYn" column="use_yn"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        role_id, group_code, group_name, group_desc, use_yn, created_at
+    </sql>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="roleResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM roles
+        ORDER BY role_id
+    </select>
+
+    <!-- 검색 조회 -->
+    <select id="findByKeyword" resultMap="roleResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM roles
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (group_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR group_code LIKE CONCAT('%', #{keyword}, '%')
+                 OR group_desc LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY role_id
+    </select>
+
+    <!-- 사용 여부로 조회 -->
+    <select id="findByUseYn" resultMap="roleResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM roles
+        WHERE use_yn = #{useYn}
+        ORDER BY role_id
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="roleResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM roles
+        WHERE role_id = #{roleId}
+    </select>
+
+    <!-- 그룹 코드로 조회 -->
+    <select id="findByGroupCode" resultMap="roleResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM roles
+        WHERE group_code = #{groupCode}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.Role" useGeneratedKeys="true" keyProperty="roleId">
+        INSERT INTO roles (
+            group_code, group_name, group_desc, use_yn
+        ) VALUES (
+            #{groupCode}, #{groupName}, #{groupDesc},
+            <choose>
+                <when test="useYn != null">#{useYn}</when>
+                <otherwise>true</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="org.shaloman.pj.domain.Role">
+        UPDATE roles
+        <set>
+            <if test="groupCode != null">group_code = #{groupCode},</if>
+            <if test="groupName != null">group_name = #{groupName},</if>
+            <if test="groupDesc != null">group_desc = #{groupDesc},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+        </set>
+        WHERE role_id = #{roleId}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM roles WHERE role_id = #{roleId}
+    </delete>
+
+    <!-- 총 수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM roles
+    </select>
+
+</mapper>

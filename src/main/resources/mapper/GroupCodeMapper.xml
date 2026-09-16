@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.GroupCodeMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="groupCodeResultMap" type="org.shaloman.pj.domain.GroupCode">
+        <id property="groupCode" column="group_code"/>
+        <result property="groupName" column="group_name"/>
+        <result property="modifiedDate" column="modified_date"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        group_code, group_name, modified_date
+    </sql>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="groupCodeResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM group_codes
+        ORDER BY group_code
+    </select>
+
+    <!-- 검색 조회 -->
+    <select id="findByKeyword" resultMap="groupCodeResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM group_codes
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (group_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR group_code LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY group_code
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="groupCodeResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM group_codes
+        WHERE group_code = #{groupCode}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.GroupCode">
+        INSERT INTO group_codes (
+            group_code, group_name
+        ) VALUES (
+            #{groupCode}, #{groupName}
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="org.shaloman.pj.domain.GroupCode">
+        UPDATE group_codes
+        <set>
+            <if test="groupName != null">group_name = #{groupName},</if>
+        </set>
+        WHERE group_code = #{groupCode}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM group_codes WHERE group_code = #{groupCode}
+    </delete>
+
+    <!-- 총 수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM group_codes
+    </select>
+
+</mapper>

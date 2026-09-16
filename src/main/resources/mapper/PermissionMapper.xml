@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.PermissionMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="permissionResultMap" type="org.shaloman.pj.domain.Permission">
+        <id property="permissionId" column="permission_id"/>
+        <result property="roleId" column="role_id"/>
+        <result property="menuId" column="menu_id"/>
+        <result property="canRead" column="can_read"/>
+        <result property="canWrite" column="can_write"/>
+        <result property="canDelete" column="can_delete"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        permission_id, role_id, menu_id, can_read, can_write, can_delete, created_at
+    </sql>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="permissionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM permissions
+        ORDER BY permission_id
+    </select>
+
+    <!-- role_id로 조회 -->
+    <select id="findByRoleId" resultMap="permissionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM permissions
+        WHERE role_id = #{roleId}
+        ORDER BY menu_id
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="permissionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM permissions
+        WHERE permission_id = #{permissionId}
+    </select>
+
+    <!-- role_id + menu_id로 조회 -->
+    <select id="findByRoleAndMenu" resultMap="permissionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM permissions
+        WHERE role_id = #{roleId} AND menu_id = #{menuId}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.Permission" useGeneratedKeys="true" keyProperty="permissionId">
+        INSERT INTO permissions (
+            role_id, menu_id, can_read, can_write, can_delete
+        ) VALUES (
+            #{roleId}, #{menuId},
+            <choose>
+                <when test="canRead != null">#{canRead}</when>
+                <otherwise>false</otherwise>
+            </choose>,
+            <choose>
+                <when test="canWrite != null">#{canWrite}</when>
+                <otherwise>false</otherwise>
+            </choose>,
+            <choose>
+                <when test="canDelete != null">#{canDelete}</when>
+                <otherwise>false</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="org.shaloman.pj.domain.Permission">
+        UPDATE permissions
+        <set>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="menuId != null">menu_id = #{menuId},</if>
+            <if test="canRead != null">can_read = #{canRead},</if>
+            <if test="canWrite != null">can_write = #{canWrite},</if>
+            <if test="canDelete != null">can_delete = #{canDelete},</if>
+        </set>
+        WHERE permission_id = #{permissionId}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM permissions WHERE permission_id = #{permissionId}
+    </delete>
+
+    <!-- role_id로 전체 삭제 -->
+    <delete id="deleteByRoleId">
+        DELETE FROM permissions WHERE role_id = #{roleId}
+    </delete>
+
+    <!-- 총 수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM permissions
+    </select>
+
+</mapper>
