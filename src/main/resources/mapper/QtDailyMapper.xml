@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.QtDailyMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="qtDailyResultMap" type="org.shaloman.pj.domain.QtDaily">
+        <id property="qtId" column="qt_id"/>
+        <result property="qtDate" column="qt_date"/>
+        <result property="bibleRef" column="bible_ref"/>
+        <result property="title" column="title"/>
+        <result property="hymnInfo" column="hymn_info"/>
+        <result property="hymnText" column="hymn_text"/>
+        <result property="bibleSectionTitle" column="bible_section_title"/>
+        <result property="bibleText" column="bible_text"/>
+        <result property="prayer" column="prayer"/>
+        <result property="source" column="source"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        qt_id, qt_date, bible_ref, title, hymn_info, hymn_text,
+        bible_section_title, bible_text, prayer, source, created_at
+    </sql>
+
+    <!-- Upsert (INSERT ON DUPLICATE KEY UPDATE) -->
+    <insert id="upsert" parameterType="org.shaloman.pj.domain.QtDaily">
+        INSERT INTO qt_daily (
+            qt_date, bible_ref, title, hymn_info, hymn_text,
+            bible_section_title, bible_text, prayer, source
+        ) VALUES (
+            #{qtDate}, #{bibleRef}, #{title}, #{hymnInfo}, #{hymnText},
+            #{bibleSectionTitle}, #{bibleText}, #{prayer},
+            <choose>
+                <when test="source != null and source != ''">#{source}</when>
+                <otherwise>'duranno'</otherwise>
+            </choose>
+        )
+        ON DUPLICATE KEY UPDATE
+            bible_ref = VALUES(bible_ref),
+            title = VALUES(title),
+            hymn_info = VALUES(hymn_info),
+            hymn_text = VALUES(hymn_text),
+            bible_section_title = VALUES(bible_section_title),
+            bible_text = VALUES(bible_text),
+            prayer = VALUES(prayer),
+            source = VALUES(source)
+    </insert>
+
+    <!-- 날짜로 조회 (source 구분) -->
+    <select id="findByDate" resultMap="qtDailyResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM qt_daily
+        WHERE qt_date = #{qtDate}
+    </select>
+
+    <!-- 날짜+출처로 조회 -->
+    <select id="findByDateAndSource" resultMap="qtDailyResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM qt_daily
+        WHERE qt_date = #{qtDate} AND source = #{source}
+    </select>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="qtDailyResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM qt_daily
+        ORDER BY qt_date DESC
+    </select>
+
+    <!-- 날짜로 모든 출처 조회 (List) -->
+    <select id="findAllByDate" resultMap="qtDailyResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM qt_daily
+        WHERE qt_date = #{qtDate}
+        ORDER BY source
+    </select>
+
+</mapper>

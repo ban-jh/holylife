@@ -4,6 +4,7 @@ import org.shaloman.pj.domain.User;
 import org.shaloman.pj.dto.UserRequestDto;
 import org.shaloman.pj.dto.UserResponseDto;
 import org.shaloman.pj.mapper.UserMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +20,11 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -50,6 +53,10 @@ public class UserService {
      * 사용자 등록
      */
     public UserResponseDto createUser(UserRequestDto request) {
+        // 비밀번호 필수 체크 (등록 시)
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 필수입니다");
+        }
         // 이메일 중복 체크
         if (userMapper.findByEmail(request.getEmail()) != null) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
@@ -57,12 +64,12 @@ public class UserService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setNickname(request.getNickname());
         user.setPhone(request.getPhone());
-        user.setRoleGroup(request.getRoleGroup() != null ? request.getRoleGroup() : "USER");
-        user.setAccountStatus("ACTIVE");
+        user.setRoleGroup(request.getRoleGroup() != null ? request.getRoleGroup() : "AGENT_DEV");
+        user.setAccountStatus(request.getAccountStatus() != null ? request.getAccountStatus() : "A");
         user.setMemo(request.getMemo());
         user.setEmailNotification(false);
         user.setTwoFactorAuth(false);
@@ -84,16 +91,34 @@ public class UserService {
         }
 
         if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getPassword() != null) user.setPassword(request.getPassword());
+        if (request.getPassword() != null) user.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getName() != null) user.setName(request.getName());
         if (request.getNickname() != null) user.setNickname(request.getNickname());
         if (request.getPhone() != null) user.setPhone(request.getPhone());
         if (request.getRoleGroup() != null) user.setRoleGroup(request.getRoleGroup());
+        if (request.getAccountStatus() != null) user.setAccountStatus(request.getAccountStatus());
         if (request.getMemo() != null) user.setMemo(request.getMemo());
+        if (request.getBibleVersion() != null) user.setBibleVersion(request.getBibleVersion());
+        if (request.getQtSource() != null) user.setQtSource(request.getQtSource());
 
         userMapper.update(user);
 
         return toResponseDto(userMapper.findById(userId));
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userMapper.update(user);
     }
 
     /**
@@ -120,6 +145,8 @@ public class UserService {
         dto.setAccountStatus(user.getAccountStatus());
         dto.setLastLogin(user.getLastLogin());
         dto.setCreatedAt(user.getCreatedAt());
+        dto.setBibleVersion(user.getBibleVersion());
+        dto.setQtSource(user.getQtSource());
         return dto;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 사용자 RESTful API 컨트롤러.
@@ -55,6 +56,38 @@ public class UserController {
             @PathVariable Long userId,
             @Valid @RequestBody UserRequestDto request) {
         return ResponseEntity.ok(userService.updateUser(userId, request));
+    }
+
+    @GetMapping("/{userId}/settings")
+    @Operation(summary = "사용자 설정 조회", description = "사용자의 성경 버전 및 QT 출처 설정을 조회한다.")
+    public ResponseEntity<UserResponseDto> getUserSettings(
+            @Parameter(description = "사용자 ID", example = "1")
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
+    }
+
+    @PutMapping("/{userId}/settings")
+    @Operation(summary = "사용자 설정 변경", description = "사용자의 성경 버전 및 QT 출처 설정을 변경한다.")
+    public ResponseEntity<UserResponseDto> updateSettings(
+            @Parameter(description = "사용자 ID", example = "1")
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> body) {
+        UserRequestDto request = new UserRequestDto();
+        request.setBibleVersion(body.get("bibleVersion"));
+        request.setQtSource(body.get("qtSource"));
+        return ResponseEntity.ok(userService.updateUser(userId, request));
+    }
+
+    @PutMapping("/{userId}/password")
+    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호 확인 후 새 비밀번호로 변경한다.")
+    public ResponseEntity<Void> changePassword(
+            @Parameter(description = "사용자 ID", example = "1")
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> body) {
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+        userService.changePassword(userId, currentPassword, newPassword);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{userId}")

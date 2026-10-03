@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.SermonMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="sermonResultMap" type="org.shaloman.pj.domain.Sermon">
+        <id property="sermonId" column="sermon_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="sermonDate" column="sermon_date"/>
+        <result property="preacher" column="preacher"/>
+        <result property="bibleRef" column="bible_ref"/>
+        <result property="bibleText" column="bible_text"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        sermon_id, user_id, title, sermon_date, preacher, bible_ref, bible_text,
+        content, status, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 (설교 날짜 내림차순) -->
+    <select id="findAll" resultMap="sermonResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM sermons
+        ORDER BY sermon_date DESC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="sermonResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM sermons
+        WHERE sermon_id = #{sermonId}
+    </select>
+
+    <!-- 설교 등록 (useGeneratedKeys로 PK 자동 주입) -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.Sermon"
+            useGeneratedKeys="true" keyProperty="sermonId">
+        INSERT INTO sermons (
+            user_id, title, sermon_date, preacher, bible_ref, bible_text,
+            content, status
+        ) VALUES (
+            #{userId}, #{title}, #{sermonDate}, #{preacher}, #{bibleRef}, #{bibleText},
+            #{content}, #{status}
+        )
+    </insert>
+
+    <!-- 설교 수정 (동적 SET, null 체크) -->
+    <update id="update" parameterType="org.shaloman.pj.domain.Sermon">
+        UPDATE sermons
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="sermonDate != null">sermon_date = #{sermonDate},</if>
+            <if test="preacher != null">preacher = #{preacher},</if>
+            <if test="bibleRef != null">bible_ref = #{bibleRef},</if>
+            <if test="bibleText != null">bible_text = #{bibleText},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = NOW()
+        </set>
+        WHERE sermon_id = #{sermonId}
+    </update>
+
+    <!-- 설교 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM sermons WHERE sermon_id = #{sermonId}
+    </delete>
+
+</mapper>

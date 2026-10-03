@@ -71,7 +71,9 @@ public class CommonCodeService {
     }
 
     /**
-     * 공통 코드 등록
+     * 공통 코드 등록.
+     * 같은 그룹 내에 동일한 sort_order가 이미 존재하면,
+     * 기존 코드들의 sort_order를 +1 하여 새 코드가 우선순위를 갖도록 한다.
      */
     public CommonCodeResponseDto createCommonCode(CommonCodeRequestDto request) {
         // 그룹 코드 존재 여부 확인
@@ -80,11 +82,16 @@ public class CommonCodeService {
             throw new IllegalArgumentException("존재하지 않는 그룹 코드입니다: " + request.getGroupCode());
         }
 
+        int sortOrder = request.getSortOrder() != null ? request.getSortOrder() : 0;
+
+        // 같은 그룹 내에서 sort_order >= 입력값인 기존 코드들을 +1 밀어내기
+        commonCodeMapper.incrementSortOrderFrom(request.getGroupCode(), sortOrder, null);
+
         CommonCode commonCode = new CommonCode();
         commonCode.setGroupCode(request.getGroupCode());
         commonCode.setCode(request.getCode());
         commonCode.setCodeName(request.getCodeName());
-        commonCode.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
+        commonCode.setSortOrder(sortOrder);
         commonCode.setUseYn(request.getUseYn() != null ? request.getUseYn() : true);
 
         commonCodeMapper.insert(commonCode);
@@ -93,7 +100,11 @@ public class CommonCodeService {
     }
 
     /**
-     * 공통 코드 수정
+     * 공통 코드 수정.
+     * 같은 그룹 내에서 새 sort_order 이상인 기존 코드들(자기 자신 제외)의
+     * sort_order를 +1 하여 순서 중복을 방지한다.
+     * sort_order가 동일하게 유지되더라도 다른 코드와 중복될 수 있으므로
+     * 항상 +1 밀어내기를 수행한다.
      */
     public CommonCodeResponseDto updateCommonCode(Long codeId, CommonCodeRequestDto request) {
         CommonCode existing = commonCodeMapper.findById(codeId);
@@ -101,10 +112,16 @@ public class CommonCodeService {
             throw new IllegalArgumentException("공통 코드를 찾을 수 없습니다: " + codeId);
         }
 
+        // sort_order가 변경되든 동일하든 항상 중복 처리
+        if (request.getSortOrder() != null) {
+            String groupCode = request.getGroupCode() != null ? request.getGroupCode() : existing.getGroupCode();
+            commonCodeMapper.incrementSortOrderFrom(groupCode, request.getSortOrder(), codeId);
+            existing.setSortOrder(request.getSortOrder());
+        }
+
         if (request.getGroupCode() != null) existing.setGroupCode(request.getGroupCode());
         if (request.getCode() != null) existing.setCode(request.getCode());
         if (request.getCodeName() != null) existing.setCodeName(request.getCodeName());
-        if (request.getSortOrder() != null) existing.setSortOrder(request.getSortOrder());
         if (request.getUseYn() != null) existing.setUseYn(request.getUseYn());
 
         commonCodeMapper.update(existing);

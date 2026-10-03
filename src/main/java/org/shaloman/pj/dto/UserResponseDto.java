@@ -38,4 +38,10 @@ public class UserResponseDto {
 
     @Schema(description = "생성일시", example = "2026-09-01T10:00:00")
     private LocalDateTime createdAt;
+
+    @Schema(description = "성경 버전 (gae, sae, niv)", example = "gae")
+    private String bibleVersion;
+
+    @Schema(description = "QT 출처 (duranno, sum, manual)", example = "duranno")
+    private String qtSource;
 }

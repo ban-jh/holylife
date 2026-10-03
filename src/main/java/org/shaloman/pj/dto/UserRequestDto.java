@@ -18,8 +18,7 @@ public class UserRequestDto {
     @Email(message = "올바른 이메일 형식이 아닙니다")
     private String email;
 
-    @Schema(description = "비밀번호 (최소 8자)", example = "password123", required = true)
-    @NotBlank(message = "비밀번호는 필수입니다")
+    @Schema(description = "비밀번호 (등록 시 필수, 수정 시 생략 가능)", example = "password123")
     @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다")
     private String password;
 
@@ -34,9 +33,18 @@ public class UserRequestDto {
     @Schema(description = "연락처", example = "010-1234-5678")
     private String phone;
 
-    @Schema(description = "권한 그룹", example = "USER", allowableValues = {"SUPER_ADMIN", "ADMIN", "EDITOR", "VIEWER", "USER"})
+    @Schema(description = "권한 그룹 (공통코드 user_role)", example = "SYS_ADMIN")
     private String roleGroup;
+
+    @Schema(description = "계정 상태 (공통코드 user_status)", example = "A")
+    private String accountStatus;
 
     @Schema(description = "메모", example = "관리자 계정")
     private String memo;
+
+    @Schema(description = "성경 버전 (gae, sae, niv)", example = "gae")
+    private String bibleVersion;
+
+    @Schema(description = "QT 출처 (duranno, sum, manual)", example = "duranno")
+    private String qtSource;
 }

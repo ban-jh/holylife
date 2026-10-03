@@ -151,6 +151,53 @@ public class MenuService {
         menuMapper.deleteById(menuId);
     }
 
+    /**
+     * 메뉴 순서 일괄 변경
+     * @param orders 각 항목은 menuId와 sortOrder를 포함
+     */
+    public void updateMenuOrder(List<Map<String, Object>> orders) {
+        if (orders == null || orders.isEmpty()) {
+            return;
+        }
+        for (Map<String, Object> order : orders) {
+            Object menuIdObj = order.get("menuId");
+            Object sortOrderObj = order.get("sortOrder");
+            if (menuIdObj == null || sortOrderObj == null) {
+                throw new IllegalArgumentException("menuId와 sortOrder가 모두 필요합니다.");
+            }
+            Long menuId = Long.valueOf(menuIdObj.toString());
+            Integer sortOrder = Integer.valueOf(sortOrderObj.toString());
+            menuMapper.updateSortOrder(menuId, sortOrder);
+        }
+    }
+
+    /**
+     * 메뉴 이동 (2Depth 메뉴를 다른 상위 메뉴로 이동)
+     */
+    public void moveMenu(Long menuId, Long newParentId) {
+        Menu menu = menuMapper.findById(menuId);
+        if (menu == null) throw new IllegalArgumentException("menu not found: " + menuId);
+
+        // 1Depth 메뉴는 다른 메뉴의 하위로 이동할 수 없음
+        if (menu.getDepth() != null && menu.getDepth() == 1) {
+            throw new IllegalArgumentException("1Depth 메뉴는 다른 메뉴의 하위로 이동할 수 없습니다.");
+        }
+
+        Menu newParent = menuMapper.findById(newParentId);
+        if (newParent == null) throw new IllegalArgumentException("parent not found: " + newParentId);
+
+        // 2Depth 메뉴 하위로는 이동할 수 없음 (대상은 반드시 1Depth)
+        if (newParent.getDepth() == null || newParent.getDepth() != 1) {
+            throw new IllegalArgumentException("2Depth 메뉴 하위로는 이동할 수 없습니다.");
+        }
+
+        menuMapper.updateParent(menuId, newParentId, newParent.getMenuName(), 2);
+        // Set sortOrder to last among new parent's children
+        List<Menu> children = menuMapper.findByParentId(newParentId);
+        int newOrder = children.size();
+        menuMapper.updateSortOrder(menuId, newOrder);
+    }
+
     // ── 트리 빌드 ──
 
     /**

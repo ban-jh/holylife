@@ -39,4 +39,10 @@ public interface MenuMapper {
 
     /** 총 메뉴 수 */
     int count();
+
+    /** 메뉴 정렬순서 일괄 업데이트 (단 건) */
+    int updateSortOrder(@Param("menuId") Long menuId, @Param("sortOrder") Integer sortOrder);
+
+    /** 메뉴 이동 (상위 메뉴 변경) */
+    int updateParent(@Param("menuId") Long menuId, @Param("parentId") Long parentId, @Param("parentName") String parentName, @Param("depth") Integer depth);
 }

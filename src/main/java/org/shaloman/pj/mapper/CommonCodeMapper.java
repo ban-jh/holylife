@@ -40,4 +40,12 @@ public interface CommonCodeMapper {
 
     /** 총 코드 수 */
     int count();
+
+    /**
+     * 같은 그룹 코드 내에서 지정된 순서 이상인 코드들의 순서를 +1 증가.
+     * 단, excludeCodeId에 해당하는 코드는 제외 (수정 시 자기 자신 제외용).
+     */
+    int incrementSortOrderFrom(@Param("groupCode") String groupCode,
+                                @Param("sortOrder") Integer sortOrder,
+                                @Param("excludeCodeId") Long excludeCodeId);
 }

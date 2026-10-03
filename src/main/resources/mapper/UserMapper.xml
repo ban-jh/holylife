@@ -14,6 +14,8 @@
         <result property="roleGroup" column="role_group"/>
         <result property="accountStatus" column="account_status"/>
         <result property="memo" column="memo"/>
+        <result property="bibleVersion" column="bible_version"/>
+        <result property="qtSource" column="qt_source"/>
         <result property="emailNotification" column="email_notification"/>
         <result property="twoFactorAuth" column="two_factor_auth"/>
         <result property="sessionAutoExpiry" column="session_auto_expiry"/>
@@ -26,7 +28,7 @@
     <!-- 공통 컬럼 -->
     <sql id="commonColumns">
         user_id, email, password, name, nickname, phone, role_group, account_status,
-        memo, email_notification, two_factor_auth, session_auto_expiry, activity_log,
+        memo, bible_version, qt_source, email_notification, two_factor_auth, session_auto_expiry, activity_log,
         last_login, created_at, updated_at
     </sql>
 
@@ -98,6 +100,8 @@
             <if test="roleGroup != null">role_group = #{roleGroup},</if>
             <if test="accountStatus != null">account_status = #{accountStatus},</if>
             <if test="memo != null">memo = #{memo},</if>
+            <if test="bibleVersion != null">bible_version = #{bibleVersion},</if>
+            <if test="qtSource != null">qt_source = #{qtSource},</if>
             <if test="emailNotification != null">email_notification = #{emailNotification},</if>
             <if test="twoFactorAuth != null">two_factor_auth = #{twoFactorAuth},</if>
             <if test="sessionAutoExpiry != null">session_auto_expiry = #{sessionAutoExpiry},</if>

@@ -19,6 +19,8 @@ public class User {
     private String roleGroup;
     private String accountStatus;
     private String memo;
+    private String bibleVersion;
+    private String qtSource;
     private Boolean emailNotification;
     private Boolean twoFactorAuth;
     private Boolean sessionAutoExpiry;

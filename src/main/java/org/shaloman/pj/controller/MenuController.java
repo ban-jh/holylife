@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 메뉴 RESTful API 컨트롤러.
@@ -66,6 +67,21 @@ public class MenuController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PutMapping("/order")
+    @Operation(summary = "메뉴 순서 일괄 변경", description = "여러 메뉴의 정렬순서(sortOrder)를 일괄 업데이트한다.")
+    public ResponseEntity<Void> updateMenuOrder(@RequestBody MenuOrderRequest request) {
+        menuService.updateMenuOrder(request.getOrders());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{menuId}/move")
+    @Operation(summary = "메뉴 이동", description = "2Depth 메뉴를 다른 상위 메뉴로 이동한다.")
+    public ResponseEntity<Void> moveMenu(@PathVariable Long menuId, @RequestBody Map<String, Object> request) {
+        Long parentId = Long.valueOf(request.get("parentId").toString());
+        menuService.moveMenu(menuId, parentId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/{menuId}")
     @Operation(summary = "메뉴 수정", description = "기존 메뉴 정보를 수정한다.")
     public ResponseEntity<MenuResponseDto> updateMenu(
@@ -82,5 +98,18 @@ public class MenuController {
             @Parameter(description = "메뉴 ID", example = "1")
             @PathVariable Long menuId) {
         menuService.deleteMenu(menuId);
+    }
+
+    /** 메뉴 순서 일괄 변경 요청 DTO */
+    public static class MenuOrderRequest {
+        private List<Map<String, Object>> orders;
+
+        public List<Map<String, Object>> getOrders() {
+            return orders;
+        }
+
+        public void setOrders(List<Map<String, Object>> orders) {
+            this.orders = orders;
+        }
     }
 }
