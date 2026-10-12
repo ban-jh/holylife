@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.mapper.ReadingNoteMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="readingNoteResultMap" type="org.shaloman.pj.domain.ReadingNote">
+        <id property="readingId" column="reading_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="bookTitle" column="book_title"/>
+        <result property="readDate" column="read_date"/>
+        <result property="author" column="author"/>
+        <result property="translator" column="translator"/>
+        <result property="toc" column="toc"/>
+        <result property="coverImage" column="cover_image"/>
+        <result property="summary" column="summary"/>
+        <result property="impression" column="impression"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        reading_id, user_id, book_title, read_date, author, translator, toc,
+        cover_image, summary, impression, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 (독서 날짜 내림차순) -->
+    <select id="findAll" resultMap="readingNoteResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM reading_notes
+        ORDER BY read_date DESC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="readingNoteResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM reading_notes
+        WHERE reading_id = #{readingId}
+    </select>
+
+    <!-- 독서 노트 등록 (useGeneratedKeys로 PK 자동 주입) -->
+    <insert id="insert" parameterType="org.shaloman.pj.domain.ReadingNote"
+            useGeneratedKeys="true" keyProperty="readingId">
+        INSERT INTO reading_notes (
+            user_id, book_title, read_date, author, translator, toc,
+            cover_image, summary, impression
+        ) VALUES (
+            #{userId}, #{bookTitle}, #{readDate}, #{author}, #{translator}, #{toc},
+            #{coverImage}, #{summary}, #{impression}
+        )
+    </insert>
+
+    <!-- 독서 노트 수정 (동적 SET, null 체크) -->
+    <update id="update" parameterType="org.shaloman.pj.domain.ReadingNote">
+        UPDATE reading_notes
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="bookTitle != null">book_title = #{bookTitle},</if>
+            <if test="readDate != null">read_date = #{readDate},</if>
+            <if test="author != null">author = #{author},</if>
+            <if test="translator != null">translator = #{translator},</if>
+            <if test="toc != null">toc = #{toc},</if>
+            <if test="coverImage != null">cover_image = #{coverImage},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="impression != null">impression = #{impression},</if>
+            updated_at = NOW()
+        </set>
+        WHERE reading_id = #{readingId}
+    </update>
+
+    <!-- 독서 노트 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM reading_notes WHERE reading_id = #{readingId}
+    </delete>
+
+</mapper>
