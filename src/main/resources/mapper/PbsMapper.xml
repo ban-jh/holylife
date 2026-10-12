@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.content.pbs.mapper.PbsMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="pbsResultMap" type="org.shaloman.pj.content.pbs.domain.Pbs">
+        <id property="pbsId" column="pbs_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="pbsDate" column="pbs_date"/>
+        <result property="bookFrom" column="book_from"/>
+        <result property="bookTo" column="book_to"/>
+        <result property="bibleText" column="bible_text"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        pbs_id, user_id, title, pbs_date, book_from, book_to, bible_text,
+        content, status, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 (PBS 날짜 내림차순) -->
+    <select id="findAll" resultMap="pbsResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs
+        ORDER BY pbs_date DESC, pbs_id DESC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="pbsResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs
+        WHERE pbs_id = #{pbsId}
+    </select>
+
+    <!-- PBS 등록 (useGeneratedKeys로 PK 자동 주입) -->
+    <insert id="insert" parameterType="org.shaloman.pj.content.pbs.domain.Pbs"
+            useGeneratedKeys="true" keyProperty="pbsId">
+        INSERT INTO pbs (
+            user_id, title, pbs_date, book_from, book_to, bible_text,
+            content, status
+        ) VALUES (
+            #{userId}, #{title}, #{pbsDate}, #{bookFrom}, #{bookTo}, #{bibleText},
+            #{content}, #{status}
+        )
+    </insert>
+
+    <!-- PBS 수정 (동적 SET, null 체크) -->
+    <update id="update" parameterType="org.shaloman.pj.content.pbs.domain.Pbs">
+        UPDATE pbs
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="pbsDate != null">pbs_date = #{pbsDate},</if>
+            <if test="bookFrom != null">book_from = #{bookFrom},</if>
+            <if test="bookTo != null">book_to = #{bookTo},</if>
+            <if test="bibleText != null">bible_text = #{bibleText},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = NOW()
+        </set>
+        WHERE pbs_id = #{pbsId}
+    </update>
+
+    <!-- PBS 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM pbs WHERE pbs_id = #{pbsId}
+    </delete>
+
+</mapper>

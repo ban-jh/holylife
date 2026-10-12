@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.CommonCodeMapper">
+<mapper namespace="org.shaloman.pj.system.code.mapper.CommonCodeMapper">
 
     <!-- ResultMap -->
-    <resultMap id="commonCodeResultMap" type="org.shaloman.pj.domain.CommonCode">
+    <resultMap id="commonCodeResultMap" type="org.shaloman.pj.system.code.domain.CommonCode">
         <id property="codeId" column="code_id"/>
         <result property="groupCode" column="group_code"/>
         <result property="code" column="code"/>
@@ -54,7 +54,7 @@
     </select>
 
     <!-- 등록 -->
-    <insert id="insert" parameterType="org.shaloman.pj.domain.CommonCode" useGeneratedKeys="true" keyProperty="codeId">
+    <insert id="insert" parameterType="org.shaloman.pj.system.code.domain.CommonCode" useGeneratedKeys="true" keyProperty="codeId">
         INSERT INTO common_codes (
             group_code, code, code_name, sort_order, use_yn
         ) VALUES (
@@ -71,7 +71,7 @@
     </insert>
 
     <!-- 수정 -->
-    <update id="update" parameterType="org.shaloman.pj.domain.CommonCode">
+    <update id="update" parameterType="org.shaloman.pj.system.code.domain.CommonCode">
         UPDATE common_codes
         <set>
             <if test="groupCode != null">group_code = #{groupCode},</if>

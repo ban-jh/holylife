@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.ReadingNoteMapper">
+<mapper namespace="org.shaloman.pj.content.reading.mapper.ReadingNoteMapper">
 
     <!-- ResultMap -->
-    <resultMap id="readingNoteResultMap" type="org.shaloman.pj.domain.ReadingNote">
+    <resultMap id="readingNoteResultMap" type="org.shaloman.pj.content.reading.domain.ReadingNote">
         <id property="readingId" column="reading_id"/>
         <result property="userId" column="user_id"/>
         <result property="bookTitle" column="book_title"/>
@@ -40,7 +40,7 @@
     </select>
 
     <!-- 독서 노트 등록 (useGeneratedKeys로 PK 자동 주입) -->
-    <insert id="insert" parameterType="org.shaloman.pj.domain.ReadingNote"
+    <insert id="insert" parameterType="org.shaloman.pj.content.reading.domain.ReadingNote"
             useGeneratedKeys="true" keyProperty="readingId">
         INSERT INTO reading_notes (
             user_id, book_title, read_date, author, translator, toc,
@@ -52,7 +52,7 @@
     </insert>
 
     <!-- 독서 노트 수정 (동적 SET, null 체크) -->
-    <update id="update" parameterType="org.shaloman.pj.domain.ReadingNote">
+    <update id="update" parameterType="org.shaloman.pj.content.reading.domain.ReadingNote">
         UPDATE reading_notes
         <set>
             <if test="userId != null">user_id = #{userId},</if>

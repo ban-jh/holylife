@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.QtDailyMapper">
+<mapper namespace="org.shaloman.pj.content.qt.mapper.QtDailyMapper">
 
     <!-- ResultMap -->
-    <resultMap id="qtDailyResultMap" type="org.shaloman.pj.domain.QtDaily">
+    <resultMap id="qtDailyResultMap" type="org.shaloman.pj.content.qt.domain.QtDaily">
         <id property="qtId" column="qt_id"/>
         <result property="qtDate" column="qt_date"/>
         <result property="bibleRef" column="bible_ref"/>
@@ -25,7 +25,7 @@
     </sql>
 
     <!-- Upsert (INSERT ON DUPLICATE KEY UPDATE) -->
-    <insert id="upsert" parameterType="org.shaloman.pj.domain.QtDaily">
+    <insert id="upsert" parameterType="org.shaloman.pj.content.qt.domain.QtDaily">
         INSERT INTO qt_daily (
             qt_date, bible_ref, title, hymn_info, hymn_text,
             bible_section_title, bible_text, prayer, source

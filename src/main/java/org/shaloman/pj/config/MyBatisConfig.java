@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration;
  * XML 매퍼 파일은 application.yml의 mybatis.mapper-locations에서 지정한다.
  */
 @Configuration
-@MapperScan(basePackages = "org.shaloman.pj.mapper")
+@MapperScan(basePackages = "org.shaloman.pj")
 public class MyBatisConfig {
 }

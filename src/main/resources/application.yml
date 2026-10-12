@@ -35,7 +35,7 @@ spring:
 # MyBatis
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: org.shaloman.pj.domain
+  type-aliases-package: org.shaloman.pj
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: true
@@ -54,7 +54,7 @@ springdoc:
     path: /v3/api-docs
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
-  packages-to-scan: org.shaloman.pj.controller
+  packages-to-scan: org.shaloman.pj
 
 # Password Encryption (BCrypt)
 holylife:

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.UserMapper">
+<mapper namespace="org.shaloman.pj.system.user.mapper.UserMapper">
 
     <!-- ResultMap -->
-    <resultMap id="userResultMap" type="org.shaloman.pj.domain.User">
+    <resultMap id="userResultMap" type="org.shaloman.pj.system.user.domain.User">
         <id property="userId" column="user_id"/>
         <result property="email" column="email"/>
         <result property="password" column="password"/>
@@ -54,7 +54,7 @@
     </select>
 
     <!-- 등록 -->
-    <insert id="insert" parameterType="org.shaloman.pj.domain.User" useGeneratedKeys="true" keyProperty="userId">
+    <insert id="insert" parameterType="org.shaloman.pj.system.user.domain.User" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users (
             email, password, name, nickname, phone, role_group, account_status,
             memo, email_notification, two_factor_auth, session_auto_expiry, activity_log
@@ -89,7 +89,7 @@
     </insert>
 
     <!-- 수정 -->
-    <update id="update" parameterType="org.shaloman.pj.domain.User">
+    <update id="update" parameterType="org.shaloman.pj.system.user.domain.User">
         UPDATE users
         <set>
             <if test="email != null">email = #{email},</if>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.QtMapper">
+<mapper namespace="org.shaloman.pj.content.qt.mapper.QtMapper">
 
     <!-- ResultMap -->
-    <resultMap id="qtResultMap" type="org.shaloman.pj.domain.Qt">
+    <resultMap id="qtResultMap" type="org.shaloman.pj.content.qt.domain.Qt">
         <id property="qtId" column="qt_id"/>
         <result property="userId" column="user_id"/>
         <result property="title" column="title"/>
@@ -53,7 +53,7 @@
     </select>
 
     <!-- 큐티 등록 (useGeneratedKeys로 PK 자동 주입) -->
-    <insert id="insert" parameterType="org.shaloman.pj.domain.Qt"
+    <insert id="insert" parameterType="org.shaloman.pj.content.qt.domain.Qt"
             useGeneratedKeys="true" keyProperty="qtId">
         INSERT INTO qts (
             user_id, title, qt_date, bible_ref, bible_text,
@@ -65,7 +65,7 @@
     </insert>
 
     <!-- 큐티 수정 (동적 SET, null 체크) -->
-    <update id="update" parameterType="org.shaloman.pj.domain.Qt">
+    <update id="update" parameterType="org.shaloman.pj.content.qt.domain.Qt">
         UPDATE qts
         <set>
             <if test="userId != null">user_id = #{userId},</if>

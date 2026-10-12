@@ -1,9 +1,9 @@
 package org.shaloman.pj.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.shaloman.pj.domain.QtDaily;
-import org.shaloman.pj.mapper.QtDailyMapper;
-import org.shaloman.pj.service.QtCrawlService;
+import org.shaloman.pj.content.qt.domain.QtDaily;
+import org.shaloman.pj.content.qt.mapper.QtDailyMapper;
+import org.shaloman.pj.content.qt.service.QtCrawlService;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;

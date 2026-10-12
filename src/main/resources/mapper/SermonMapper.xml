@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.SermonMapper">
+<mapper namespace="org.shaloman.pj.content.sermon.mapper.SermonMapper">
 
     <!-- ResultMap -->
-    <resultMap id="sermonResultMap" type="org.shaloman.pj.domain.Sermon">
+    <resultMap id="sermonResultMap" type="org.shaloman.pj.content.sermon.domain.Sermon">
         <id property="sermonId" column="sermon_id"/>
         <result property="userId" column="user_id"/>
         <result property="title" column="title"/>
@@ -39,7 +39,7 @@
     </select>
 
     <!-- 설교 등록 (useGeneratedKeys로 PK 자동 주입) -->
-    <insert id="insert" parameterType="org.shaloman.pj.domain.Sermon"
+    <insert id="insert" parameterType="org.shaloman.pj.content.sermon.domain.Sermon"
             useGeneratedKeys="true" keyProperty="sermonId">
         INSERT INTO sermons (
             user_id, title, sermon_date, preacher, bible_ref, bible_text,
@@ -51,7 +51,7 @@
     </insert>
 
     <!-- 설교 수정 (동적 SET, null 체크) -->
-    <update id="update" parameterType="org.shaloman.pj.domain.Sermon">
+    <update id="update" parameterType="org.shaloman.pj.content.sermon.domain.Sermon">
         UPDATE sermons
         <set>
             <if test="userId != null">user_id = #{userId},</if>

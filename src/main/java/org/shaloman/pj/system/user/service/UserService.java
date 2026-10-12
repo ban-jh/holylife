@@ -1,0 +1,152 @@
+package org.shaloman.pj.system.user.service;
+
+import org.shaloman.pj.system.user.domain.User;
+import org.shaloman.pj.system.user.dto.UserRequestDto;
+import org.shaloman.pj.system.user.dto.UserResponseDto;
+import org.shaloman.pj.system.user.mapper.UserMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 사용자 서비스.
+ * @Transactional로 트랜잭션을 관리한다.
+ */
+@Service
+@Transactional
+public class UserService {
+
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+        this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * 전체 사용자 조회 (읽기 전용)
+     */
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsers() {
+        return userMapper.findAll().stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 사용자 ID로 조회 (읽기 전용)
+     */
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserById(Long userId) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+        }
+        return toResponseDto(user);
+    }
+
+    /**
+     * 사용자 등록
+     */
+    public UserResponseDto createUser(UserRequestDto request) {
+        // 비밀번호 필수 체크 (등록 시)
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 필수입니다");
+        }
+        // 이메일 중복 체크
+        if (userMapper.findByEmail(request.getEmail()) != null) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
+        }
+
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setName(request.getName());
+        user.setNickname(request.getNickname());
+        user.setPhone(request.getPhone());
+        user.setRoleGroup(request.getRoleGroup() != null ? request.getRoleGroup() : "AGENT_DEV");
+        user.setAccountStatus(request.getAccountStatus() != null ? request.getAccountStatus() : "A");
+        user.setMemo(request.getMemo());
+        user.setEmailNotification(false);
+        user.setTwoFactorAuth(false);
+        user.setSessionAutoExpiry(false);
+        user.setActivityLog(false);
+
+        userMapper.insert(user);
+
+        return toResponseDto(userMapper.findById(user.getUserId()));
+    }
+
+    /**
+     * 사용자 수정
+     */
+    public UserResponseDto updateUser(Long userId, UserRequestDto request) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+        }
+
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getPassword() != null) user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getName() != null) user.setName(request.getName());
+        if (request.getNickname() != null) user.setNickname(request.getNickname());
+        if (request.getPhone() != null) user.setPhone(request.getPhone());
+        if (request.getRoleGroup() != null) user.setRoleGroup(request.getRoleGroup());
+        if (request.getAccountStatus() != null) user.setAccountStatus(request.getAccountStatus());
+        if (request.getMemo() != null) user.setMemo(request.getMemo());
+        if (request.getBibleVersion() != null) user.setBibleVersion(request.getBibleVersion());
+        if (request.getQtSource() != null) user.setQtSource(request.getQtSource());
+
+        userMapper.update(user);
+
+        return toResponseDto(userMapper.findById(userId));
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userMapper.update(user);
+    }
+
+    /**
+     * 사용자 삭제
+     */
+    public void deleteUser(Long userId) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
+        }
+        userMapper.deleteById(userId);
+    }
+
+    // ── 변환 메서드 ──
+
+    private UserResponseDto toResponseDto(User user) {
+        UserResponseDto dto = new UserResponseDto();
+        dto.setUserId(user.getUserId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setNickname(user.getNickname());
+        dto.setPhone(user.getPhone());
+        dto.setRoleGroup(user.getRoleGroup());
+        dto.setAccountStatus(user.getAccountStatus());
+        dto.setLastLogin(user.getLastLogin());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setBibleVersion(user.getBibleVersion());
+        dto.setQtSource(user.getQtSource());
+        return dto;
+    }
+}

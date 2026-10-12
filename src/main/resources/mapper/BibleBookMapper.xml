@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.shaloman.pj.mapper.BibleBookMapper">
+<mapper namespace="org.shaloman.pj.content.bible.mapper.BibleBookMapper">
 
     <!-- ResultMap -->
-    <resultMap id="bibleBookResultMap" type="org.shaloman.pj.domain.BibleBook">
+    <resultMap id="bibleBookResultMap" type="org.shaloman.pj.content.bible.domain.BibleBook">
         <id property="bookId" column="book_id"/>
         <result property="versionId" column="version_id"/>
         <result property="bookCode" column="book_code"/>
