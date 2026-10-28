@@ -1,84 +1,85 @@
 # Faith Pathway (Holylife) ERD
 
-> design/ 폴더의 HTML 화면 설계 파일들을 기반으로 작성된 ERD
+> 현재 데이터베이스 스키마를 기반으로 작성된 ERD
+> (Spring Batch 메타테이블 8개는 제외, 비즈니스 테이블 21개 포함)
 
 ## ERD 다이어그램
 
 ```
-┌──────────────────────────┐         ┌──────────────────────────┐
-│         USER             │         │       COMMON_CODE        │
-│──────────────────────────│         │──────────────────────────│
-│ PK  user_id      BIGINT  │         │ PK  code_id      BIGINT  │
-│     email        VARCHAR │         │     group_code   VARCHAR │
-│     password     VARCHAR │         │     code         VARCHAR │
-│     name         VARCHAR │         │     code_name    VARCHAR │
-│     nickname     VARCHAR │         │     description  TEXT    │
-│     role         VARCHAR │         │     sort_order   INT     │
-│     status       VARCHAR │         │     use_yn       BOOLEAN │
-│     created_at   DATETIME│         │     created_at   DATETIME│
-│     updated_at   DATETIME│         │     updated_at   DATETIME│
-└────────────┬─────────────┘         └──────────────────────────┘
-             │ 1                                │
+┌──────────────────────────────┐         ┌──────────────────────────┐
+│           USER               │         │       COMMON_CODE        │
+│──────────────────────────────│         │──────────────────────────│
+│ PK  user_id        BIGINT    │         │ PK  code_id      BIGINT  │
+│     email          VARCHAR   │         │     group_code   VARCHAR │
+│     password       VARCHAR   │         │     code         VARCHAR │
+│     name           VARCHAR   │         │     code_name    VARCHAR │
+│     nickname       VARCHAR   │         │     description  TEXT    │
+│     bible_version  VARCHAR   │         │     sort_order   INT     │
+│     qt_source      VARCHAR   │         │     use_yn       BOOLEAN │
+│     status         VARCHAR   │         │     created_at   DATETIME│
+│     created_at     DATETIME  │         │     updated_at   DATETIME│
+│     updated_at     DATETIME  │         └──────────────────────────┘
+└────────────┬─────────────────┘
+             │ 1
+             │
+             ├──────────────────────────────────┐
              │                                  │
-             ├──────────────────────────────────┤
-             │                                  │
-             │ N (작성자)                        │ 1
+             │ N (작성자)                        │
              ▼                                  ▼
 ┌──────────────────────────┐         ┌──────────────────────────┐
-│      SERMON              │         │     COMMON_CODE          │
-│──────────────────────────│         │  (group_code별 관리)      │
-│ PK  sermon_id    BIGINT  │         └──────────────────────────┘
-│ FK  user_id      BIGINT  │
-│     title        VARCHAR │
-│     sermon_date  DATE    │         ┌──────────────────────────┐
-│     preacher     VARCHAR │         │          MENU            │
-│     bible_ref    VARCHAR │         │──────────────────────────│
-│     bible_text   TEXT    │         │ PK  menu_id      BIGINT  │
-│     content      TEXT    │         │ FK  parent_id    BIGINT  │
-│     status       VARCHAR │         │     menu_name    VARCHAR │
-│     created_at   DATETIME│         │     menu_url     VARCHAR │
-│     updated_at   DATETIME│         │     sort_order   INT     │
-└────────────┬─────────────┘         │     icon        VARCHAR │
-             │                       │     use_yn       BOOLEAN │
-             │ N                     │     created_at   DATETIME│
-             ▼                       │     updated_at   DATETIME│
-┌──────────────────────────┐         └──────────────┬───────────┘
-│     SERMON_TAG           │                        │
-│──────────────────────────│         ┌──────────────┴───────────┐
-│ PK  sermon_tag_id BIGINT │         │    PERMISSION            │
-│ FK  sermon_id    BIGINT  │         │──────────────────────────│
-│ FK  tag_id       BIGINT  │         │ PK  permission_id BIGINT │
-└──────┬───────────────────┘         │ FK  role_id      BIGINT  │
-       │                             │ FK  menu_id      BIGINT  │
-       │ N                           │     can_read    BOOLEAN │
-       ▼                             │     can_write   BOOLEAN │
-┌──────────────────────────┐         │     can_delete  BOOLEAN │
-│         TAG              │         │     created_at   DATETIME│
-│──────────────────────────│         └──────────────────────────┘
-│ PK  tag_id       BIGINT  │
-│     tag_name     VARCHAR │         ┌──────────────────────────┐
-│     created_at   DATETIME│         │         ROLE             │
-└──────────────────────────┘         │──────────────────────────│
-                                     │ PK  role_id      BIGINT  │
-┌──────────────────────────┐         │     role_name    VARCHAR │
-│         PBS              │         │     description  VARCHAR │
-│──────────────────────────│         │     use_yn       BOOLEAN │
-│ PK  pbs_id       BIGINT  │         │     created_at   DATETIME│
-│ FK  user_id      BIGINT  │         └──────────────┬───────────┘
-│     title        VARCHAR │                        │
-│     pbs_date     DATE    │                        │ 1
-│     book_from    VARCHAR │                        │
-│     book_to      VARCHAR │                        ▼
-│     bible_text   TEXT    │         ┌──────────────────────────┐
-│     content      TEXT    │         │    USER_ROLE             │
-│     status       VARCHAR │         │──────────────────────────│
-│     created_at   DATETIME│         │ PK  user_role_id  BIGINT │
-│     updated_at   DATETIME│         │ FK  user_id      BIGINT  │
-└────────────┬─────────────┘         │ FK  role_id      BIGINT  │
-             │ N                     └──────────────────────────┘
-             ▼
-┌──────────────────────────┐
-│     PBS_TAG              │
+│      SERMON              │         │     GROUP_CODE           │
+│──────────────────────────│         │──────────────────────────│
+│ PK  sermon_id    BIGINT  │         │ PK  group_code   VARCHAR │
+│ FK  user_id      BIGINT  │         │     group_name   VARCHAR │
+│     title        VARCHAR │         │     modified_date DATETIME│
+│     sermon_date  DATE    │         └──────────────────────────┘
+│     preacher     VARCHAR │
+│     bible_ref    VARCHAR │         ┌──────────────────────────┐
+│     bible_text   TEXT    │         │          MENU            │
+│     content      TEXT    │         │──────────────────────────│
+│     status       VARCHAR │         │ PK  menu_id      BIGINT  │
+│     created_at   DATETIME│         │ FK  parent_id    BIGINT  │
+│     updated_at   DATETIME│         │     menu_name    VARCHAR │
+└────────────┬─────────────┘         │     menu_url     VARCHAR │
+             │ N                     │     sort_order   INT     │
+             ▼                       │     icon        VARCHAR │
+┌──────────────────────────┐         │     use_yn       BOOLEAN │
+│     SERMON_TAG           │         │     created_at   DATETIME│
+│──────────────────────────│         │     updated_at   DATETIME│
+│ PK  sermon_tag_id BIGINT │         └──────────────┬───────────┘
+│ FK  sermon_id    BIGINT  │                        │
+│ FK  tag_id       BIGINT  │         ┌──────────────┴───────────┐
+└──────┬───────────────────┘         │    PERMISSION            │
+       │                             │──────────────────────────│
+       │ N                           │ PK  permission_id BIGINT │
+       ▼                             │ FK  role_id      BIGINT  │
+┌──────────────────────────┐         │ FK  menu_id      BIGINT  │
+│         TAG              │         │     can_read    BOOLEAN │
+│──────────────────────────│         │     can_write   BOOLEAN │
+│ PK  tag_id       BIGINT  │         │     can_delete  BOOLEAN │
+│     tag_name     VARCHAR │         │     created_at   DATETIME│
+│     created_at   DATETIME│         └──────────────────────────┘
+└──────────────────────────┘
+                                     ┌──────────────────────────┐
+┌──────────────────────────┐         │         ROLE             │
+│         PBS              │         │──────────────────────────│
+│──────────────────────────│         │ PK  role_id      BIGINT  │
+│ PK  pbs_id       BIGINT  │         │     group_code   VARCHAR │
+│ FK  user_id      BIGINT  │         │     group_name   VARCHAR │
+│     title        VARCHAR │         │     group_desc   VARCHAR │
+│     pbs_date     DATE    │         │     use_yn       BOOLEAN │
+│     book_from    VARCHAR │         │     created_at   DATETIME│
+│     book_to      VARCHAR │         └──────────────┬───────────┘
+│     bible_text   TEXT    │                        │
+│     content      TEXT    │                        │ 1
+│     status       VARCHAR │                        ▼
+│     created_at   DATETIME│         ┌──────────────────────────┐
+│     updated_at   DATETIME│         │    USER_ROLE             │
+└────────────┬─────────────┘         │──────────────────────────│
+             │ N                     │ PK  user_role_id  BIGINT │
+             ▼                       │ FK  user_id      BIGINT  │
+┌──────────────────────────┐         │ FK  role_id      BIGINT  │
+│     PBS_TAG              │         └──────────────────────────┘
 │──────────────────────────│
 │ PK  pbs_tag_id   BIGINT  │
 │ FK  pbs_id       BIGINT  │
@@ -111,25 +112,48 @@
 └──────────────────────────┘
 
 
-┌──────────────────────────┐         ┌──────────────────────────┐
-│   REFERENCE_RESOURCE     │         │     BIBLE_VERSION        │
-│──────────────────────────│         │──────────────────────────│
-│ PK  ref_id       BIGINT  │         │ PK  version_id   BIGINT  │
-│ FK  ref_type     VARCHAR │         │     version_name VARCHAR │
-│     target_id    BIGINT  │         │     language    VARCHAR │
-│     ref_category VARCHAR │         │     use_yn      BOOLEAN │
-│     url          VARCHAR │         └──────────────────────────┘
-│     file_path    VARCHAR │
-│     description  TEXT    │         ┌──────────────────────────┐
-│     sort_order   INT     │         │     BIBLE_TEXT           │
-│     created_at   DATETIME│         │──────────────────────────│
-└──────────────────────────┘         │ PK  bible_text_id BIGINT │
-                                     │ FK  version_id   BIGINT │
-                                     │     book        VARCHAR │
-                                     │     chapter      INT    │
-                                     │     verse        INT    │
-                                     │     content     TEXT    │
-                                     └──────────────────────────┘
+┌──────────────────────────────┐
+│   REFERENCE_RESOURCE         │
+│──────────────────────────────│
+│ PK  ref_id         BIGINT    │
+│     ref_type       VARCHAR   │
+│     target_id      BIGINT    │
+│     ref_category   VARCHAR   │
+│     url            VARCHAR   │
+│     file_path      VARCHAR   │
+│     file_name      VARCHAR   │
+│     file_type      VARCHAR   │
+│     file_size      VARCHAR   │
+│     description    TEXT      │
+│     sort_order     INT       │
+│     created_at     DATETIME  │
+└──────────────────────────────┘
+
+
+┌──────────────────────────┐         ┌──────────────────────────────┐
+│     BIBLE_VERSION        │         │     BIBLE_BOOKS              │
+│──────────────────────────│         │──────────────────────────────│
+│ PK  version_id   BIGINT  │         │ PK  book_id        BIGINT    │
+│     version_name VARCHAR │◄────────│ FK  version_id     BIGINT    │
+│     language    VARCHAR │         │     book_code      VARCHAR   │
+│     use_yn      BOOLEAN │         │     book_name_kr   VARCHAR   │
+└──────────────────────────┘         │     book_name_en   VARCHAR   │
+                                     │     testament      VARCHAR   │
+┌──────────────────────────┐         │     chapter        INT      │
+│     QT_DAILY             │         │     verse          INT      │
+│──────────────────────────│         │     content        TEXT     │
+│ PK  qt_id        BIGINT  │         │     created_at     DATETIME  │
+│     qt_date      DATE    │         └──────────────────────────────┘
+│     bible_ref    VARCHAR │
+│     title        VARCHAR │
+│     hymn_info    VARCHAR │
+│     hymn_text    TEXT    │
+│ bible_section_title VARCHAR│
+│     bible_text   TEXT    │
+│     prayer       TEXT    │
+│     source       VARCHAR │
+│     created_at   DATETIME│
+└──────────────────────────┘
 ```
 
 ## 엔티티 상세 정의
@@ -146,6 +170,8 @@
 | phone | VARCHAR(20) | 연락처 (010-0000-0000 형식) |
 | role_group | VARCHAR(50) | 권한 그룹 (Super Admin / Admin / Editor / Viewer) |
 | account_status | VARCHAR(20) | 계정 상태 (ACTIVE / INACTIVE / PENDING) |
+| bible_version | VARCHAR(20) | 기본 성경 버전 (사용자 선호 설정) |
+| qt_source | VARCHAR(20) | 기본 QT 출처 (사용자 선호 설정) |
 | memo | VARCHAR(500) | 메모/설명 |
 | email_notification | BOOLEAN | 이메일 알림 수신 여부 |
 | two_factor_auth | BOOLEAN | 2단계 인증(2FA) 사용 여부 |
@@ -384,6 +410,9 @@
 | ref_category | VARCHAR(20) | 자료 유형 (URL / IMAGE / DOCUMENT / MAP) |
 | url | VARCHAR(500) | URL (ref_category=URL인 경우) |
 | file_path | VARCHAR(500) | 파일 경로 (IMAGE, DOCUMENT인 경우) |
+| file_name | VARCHAR(200) | 파일명 |
+| file_type | VARCHAR(20) | 파일 유형 (확장자) |
+| file_size | VARCHAR(20) | 파일 크기 |
 | description | TEXT | 설명 |
 | sort_order | INT | 정렬 순서 |
 | created_at | DATETIME | 생성일시 |
@@ -405,18 +434,46 @@
 
 ---
 
-### 17. BIBLE_TEXT (성경 본문)
+### 17. BIBLE_BOOKS (성경책별 본문)
+
+> 이전 `BIBLE_TEXT` 테이블을 대체한 테이블입니다.
 
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
-| bible_text_id | BIGINT PK | 본문 ID |
+| book_id | BIGINT PK | 본문 ID |
 | version_id | BIGINT FK → BIBLE_VERSION | 버전 ID |
-| book | VARCHAR(50) | 성경책 (창세기, 마태복음 등) |
+| book_code | VARCHAR(10) | 성경책 코드 (예: GEN, MAT) |
+| book_name_kr | VARCHAR(20) | 성경책명 (한글, 예: 창세기) |
+| book_name_en | VARCHAR(50) | 성경책명 (영문, 예: Genesis) |
+| testament | VARCHAR(5) | 구약/신약 구분 (OT / NT) |
 | chapter | INT | 장 |
 | verse | INT | 절 |
 | content | TEXT | 본문 내용 |
+| created_at | DATETIME | 생성일시 |
 
-**출처:** pbs_content.html, sermon_content.html, qt_content.html의 성경 말씀 표시
+**출처:** pbs_content.html, sermon_content.html, qt_content.html의 성경 말씀 표시, bible_versions setup
+
+---
+
+### 18. QT_DAILY (QT 크롤링 데이터)
+
+> 크롤링된 일일 QT 데이터를 저장하는 테이블입니다.
+
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| qt_id | BIGINT PK | QT 데이터 ID |
+| qt_date | DATE | QT 날짜 |
+| bible_ref | VARCHAR(100) | 성경 구절 참조 |
+| title | VARCHAR(200) | QT 제목 |
+| hymn_info | VARCHAR(200) | 찬송가 정보 |
+| hymn_text | TEXT | 찬송가 가사 |
+| bible_section_title | VARCHAR(200) | 성경 구절 소제목 |
+| bible_text | TEXT | 성경 본문 |
+| prayer | TEXT | 기도문 |
+| source | VARCHAR(50) | 출처 (크롤링 소스) |
+| created_at | DATETIME | 생성일시 |
+
+**출처:** qt_content.html, QtScheduler (크롤링 배치)
 
 ---
 
@@ -437,8 +494,9 @@
 | PBS ↔ TAG | N:M | 성경공부와 태그는 다대다 (PBS_TAG 매핑) |
 | QT ↔ TAG | N:M | QT와 태그는 다대다 (QT_TAG 매핑) |
 | REFERENCE_RESOURCE → (PBS/SERMON/QT) | N:1 (다형성) | 참고자료는 타입에 따라 여러 콘텐츠에 연결 |
-| BIBLE_VERSION → BIBLE_TEXT | 1:N | 한 버전에 여러 본문이 속함 |
+| BIBLE_VERSION → BIBLE_BOOKS | 1:N | 한 버전에 여러 성경책 본문이 속함 |
 | COMMON_CODE | 독립 | 그룹 코드 기반 공통 코드 관리 |
+| QT_DAILY | 독립 | 크롤링된 일일 QT 데이터 (독립 테이블) |
 
 ---
 
@@ -450,11 +508,13 @@
 | ROLE, USER_ROLE | WarmAdminUserList_nickname.html, WarmAdminPermissionMenuManagement.html |
 | MENU | WarmAdminMenuManagement_UserFormat.html, 모든 화면 사이드바 |
 | PERMISSION | WarmAdminPermissionMenuManagement.html |
-| COMMON_CODE | WarmAdminCommonCodeManagement_v2.html |
+| COMMON_CODE, GROUP_CODE | WarmAdminCommonCodeManagement_v2.html |
 | SERMON | sermon_list.html, sermon_content.html |
 | PBS | pbs_list.html, pbs_content.html |
 | QT | qt_list.html, qt_content.html |
 | READING_NOTE | reading_list.html, reading_content.html |
 | TAG | sermon_list/content, qt_list/content |
 | REFERENCE_RESOURCE | pbs_content.html (참고자료 탭) |
-| BIBLE_VERSION, BIBLE_TEXT | pbs_content, sermon_content, qt_content (성경 말씀 탭) |
+| BIBLE_VERSION | pbs_content, sermon_content, qt_content (성경 말씀 탭) |
+| BIBLE_BOOKS | pbs_content, sermon_content, qt_content (성경 말씀 표시), bible_versions setup |
+| QT_DAILY | qt_content.html, QtScheduler (크롤링 배치) |

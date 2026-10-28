@@ -2,8 +2,9 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v2.0 (구현 완료 반영) |
 | 작성일 | 2026-10-12 |
+| 최종 수정 | 2026-10-28 |
 | 대상 화면 | 메인 대시보드 (로그인 후 첫 화면) |
 | 디자인 테마 | Warm tone (#c97d4e accent) |
 | 참조 디자인 | design/System_html/WarmAdminDashboard_nickname.html |
@@ -295,7 +296,25 @@ Response:
 
 ---
 
-## 8. 향후 확장
+## 9. 구현 상태
+
+**구현 완료 (2026-10-28 기준):**
+
+| 항목 | 상태 | 파일 |
+|------|------|------|
+| DashboardView.vue | 완료 | src/views/DashboardView.vue (436 lines) |
+| dashboard.css | 완료 | src/assets/css/dashboard.css (517 lines) |
+| /dashboard 라우트 | 완료 | src/router/index.ts — 기본 redirect / → /dashboard |
+| 통계 카드 (4개) | 완료 | 설교/QT/PBS/독서 건수 + 이번달 신규 |
+| 오늘의 QT 카드 | 완료 | GET /api/qt-daily/today 연동 |
+| 월간 작성 통계 | 완료 | CSS 막대그래프 |
+| 최근 등록 콘텐츠 | 완료 | 탭(설교/QT/PBS/독서) + 테이블 |
+| 사이드바 연동 | 완료 | 대시보드 메뉴 display_yn=0 (사이드바 숨김, 로고 클릭 시 이동) |
+| 권한 필터링 | 완료 | 로그인 사용자 권한에 따른 메뉴 표시 |
+
+---
+
+## 10. 향후 확장
 
 | 기능 | 설명 | 시점 |
 |------|------|------|

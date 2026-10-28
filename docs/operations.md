@@ -18,13 +18,24 @@
 ┌──────────────────────────────────────┐
 │    Spring Boot (JAR)                  │
 │    RESTful API + Swagger + MyBatis    │
+│    Spring Security + JWT 인증          │
 └──────────┬───────────────────────────┘
            │
            ▼ TCP :3306
 ┌──────────────────────────────────────┐
-│       MariaDB                         │
+│       MariaDB (bind 0.0.0.0:3306)    │
 └──────────────────────────────────────┘
 ```
+
+### 1.1 인증 구성
+
+| 항목 | 내용 |
+|---|---|
+| 인증 프레임워크 | Spring Security + JWT (jjwt 0.12.6) |
+| 토큰 유효기간 | 24시간 |
+| API 접근 제어 | RoleAuthorizationFilter (역할 기반) |
+| 세션 관리 | localStorage + 날짜 변경 감지 + 1시간 타임아웃 |
+| 기본 관리자 | admin@holylife.local / admin123 |
 
 ## 2. 배포 경로
 
@@ -55,27 +66,76 @@
 /home/jhban/holylife/
 ├── holylife/                       ← Spring Boot 백엔드 (GitHub: ban-jh/holylife, branch: dev)
 │   ├── src/main/java/org/shaloman/pj/
-│   │   ├── config/                 ← MyBatis, Transaction, Swagger 설정
-│   │   ├── controller/             ← REST API 컨트롤러
-│   │   ├── domain/                 ← 도메인 객체
-│   │   ├── dto/                    ← 요청/응답 DTO
-│   │   ├── mapper/                 ← MyBatis Mapper 인터페이스
-│   │   ├── service/                ← 비즈니스 로직 (@Transactional)
-│   │   └── nlp/date/               ← 자연어 날짜 파서
+│   │   ├── config/                 ← SecurityConfig, JwtUtil, JwtAuthenticationFilter,
+│   │   │                              RoleAuthorizationFilter, MyBatisConfig, SwaggerConfig,
+│   │   │                              QtScheduler
+│   │   ├── common/fileupload/      ← controller, service
+│   │   ├── content/
+│   │   │   ├── bible/              ← controller, domain, mapper
+│   │   │   ├── sermon/             ← controller, domain, dto, mapper, service
+│   │   │   ├── qt/                 ← controller, domain, dto, mapper, service
+│   │   │   ├── pbs/                ← controller, domain, mapper, service
+│   │   │   └── reading/            ← controller, domain, mapper, service
+│   │   ├── system/
+│   │   │   ├── user/               ← controller (AuthController 포함), domain, dto, mapper, service
+│   │   │   ├── role/               ← controller, domain, dto, mapper, service
+│   │   │   ├── permission/         ← controller, domain, dto, mapper, service
+│   │   │   ├── menu/               ← controller, domain, dto, mapper, service
+│   │   │   └── code/               ← controller, domain, dto, mapper, service
+│   │   └── nlp/date/               ← NaturalDateParser
 │   ├── src/main/resources/
 │   │   ├── application.yml         ← 개발용 설정
 │   │   └── mapper/                 ← MyBatis XML 매퍼
-│   └── pom.xml
+│   ├── pom.xml
+│   ├── Dockerfile                  ← 백엔드 컨테이너 이미지
+│   └── docker-compose.yml          ← 전체 서비스 구성 (DB + 백엔드 + 프론트엔드)
 │
 └── holylifeView/                   ← Vue.js 프론트엔드 (GitHub: ban-jh/holylifeView, branch: main)
     ├── src/
     │   ├── api/index.ts            ← Axios API 클라이언트
-    │   ├── router/index.ts         ← Vue Router (10개 라우트)
-    │   ├── views/                  ← 10개 화면 컴포넌트
+    │   ├── router/index.ts         ← Vue Router (22개 라우트)
+    │   ├── views/                  ← 17개 화면 컴포넌트
+    │   │   ├── DashboardView.vue
+    │   │   ├── LoginView.vue
+    │   │   ├── SignupView.vue
+    │   │   ├── SermonListView.vue
+    │   │   ├── SermonDetailView.vue
+    │   │   ├── QtListView.vue
+    │   │   ├── QtDetailView.vue
+    │   │   ├── PbsListView.vue
+    │   │   ├── PbsDetailView.vue
+    │   │   ├── ReadingListView.vue
+    │   │   ├── ReadingDetailView.vue
+    │   │   ├── MyPageView.vue
+    │   │   └── system/
+    │   │       ├── UserListView.vue
+    │   │       ├── UserCreateView.vue
+    │   │       ├── MenuListView.vue
+    │   │       ├── PermissionListView.vue
+    │   │       └── CommonCodeView.vue
     │   └── assets/main.css         ← Warm 톤 전역 스타일
+    ├── Dockerfile                  ← 프론트엔드 컨테이너 이미지
     ├── vite.config.ts              ← Vite 설정 (개발 프록시 :8080)
     └── package.json
 ```
+
+### 3.1 백엔드 패키지 구성 (총 82개 Java 파일)
+
+| 패키지 | 구성 요소 |
+|---|---|
+| `org.shaloman.pj.config` | SecurityConfig, JwtUtil, JwtAuthenticationFilter, RoleAuthorizationFilter, MyBatisConfig, SwaggerConfig, QtScheduler |
+| `org.shaloman.pj.common.fileupload` | controller, service |
+| `org.shaloman.pj.content.bible` | controller, domain, mapper |
+| `org.shaloman.pj.content.sermon` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.content.qt` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.content.pbs` | controller, domain, mapper, service |
+| `org.shaloman.pj.content.reading` | controller, domain, mapper, service |
+| `org.shaloman.pj.system.user` | controller (AuthController 포함), domain, dto, mapper, service |
+| `org.shaloman.pj.system.role` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.system.permission` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.system.menu` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.system.code` | controller, domain, dto, mapper, service |
+| `org.shaloman.pj.nlp.date` | NaturalDateParser |
 
 ## 4. 시스템 설정 파일
 
@@ -84,6 +144,7 @@
 | systemd 서비스 | `/etc/systemd/system/holylife.service` | 서비스 등록 (부팅 시 자동 시작) |
 | Nginx 사이트 | `/etc/nginx/sites-available/holylife` | 리버스 프록시 설정 |
 | Nginx 심볼릭링크 | `/etc/nginx/sites-enabled/holylife` | 사이트 활성화 |
+| Docker Compose | `/home/jhban/holylife/holylife/docker-compose.yml` | 컨테이너 서비스 구성 |
 
 ## 5. 서비스 관리
 
@@ -145,7 +206,24 @@ sudo nginx -t
 sudo systemctl status nginx
 ```
 
-### 5.6 로그 확인
+### 5.6 Docker 서비스 관리
+
+```bash
+# 컨테이너 전체 기동
+cd /home/jhban/holylife/holylife
+docker compose up -d
+
+# 컨테이너 상태 확인
+docker compose ps
+
+# 컨테이너 중지
+docker compose down
+
+# 로그 확인
+docker compose logs -f
+```
+
+### 5.7 로그 확인
 
 ```bash
 # 애플리케이션 로그 (실시간)
@@ -245,6 +323,24 @@ curl http://localhost:80/
 /opt/holylife/sh/deploy-frontend.sh
 ```
 
+### 6.4 Docker 배포
+
+```bash
+# docker-compose로 전체 서비스 기동
+cd /home/jhban/holylife/holylife
+docker compose up -d --build
+```
+
+백엔드 Dockerfile과 프론트엔드 Dockerfile을 각각 사용하여 컨테이너 이미지를 빌드합니다.
+`docker-compose.yml`은 MariaDB, 백엔드, 프론트엔드를 통합하여 관리합니다.
+
+### 6.5 Oracle Cloud Free Tier 배포
+
+Oracle Cloud Free Tier 인스턴스에서 Docker 기반 배포를 지원합니다.
+- 인스턴스 내에서 `docker compose up -d` 실행
+- 방화벽 규칙에서 80, 8080, 3306 포트 개방
+- 필요에 따라 Nginx 리버스 프록시 추가 구성
+
 ## 7. 개발 환경 실행
 
 ### 7.1 백엔드 개발 서버
@@ -268,7 +364,11 @@ npm run dev
 ### 7.3 데이터베이스 접속
 
 ```bash
+# 로컬 접속
 mysql -u shaloman -p123321 holylife
+
+# 외부 네트워크에서 접속 (bind-address 0.0.0.0)
+mysql -h 192.168.2.15 -P 3306 -u shaloman -p123321 holylife
 ```
 
 ## 8. 접속 URL
@@ -290,6 +390,7 @@ mysql -u shaloman -p123321 holylife
 | Vue.js 화면 | http://192.168.2.15/ |
 | Swagger UI | http://192.168.2.15/swagger-ui.html |
 | REST API | http://192.168.2.15/api/users |
+| MariaDB (외부 접속) | 192.168.2.15:3306 |
 
 ### 외부 접속
 
@@ -305,25 +406,53 @@ mysql -u shaloman -p123321 holylife
 
 | 항목 | 값 |
 |---|---|
-| 호스트 | localhost |
+| 호스트 (로컬) | localhost |
+| 호스트 (외부) | 192.168.2.15 |
 | 포트 | 3306 |
 | 데이터베이스 | holylife |
 | 사용자 | shaloman |
 | 비밀번호 | 123321 |
+| bind-address | 0.0.0.0 (외부 접속 허용) |
 
-### 9.2 테이블 목록 (18개)
+### 9.2 테이블 목록 (총 28개)
+
+#### 비즈니스 테이블 (19개)
 
 ```
-users, roles, user_roles, menus, permissions,
+users, roles, user_roles,
+menus, permissions,
 group_codes, common_codes, tags,
 sermons, sermon_tags,
 pbs, pbs_tags,
 qts, qt_tags,
 reading_notes, reference_resources,
-bible_versions, bible_texts
+bible_versions, bible_books
 ```
 
-### 9.3 스키마 초기화
+#### QT 일일 크롤링 테이블 (1개)
+
+```
+qt_daily
+```
+
+#### Spring Batch 메타 테이블 (8개)
+
+```
+BATCH_JOB_INSTANCE, BATCH_JOB_EXECUTION, BATCH_JOB_EXECUTION_PARAMS,
+BATCH_STEP_EXECUTION, BATCH_STEP_EXECUTION_CONTEXT,
+BATCH_JOB_EXECUTION_CONTEXT, BATCH_JOB_SEQ, BATCH_STEP_EXECUTION_SEQ
+```
+
+### 9.3 QT 자동 크롤링
+
+| 항목 | 내용 |
+|---|---|
+| 스케줄러 | QtScheduler |
+| 실행 시간 | 매일 04:00 |
+| 크롤링 소스 | duranno (두란노 QT) |
+| 저장 테이블 | qt_daily |
+
+### 9.4 스키마 초기화
 
 ```bash
 mysql -u shaloman -p123321 holylife < /home/jhban/holylife/holylife/docs/schema.sql
@@ -394,11 +523,38 @@ sudo systemctl status mariadb
 mysql -u shaloman -p123321 holylife -e "SELECT 1;"
 ```
 
-### 11.5 포트 확인
+### 11.5 JWT 인증 관련
+
+```bash
+# 로그인 테스트
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@holylife.local","password":"admin123"}'
+
+# 토큰과 함께 API 호출
+curl -H "Authorization: Bearer <TOKEN>" http://localhost:8080/api/users
+```
+
+### 11.6 포트 확인
 
 ```bash
 # 80 (Nginx), 8080 (Spring Boot), 3306 (MariaDB)
 ss -tlnp | grep -E '80|8080|3306'
+```
+
+### 11.7 Docker 컨테이너 문제
+
+```bash
+# 컨테이너 상태 확인
+docker compose ps
+
+# 컨테이너 로그 확인
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f db
+
+# 컨테이너 재기동
+docker compose restart
 ```
 
 ## 12. 기술 스택
@@ -406,12 +562,16 @@ ss -tlnp | grep -E '80|8080|3306'
 | 구성 | 기술 |
 |---|---|
 | 백엔드 | Spring Boot 4.0.0, Java 17 |
+| 인증/보안 | Spring Security, JWT (jjwt 0.12.6) |
 | ORM | MyBatis 4.0.1 |
+| 배치 | Spring Batch (QT 일일 크롤링) |
 | API 문서 | springdoc-openapi 2.6.0 (Swagger UI) |
 | 프론트엔드 | Vue 3 + TypeScript + Vite 6 |
-| 라우팅 | Vue Router 4 |
+| 라우팅 | Vue Router 4 (22개 라우트, 17개 화면) |
 | HTTP 클라이언트 | Axios |
 | 데이터베이스 | MariaDB 10.11 |
 | 웹 서버 | Nginx 1.24 |
+| 컨테이너 | Docker + Docker Compose |
 | 서비스 관리 | systemd |
 | 빌드 | Maven (백엔드), npm/Vite (프론트엔드) |
+| 클라우드 | Oracle Cloud Free Tier 지원 |

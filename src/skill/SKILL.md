@@ -36,7 +36,9 @@ Faith Pathway(홀리라이프) 프로젝트의 웹 화면용 정적 HTML 디자�
 design/
   login/           - 로그인, 회원가입, PBS 로그인 화면
   성경공부/         - 성경공부 목록, 성경 콘텐츠 상세 화면
+  독서/             - 독서 노트 목록/상세 화면
   System_html/     - 관리자 대시보드, 사용자 관리, 메뉴 관리, 권한 관리, 공통코드 관리
+  dashboard/       - 대시보드 화면 (WarmAdminDashboard.html)
 ```
 
 ### 두 가지 디자인 테마

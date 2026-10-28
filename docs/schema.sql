@@ -1,6 +1,6 @@
 -- ============================================================
 -- Faith Pathway (Holylife) 테이블 생성 스크립트
--- ERD 기반: 17 엔티티
+-- ERD 기반: 20 엔티티
 -- ============================================================
 
 -- 1. USER (사용자)
@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone                VARCHAR(20)  NULL,
     role_group           VARCHAR(50)  NOT NULL DEFAULT 'USER',
     account_status       VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+    bible_version        VARCHAR(20)  NULL,
+    qt_source            VARCHAR(20)  NULL,
     memo                 VARCHAR(500) NULL,
     email_notification   BOOLEAN      NOT NULL DEFAULT FALSE,
     two_factor_auth      BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -242,15 +244,37 @@ CREATE TABLE IF NOT EXISTS bible_versions (
     UNIQUE KEY uk_bible_versions_name (version_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 17. BIBLE_TEXT (성경 본문)
-CREATE TABLE IF NOT EXISTS bible_texts (
-    bible_text_id        BIGINT       NOT NULL AUTO_INCREMENT,
+-- 17. BIBLE_BOOKS (성경 본문 — 책/장/절)
+CREATE TABLE IF NOT EXISTS bible_books (
+    book_id              BIGINT       NOT NULL AUTO_INCREMENT,
     version_id           BIGINT       NOT NULL,
-    book                 VARCHAR(50)  NOT NULL,
+    book_code            VARCHAR(10)  NOT NULL,
+    book_name_kr         VARCHAR(20)  NOT NULL,
+    book_name_en         VARCHAR(50)  NOT NULL,
+    testament            VARCHAR(5)   NOT NULL,
     chapter              INT          NOT NULL,
     verse                INT          NOT NULL,
     content              TEXT         NOT NULL,
-    PRIMARY KEY (bible_text_id),
-    UNIQUE KEY uk_bible_texts (version_id, book, chapter, verse),
-    CONSTRAINT fk_bible_texts_version FOREIGN KEY (version_id) REFERENCES bible_versions (version_id) ON DELETE CASCADE
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (book_id),
+    INDEX idx_bible_books_lookup (version_id, book_code, chapter, verse),
+    CONSTRAINT fk_bible_books_version FOREIGN KEY (version_id) REFERENCES bible_versions (version_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 18. QT_DAILY (매일 큐티 — 자동 생성 큐티 콘텐츠)
+CREATE TABLE IF NOT EXISTS qt_daily (
+    qt_id                BIGINT       NOT NULL AUTO_INCREMENT,
+    qt_date              DATE         NOT NULL,
+    bible_ref            VARCHAR(100) NOT NULL,
+    title                VARCHAR(200) NOT NULL,
+    hymn_info            VARCHAR(200) NULL,
+    hymn_text            TEXT         NULL,
+    bible_section_title  VARCHAR(200) NULL,
+    bible_text           TEXT         NULL,
+    prayer               TEXT         NULL,
+    source               VARCHAR(50)  NULL,
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (qt_id),
+    INDEX idx_qt_daily_date (qt_date),
+    INDEX idx_qt_daily_source (qt_date, source)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
