@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대시보드 — 말씀 관리자</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #faf7f2;
+    --cream-dark: #f2ece0;
+    --warm-white: #fffcf8;
+    --sand: #e8ddd0;
+    --sand-dark: #d4c5b0;
+    --brown-light: #c8b49a;
+    --brown: #8c6f56;
+    --brown-dark: #5e4a38;
+    --accent: #c97d4e;
+    --accent-light: #f0d4ba;
+    --accent-hover: #b06b3c;
+    --text-primary: #2d2118;
+    --text-secondary: #7a6655;
+    --text-muted: #a89585;
+    --sidebar-width: 240px;
+    --header-height: 64px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 4px rgba(100,70,40,0.07);
+    --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
+    --shadow-lg: 0 8px 32px rgba(100,70,40,0.13);
+    --transition: 0.22s cubic-bezier(.4,0,.2,1);
+    --green: #3a8c5f;
+    --blue: #3a6f8c;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: var(--cream);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--brown-dark);
+    display: flex; flex-direction: column;
+    flex-shrink: 0; position: relative; z-index: 100;
+    transition: transform var(--transition), width var(--transition);
+    overflow: hidden;
+  }
+  .sidebar-logo {
+    height: var(--header-height);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .sidebar-logo-icon {
+    width: 34px; height: 34px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sidebar-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 1.8; }
+  .sidebar-logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; line-height: 1.2; }
+  .sidebar-logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 400; letter-spacing: 0.3px; }
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 10px 20px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+  .sidebar-nav::-webkit-scrollbar { width: 4px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; padding: 16px 10px 6px; }
+  .nav-item { position: relative; }
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.65); cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    user-select: none; text-decoration: none;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.92); }
+  .nav-link.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .nav-link.parent-active { background: rgba(201,125,78,0.18); color: rgba(255,255,255,0.92); }
+  .nav-link svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-link-label { flex: 1; font-size: 13.5px; font-weight: 500; }
+  .nav-chevron { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--transition); flex-shrink: 0; }
+  .nav-chevron.open { transform: rotate(180deg); }
+  .nav-sub { overflow: hidden; max-height: 0; transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s; opacity: 0; }
+  .nav-sub.open { max-height: 300px; opacity: 1; }
+  .nav-sub-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 12px 7px 40px; border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.5); cursor: pointer;
+    font-size: 13px; font-weight: 400;
+    transition: background var(--transition), color var(--transition); user-select: none;
+  }
+  .nav-sub-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); flex-shrink: 0; transition: background var(--transition); }
+  .nav-sub-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-sub-item:hover::before { background: var(--accent); }
+  .nav-sub-item.active { color: var(--accent-light); font-weight: 600; }
+  .nav-sub-item.active::before { background: var(--accent); }
+  .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition); }
+  .sidebar-user:hover { background: rgba(255,255,255,0.07); }
+  .sidebar-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.38); }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--cream); }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-height);
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--sand);
+    display: flex; align-items: center; padding: 0 28px; gap: 14px;
+    flex-shrink: 0; box-shadow: var(--shadow-sm); position: relative; z-index: 10;
+  }
+  .mobile-menu-btn { display: none; width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition); }
+  .mobile-menu-btn:hover { background: var(--cream-dark); }
+  .mobile-menu-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .breadcrumb-item { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+  .breadcrumb-item.current { color: var(--text-primary); font-weight: 600; }
+  .breadcrumb-sep { color: var(--sand-dark); font-size: 12px; }
+  .header-actions { display: flex; align-items: center; gap: 6px; }
+  .header-search { display: flex; align-items: center; gap: 8px; background: var(--cream); border: 1.5px solid var(--sand); border-radius: 22px; padding: 7px 14px; transition: border-color var(--transition), box-shadow var(--transition); cursor: text; }
+  .header-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,125,78,0.12); }
+  .header-search svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .header-search input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text-primary); width: 160px; font-family: inherit; }
+  .header-search input::placeholder { color: var(--text-muted); }
+  .icon-btn { width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition), color var(--transition); position: relative; }
+  .icon-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .badge { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; border: 1.5px solid var(--warm-white); }
+  .header-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: opacity var(--transition); margin-left: 4px; border: 2px solid var(--accent-light); }
+  .header-avatar:hover { opacity: 0.85; }
+
+  /* ── Content ── */
+  .content { flex: 1; overflow-y: auto; padding: 32px 36px; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.3; }
+  .page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Animations ── */
+  @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .content > * { animation: fadeSlideIn 0.4s cubic-bezier(.4,0,.2,1) both; }
+  .content > *:nth-child(1) { animation-delay: 0.05s; }
+  .content > *:nth-child(2) { animation-delay: 0.10s; }
+  .content > *:nth-child(3) { animation-delay: 0.15s; }
+  .content > *:nth-child(4) { animation-delay: 0.20s; }
+
+  /* ── Stats Row ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--warm-white); border-radius: var(--radius-md);
+    border: 1px solid var(--sand); padding: 18px 20px;
+    display: flex; align-items: flex-start; gap: 14px;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--transition), transform var(--transition);
+    cursor: pointer;
+  }
+  .stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+  .stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stat-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .stat-icon.orange { background: #fde8d8; color: var(--accent); }
+  .stat-icon.green { background: #d8ede1; color: var(--green); }
+  .stat-icon.brown { background: #ede0d4; color: var(--brown); }
+  .stat-icon.blue { background: #d8e8f0; color: var(--blue); }
+  .stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.8px; line-height: 1.2; }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+  .stat-change { font-size: 11.5px; color: var(--green); font-weight: 600; margin-top: 4px; }
+  .stat-change.zero { color: var(--text-muted); }
+
+  /* ── Dashboard Cards (독립 입체 카드) ── */
+  .dash-card {
+    background: var(--warm-white); border: 1px solid var(--sand);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .dash-card-head { padding: 20px 22px; border-bottom: 1px solid var(--sand); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .dash-card-body { padding: 22px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .section-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Two Column Layout ── */
+  .dash-split { display: grid; grid-template-columns: calc(60% - 8px) calc(40% - 8px); gap: 16px; margin-bottom: 20px; }
+
+  /* ── Today QT ── */
+  .today-qt-content { padding: 22px; }
+  .qt-date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .qt-date { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+  .qt-source-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--accent-light); color: var(--accent-hover); }
+  .qt-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; line-height: 1.4; }
+  .qt-bible-ref { font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 12px; }
+  .qt-preview { font-size: 13px; color: var(--text-secondary); line-height: 1.7; max-height: 100px; overflow: hidden; position: relative; }
+  .qt-preview::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, var(--warm-white)); }
+  .qt-action-row { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cream-dark); display: flex; align-items: center; justify-content: space-between; }
+  .qt-empty { text-align: center; padding: 30px 20px; color: var(--text-muted); font-size: 13px; }
+
+  /* ── Buttons ── */
+  .warm-btn { border: 1px solid var(--sand); border-radius: var(--radius-sm); padding: 9px 16px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition); line-height: 1.4; display: inline-flex; align-items: center; gap: 6px; }
+  .warm-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(201,125,78,0.25); }
+  .warm-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .warm-btn.secondary { background: var(--warm-white); color: var(--text-secondary); }
+  .warm-btn.secondary:hover { background: var(--cream-dark); }
+  .warm-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ── Monthly Stats ── */
+  .monthly-stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .monthly-stat-row:last-of-type { margin-bottom: 0; }
+  .monthly-stat-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); width: 50px; flex-shrink: 0; }
+  .monthly-bar-container { flex: 1; height: 24px; background: var(--cream); border-radius: 12px; overflow: hidden; position: relative; }
+  .monthly-bar { height: 100%; border-radius: 12px; transition: width 0.5s cubic-bezier(.4,0,.2,1); display: flex; align-items: center; padding-left: 10px; }
+  .monthly-bar.orange { background: linear-gradient(90deg, var(--accent), #dba684); }
+  .monthly-bar.green { background: linear-gradient(90deg, var(--green), #5ba87a); }
+  .monthly-bar.brown { background: linear-gradient(90deg, var(--brown), #a88a6e); }
+  .monthly-bar.blue { background: linear-gradient(90deg, var(--blue), #5a8caa); }
+  .monthly-bar.empty { background: var(--cream-dark); }
+  .monthly-stat-count { font-size: 12px; font-weight: 700; color: var(--text-primary); width: 40px; text-align: right; flex-shrink: 0; }
+  .monthly-total { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--cream-dark); text-align: right; font-size: 13px; color: var(--text-muted); }
+  .monthly-total strong { color: var(--brown-dark); font-size: 18px; font-weight: 800; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; border-bottom: 1px solid var(--sand); }
+  .tab { border: 0; background: transparent; padding: 12px 20px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); font-family: inherit; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+  .tab .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--cream-dark); color: var(--text-muted); font-size: 10px; font-weight: 700; margin-left: 5px; }
+  .tab.active .tab-count { background: var(--accent-light); color: var(--accent-hover); }
+
+  /* ── Table ── */
+  .recent-table-wrap { overflow-x: auto; }
+  .recent-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .recent-table th { background: var(--cream); color: var(--text-secondary); font-size: 11.5px; font-weight: 700; text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--sand); white-space: nowrap; }
+  .recent-table td { padding: 14px 18px; border-bottom: 1px solid var(--cream-dark); color: var(--text-primary); vertical-align: middle; }
+  .recent-table tbody tr { transition: background var(--transition); cursor: pointer; }
+  .recent-table tbody tr:hover { background: #fcf8f3; }
+  .recent-table tbody tr:last-child td { border-bottom: none; }
+  .recent-title { font-weight: 700; color: var(--text-primary); }
+  .recent-date { color: var(--text-secondary); font-size: 12px; }
+  .status-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .status-published { background: #e5f3ea; color: #4c8060; }
+  .status-draft { background: #f8edd9; color: #a87532; }
+  .status-public { background: #e5f3ea; color: #4c8060; }
+  .status-private { background: #f0e8e1; color: #8c6f56; }
+  .row-actions { display: flex; gap: 5px; justify-content: flex-end; }
+  .table-action { border: 1px solid transparent; background: transparent; color: var(--text-muted); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 500; transition: all var(--transition); }
+  .table-action:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .table-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+
+  /* ── Recent Card Footer ── */
+  .recent-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-top: 1px solid var(--sand); }
+  .recent-footer-link { font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; transition: color var(--transition); }
+  .recent-footer-link:hover { color: var(--accent-hover); }
+
+  /* ── Overlay ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(45,33,24,0.45); z-index: 90; backdrop-filter: blur(2px); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .dash-split { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 680px) {
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); z-index: 200; }
+    .sidebar.open { transform: translateX(0); }
+    .overlay.active { display: block; }
+    .mobile-menu-btn { display: flex; }
+    .content { padding: 20px 18px; }
+    .header { padding: 0 16px; }
+    .header-search { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .page-title { font-size: 18px; }
+  }
+  @media (max-width: 400px) {
+    .stats-row { grid-template-columns: 1fr; }
+  }
+
+  * { scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7L12 2z"/><path d="M12 22V12"/><path d="M3 7l9 5 9-5"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">말씀 관리자</div>
+        <div class="sidebar-logo-sub">Word Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">메인 메뉴</div>
+
+      <div class="nav-item">
+        <div class="nav-link active" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="nav-link-label">대시보드</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="nav-link-label">P.B.S (성경공부)</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="nav-link-label">Q.T</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-link-label">설교</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-link-label">독서</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">관리</div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="toggleSystem()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+          <span class="nav-link-label">시스템</span>
+          <svg class="nav-chevron" id="system-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-sub" id="system-sub">
+          <div class="nav-sub-item" onclick="setSubActive(this)">사용자</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">메뉴</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">공통코드</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">박</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">박성민 관리자</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+        <svg style="width:14px;height:14px;stroke:rgba(255,255,255,0.3);fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="header">
+      <button class="mobile-menu-btn" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="breadcrumb">
+        <span class="breadcrumb-item current">대시보드</span>
+      </div>
+      <div class="header-actions">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="검색어를 입력하세요">
+        </div>
+        <button class="icon-btn" title="알림">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge"></span>
+        </button>
+        <button class="icon-btn" title="설정">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        </button>
+        <div class="header-avatar" title="내 프로필">박</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title">대시보드</div>
+        <div class="page-desc">말씀 관리 현황을 한눈에 확인합니다.</div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card" onclick="showToast('설교 목록으로 이동')">
+          <div class="stat-icon orange">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <div class="stat-value">2</div>
+            <div class="stat-label">설교</div>
+            <div class="stat-change">+2 이번 달</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showToast('QT 목록으로 이동')">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div>
+            <div class="stat-value">1</div>
+            <div class="stat-label">QT</div>
+            <div class="stat-change">+1 이번 달</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showToast('PBS 목록으로 이동')">
+          <div class="stat-icon brown">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">P.B.S</div>
+            <div class="stat-change zero">이번 달 0건</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showToast('독서 목록으로 이동')">
+          <div class="stat-icon blue">
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div>
+            <div class="stat-value">3</div>
+            <div class="stat-label">독서</div>
+            <div class="stat-change">+3 이번 달</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column: Today QT + Monthly Stats -->
+      <div class="dash-split">
+
+        <!-- Today QT Card -->
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <div>
+              <div class="section-title">오늘의 QT</div>
+              <div class="section-desc">크롤링된 오늘의 큐티 데이터</div>
+            </div>
+            <span class="qt-source-badge">duranno</span>
+          </div>
+          <div class="today-qt-content">
+            <div class="qt-date-row">
+              <span class="qt-date">2026년 10월 12일 (월)</span>
+            </div>
+            <div class="qt-title">예배하는 세대를 위해 준비된 사람들</div>
+            <div class="qt-bible-ref">역대상 23 : 1~32</div>
+            <div class="qt-preview">다윗이 나이가 많아 늙으매 아들 솔로몬을 이스라엘 왕으로 삼고 이스라엘 모든 방백과 제사장과 레위 사람을 모았더라 레위 사람은 삼십 세 이상으로 계수하니 모든 남자의 수가 삼만 팔천 명인데 그 중의 이만 사천 명은 여호와의 성전의 일을 보살피는 자요...</div>
+            <div class="qt-action-row">
+              <span style="font-size:12px;color:var(--text-muted);">오늘의 QT를 묵상하고 기록해 보세요</span>
+              <button class="warm-btn primary" onclick="showToast('QT 작성 화면으로 이동')">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                QT 작성하기
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Stats Card -->
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <div>
+              <div class="section-title">월간 작성 통계</div>
+              <div class="section-desc">2026년 10월</div>
+            </div>
+          </div>
+          <div class="dash-card-body">
+            <div class="monthly-stat-row">
+              <span class="monthly-stat-label">설교</span>
+              <div class="monthly-bar-container">
+                <div class="monthly-bar orange" style="width: 67%"></div>
+              </div>
+              <span class="monthly-stat-count">2건</span>
+            </div>
+            <div class="monthly-stat-row">
+              <span class="monthly-stat-label">QT</span>
+              <div class="monthly-bar-container">
+                <div class="monthly-bar green" style="width: 33%"></div>
+              </div>
+              <span class="monthly-stat-count">1건</span>
+            </div>
+            <div class="monthly-stat-row">
+              <span class="monthly-stat-label">P.B.S</span>
+              <div class="monthly-bar-container">
+                <div class="monthly-bar empty" style="width: 100%"></div>
+              </div>
+              <span class="monthly-stat-count">0건</span>
+            </div>
+            <div class="monthly-stat-row">
+              <span class="monthly-stat-label">독서</span>
+              <div class="monthly-bar-container">
+                <div class="monthly-bar blue" style="width: 100%"></div>
+              </div>
+              <span class="monthly-stat-count">3건</span>
+            </div>
+            <div class="monthly-total">
+              총 <strong>6</strong>건 작성
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Content Card -->
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <div>
+            <div class="section-title">최근 등록 콘텐츠</div>
+            <div class="section-desc">각 콘텐츠별 최근 5건</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" id="contentTabs">
+          <button class="tab active" data-tab="sermon" onclick="switchTab('sermon')">설교 <span class="tab-count">2</span></button>
+          <button class="tab" data-tab="qt" onclick="switchTab('qt')">QT <span class="tab-count">1</span></button>
+          <button class="tab" data-tab="pbs" onclick="switchTab('pbs')">P.B.S <span class="tab-count">0</span></button>
+          <button class="tab" data-tab="reading" onclick="switchTab('reading')">독서 <span class="tab-count">3</span></button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="recent-table-wrap">
+
+          <!-- Sermon Tab -->
+          <table class="recent-table" id="tab-sermon">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>설교자</th>
+                <th>설교 날짜</th>
+                <th>상태</th>
+                <th style="width:120px;text-align:right;">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="showToast('설교 상세로 이동')">
+                <td class="recent-title">은혜로운 설교</td>
+                <td>홍길동 목사</td>
+                <td class="recent-date">2026-10-11</td>
+                <td><span class="status-badge status-published">PUBLISHED</span></td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+              <tr onclick="showToast('설교 상세로 이동')">
+                <td class="recent-title">다윗의 회개</td>
+                <td>김선교 목사</td>
+                <td class="recent-date">2026-10-05</td>
+                <td><span class="status-badge status-draft">DRAFT</span></td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- QT Tab -->
+          <table class="recent-table" id="tab-qt" style="display:none">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>성경 구절</th>
+                <th>QT 날짜</th>
+                <th>공개 범위</th>
+                <th style="width:120px;text-align:right;">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="showToast('QT 상세로 이동')">
+                <td class="하 recent-title">하나님을 찾으며 감당할 사명</td>
+                <td>역대상 22 : 2~19</td>
+                <td class="recent-date">2026-10-11</td>
+                <td><span class="status-badge status-private">PRIVATE</span></td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- PBS Tab -->
+          <table class="recent-table" id="tab-pbs" style="display:none">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>성경 구절</th>
+                <th>PBS 날짜</th>
+                <th>상태</th>
+                <th style="width:120px;text-align:right;">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="table-empty">등록된 P.B.S가 없습니다.</td></tr>
+            </tbody>
+          </table>
+
+          <!-- Reading Tab -->
+          <table class="recent-table" id="tab-reading" style="display:none">
+            <thead>
+              <tr>
+                <th>도서 제목</th>
+                <th>저자</th>
+                <th>독서 날짜</th>
+                <th style="width:120px;text-align:right;">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="showToast('독서 상세로 이동')">
+                <td class="recent-title">하나님의 마음으로 살기</td>
+                <td>존 파이퍼</td>
+                <td class="recent-date">2026-10-10</td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+              <tr onclick="showToast('독서 상세로 이동')">
+                <td class="recent-title">믿음의 위대한 유산</td>
+                <td>팀 켈러</td>
+                <td class="recent-date">2026-10-07</td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+              <tr onclick="showToast('독서 상세로 이동')">
+                <td class="recent-title">기독교 교리 개론</td>
+                <td>웨인 그루뎀</td>
+                <td class="recent-date">2026-10-03</td>
+                <td><div class="row-actions"><button class="table-action" onclick="event.stopPropagation();showToast('보기')">보기</button><button class="table-action" onclick="event.stopPropagation();showToast('수정')">수정</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="recent-footer">
+          <button class="warm-btn primary" onclick="showToast('새 콘텐츠 등록')">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            새 콘텐츠 등록
+          </button>
+          <span class="recent-footer-link" onclick="showToast('전체 목록으로 이동')">전체 보기 →</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--brown-dark); color: #fff;
+  padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 13.5px; font-weight: 500; box-shadow: var(--shadow-lg);
+  transform: translateY(80px); opacity: 0;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+  pointer-events: none; z-index: 9999;
+  display: flex; align-items: center; gap: 10px;
+">
+  <svg style="width:16px;height:16px;stroke:#a8d8bc;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  // Nav active
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => { l.classList.remove('active'); if (!l.id) l.classList.remove('parent-active'); });
+    el.classList.add('active');
+  }
+
+  // System submenu
+  var systemOpen = false;
+  function toggleSystem() {
+    systemOpen = !systemOpen;
+    var sub = document.getElementById('system-sub');
+    var chevron = document.getElementById('system-chevron');
+    if (systemOpen) { sub.classList.add('open'); chevron.classList.add('open'); }
+    else { sub.classList.remove('open'); chevron.classList.remove('open'); }
+  }
+  function setSubActive(el) {
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Mobile sidebar
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
+
+  // Tab switching
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.recent-table').forEach(t => t.style.display = 'none');
+    document.querySelector('.tab[data-tab="' + tabName + '"]').classList.add('active');
+    document.getElementById('tab-' + tabName).style.display = '';
+  }
+
+  // Toast
+  var toastTimer;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    var toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    toastTimer = setTimeout(function() {
+      toast.style.transform = 'translateY(80px)';
+      toast.style.opacity = '0';
+    }, 2800);
+  }
+</script>
+
+</body>
+</html>

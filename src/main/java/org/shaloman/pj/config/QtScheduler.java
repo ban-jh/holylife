@@ -31,6 +31,7 @@ public class QtScheduler {
         try {
             JobParameters params = new JobParametersBuilder()
                     .addLong("run.id", System.currentTimeMillis())
+                    .addString("job.type", "duranno")
                     .toJobParameters();
             log.info("QT 크롤링 배치 잡 시작 (Duranno)");
             jobLauncher.run(qtCrawlJob, params);
@@ -49,6 +50,7 @@ public class QtScheduler {
         try {
             JobParameters params = new JobParametersBuilder()
                     .addLong("run.id", System.currentTimeMillis())
+                    .addString("job.type", "sum")
                     .toJobParameters();
             log.info("QT 크롤링 배치 잡 시작 (SUM)");
             jobLauncher.run(qtSumCrawlJob, params);

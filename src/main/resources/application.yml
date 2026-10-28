@@ -68,6 +68,11 @@ holylife:
     crawl-url: https://www.duranno.com/qt/view/bible.asp
     sum-crawl-url: https://sum.su.or.kr:8888/bible/today
 
+# JWT
+jwt:
+  secret: holylife-secret-key-for-jwt-token-generation-2026
+  expiration: 86400000  # 24 hours in ms
+
 # Logging
 logging:
   level:
