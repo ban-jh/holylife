@@ -1,0 +1,72 @@
+# holylife Docker Compose
+# 전체 서비스 orchestration: MariaDB + Spring Boot Backend + Nginx Frontend
+#
+# 사용법:
+#   docker-compose up -d          # 전체 서비스 시작
+#   docker-compose down           # 전체 서비스 중지
+#   docker-compose logs -f        # 로그 실시간 확인
+#   docker-compose restart backend # 백엔드만 재시작
+#
+# Oracle Cloud ARM(Ampere A1)에서 테스트됨
+
+services:
+  # ── MariaDB 데이터베이스 ──
+  mariadb:
+    image: mariadb:10.11
+    container_name: holylife-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: holylife
+      MARIADB_USER: shaloman
+      MARIADB_PASSWORD: 123321
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - holylife-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot 백엔드 ──
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: holylife-backend
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - holylife-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+
+  # ── Nginx 프론트엔드 ──
+  frontend:
+    build:
+      context: ../holylifeView
+      dockerfile: Dockerfile
+    container_name: holylife-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - holylife-net
+
+volumes:
+  db_data:
+
+networks:
+  holylife-net:
+    driver: bridge

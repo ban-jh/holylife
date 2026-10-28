@@ -1,0 +1,10 @@
+# .dockerignore — 백엔드
+target/
+*.log
+.git/
+.gitignore
+*.md
+docker/
+Dockerfile
+docker-compose.yml
+.dockerignore
