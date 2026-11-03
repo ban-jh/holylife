@@ -1,5 +1,6 @@
 package org.shaloman.pj.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,13 +20,16 @@ import java.util.List;
  * - CSRF 비활성화 (REST API)
  * - 세션 무상태 (STATELESS)
  * - JWT 필터를 UsernamePasswordAuthenticationFilter 이전에 추가
- * - 공개 엔드포인트: 로그인, 회원가입, Swagger, 정적 리소스
+ * - 공개 엔드포인트: 로그인, Swagger(dev만), 정적 리소스
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -37,18 +41,21 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
                 // 공개 엔드포인트
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
+                auth.requestMatchers("/api/auth/login").permitAll();
+                // 회원가입(POST /api/users)은 인증 필요 — 관리자만 사용자 등록 (취약점 #6)
+                // Swagger는 프로덕션이 아닐 때만 허용 (취약점 #5)
+                if (!"prod".equals(activeProfile)) {
+                    auth.requestMatchers("/swagger-ui/**").permitAll();
+                    auth.requestMatchers("/v3/api-docs/**").permitAll();
+                }
+                auth.requestMatchers("/uploads/**").permitAll();
                 // 나머지 /api/** 는 인증 필요
-                .requestMatchers("/api/**").authenticated()
+                auth.requestMatchers("/api/**").authenticated();
                 // 그 외 모든 요청 허용
-                .anyRequest().permitAll()
-            )
+                auth.anyRequest().permitAll();
+            })
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(new RoleAuthorizationFilter(), JwtAuthenticationFilter.class);
 
@@ -58,7 +65,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        // 취약점 #2: CORS 제한 — 특정 origin만 허용
+        config.setAllowedOriginPatterns(List.of(
+            "http://localhost",
+            "http://localhost:80",
+            "http://123.143.232.180",
+            "http://192.168.2.15"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

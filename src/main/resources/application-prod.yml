@@ -1,0 +1,22 @@
+# HolyLife Production Configuration (source — deployed copy in /opt/holylife/config/)
+
+spring:
+  datasource:
+    password: ${DB_PASSWORD:123321}
+
+# 취약점 #5: 프로덕션에서 Swagger 비활성화
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+# 취약점 #1: JWT 시크릿 환경변수화
+jwt:
+  secret: ${JWT_SECRET:hL9xK2mP7vQ4wR8sT3uY6bN1cF5jG0hM2dV9aZ4eL7iS3oP6qW1rX5tU8yB0nC4}
+  expiration: 86400000
+
+holylife:
+  upload:
+    path: /opt/holylife/uploads
+    url-prefix: /uploads

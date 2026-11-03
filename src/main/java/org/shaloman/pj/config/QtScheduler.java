@@ -29,11 +29,12 @@ public class QtScheduler {
     @Scheduled(cron = "0 0 4 * * ?")
     public void runQtCrawlJob() {
         try {
+            String today = java.time.LocalDate.now().toString();
             JobParameters params = new JobParametersBuilder()
-                    .addLong("run.id", System.currentTimeMillis())
                     .addString("job.type", "duranno")
+                    .addString("job.date", today)
                     .toJobParameters();
-            log.info("QT 크롤링 배치 잡 시작 (Duranno)");
+            log.info("QT 크롤링 배치 잡 시작 (Duranno) date={}", today);
             jobLauncher.run(qtCrawlJob, params);
             log.info("QT 크롤링 배치 잡 완료 (Duranno)");
         } catch (Exception e) {
@@ -48,11 +49,12 @@ public class QtScheduler {
     @Scheduled(cron = "0 5 4 * * ?")
     public void runQtSumCrawlJob() {
         try {
+            String today = java.time.LocalDate.now().toString();
             JobParameters params = new JobParametersBuilder()
-                    .addLong("run.id", System.currentTimeMillis())
                     .addString("job.type", "sum")
+                    .addString("job.date", today)
                     .toJobParameters();
-            log.info("QT 크롤링 배치 잡 시작 (SUM)");
+            log.info("QT 크롤링 배치 잡 시작 (SUM) date={}", today);
             jobLauncher.run(qtSumCrawlJob, params);
             log.info("QT 크롤링 배치 잡 완료 (SUM)");
         } catch (Exception e) {
