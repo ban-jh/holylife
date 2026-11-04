@@ -66,9 +66,10 @@ public class AuthController {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
-        // 계정 상태 확인
+        // 취약점 #11: 사용자 열거 방지 — 계정 상태 확인 실패 시에도 동일한 메시지 반환
         if (!"A".equals(user.getAccountStatus())) {
-            throw new IllegalArgumentException("비활성화된 계정입니다.");
+            recordFailedAttempt(clientIp);
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

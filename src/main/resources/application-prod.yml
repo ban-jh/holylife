@@ -3,6 +3,11 @@
 spring:
   datasource:
     password: ${DB_PASSWORD:123321}
+  # 취약점 #10: 파일 업로드 크기 제한
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
 
 # 취약점 #5: 프로덕션에서 Swagger 비활성화
 springdoc:
@@ -12,8 +17,9 @@ springdoc:
     enabled: false
 
 # 취약점 #1: JWT 시크릿 환경변수화
+# 취약점 #13: 기본값 제거 — 환경변수만 사용
 jwt:
-  secret: ${JWT_SECRET:hL9xK2mP7vQ4wR8sT3uY6bN1cF5jG0hM2dV9aZ4eL7iS3oP6qW1rX5tU8yB0nC4}
+  secret: ${JWT_SECRET}
   expiration: 86400000
 
 holylife:

@@ -28,6 +28,12 @@ public class FileUploadService {
         "jpg", "jpeg", "png", "gif", "svg", "webp", "ico", "pdf"
     );
 
+    // 취약점 #12: 허용 MIME 타입 화이트리스트
+    private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
+        "image/jpeg", "image/png", "image/gif", "image/svg+xml",
+        "image/webp", "image/x-icon", "application/pdf"
+    );
+
     public FileUploadService(FileUploadConfig config) {
         this.config = config;
     }
@@ -50,6 +56,9 @@ public class FileUploadService {
 
         // 취약점 #3: 확장자 화이트리스트 검증
         validateFileExtension(originalFilename);
+
+        // 취약점 #12: MIME 타입 검증
+        validateMimeType(file.getContentType());
 
         // 카테고리 기본값
         if (category == null || category.isBlank()) {
@@ -157,6 +166,15 @@ public class FileUploadService {
         String extension = filename.substring(lastDot + 1).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다: " + extension);
+        }
+    }
+
+    /**
+     * 취약점 #12: MIME 타입 화이트리스트 검증.
+     */
+    private void validateMimeType(String contentType) {
+        if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("허용되지 않는 파일 MIME 타입입니다: " + contentType);
         }
     }
 

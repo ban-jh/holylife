@@ -57,6 +57,8 @@ public class UserService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("비밀번호는 필수입니다");
         }
+        // 취약점 #10: 비밀번호 복잡도 검증
+        validatePassword(request.getPassword());
         // 이메일 중복 체크
         if (userMapper.findByEmail(request.getEmail()) != null) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
@@ -117,6 +119,8 @@ public class UserService {
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
+        // 취약점 #10: 비밀번호 복잡도 검증
+        validatePassword(newPassword);
         user.setPassword(passwordEncoder.encode(newPassword));
         userMapper.update(user);
     }
@@ -130,6 +134,27 @@ public class UserService {
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId);
         }
         userMapper.deleteById(userId);
+    }
+
+    // ── 비밀번호 검증 ──
+
+    /**
+     * 취약점 #10: 비밀번호 복잡도 검증.
+     * 최소 8자, 영문+숫자 조합 필수.
+     */
+    private void validatePassword(String password) {
+        if (password == null || password.length() < 8) {
+            throw new IllegalArgumentException("비밀번호는 최소 8자 이상이어야 합니다.");
+        }
+        boolean hasLetter = false;
+        boolean hasDigit = false;
+        for (char c : password.toCharArray()) {
+            if (Character.isLetter(c)) hasLetter = true;
+            if (Character.isDigit(c)) hasDigit = true;
+        }
+        if (!hasLetter || !hasDigit) {
+            throw new IllegalArgumentException("비밀번호는 영문과 숫자를 조합해야 합니다.");
+        }
     }
 
     // ── 변환 메서드 ──
