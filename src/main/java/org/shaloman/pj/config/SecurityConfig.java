@@ -45,11 +45,10 @@ public class SecurityConfig {
                 // 공개 엔드포인트
                 auth.requestMatchers("/api/auth/login").permitAll();
                 // 회원가입(POST /api/users)은 인증 필요 — 관리자만 사용자 등록 (취약점 #6)
-                // Swagger는 프로덕션이 아닐 때만 허용 (취약점 #5)
-                if (!"prod".equals(activeProfile)) {
-                    auth.requestMatchers("/swagger-ui/**").permitAll();
-                    auth.requestMatchers("/v3/api-docs/**").permitAll();
-                }
+                // Swagger UI 접근 허용 (운영 환경 포함)
+                auth.requestMatchers("/swagger-ui/**").permitAll();
+                auth.requestMatchers("/swagger-ui.html").permitAll();
+                auth.requestMatchers("/v3/api-docs/**").permitAll();
                 auth.requestMatchers("/uploads/**").permitAll();
                 // 나머지 /api/** 는 인증 필요
                 auth.requestMatchers("/api/**").authenticated();

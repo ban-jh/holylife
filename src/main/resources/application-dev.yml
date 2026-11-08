@@ -1,0 +1,60 @@
+# HolyLife Development Configuration
+# 개발 서버(192.168.2.15) — dev 프로파일
+# 실행: --spring.profiles.active=dev
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/holylife
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: shaloman
+    password: ${DB_PASSWORD:123321}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+# Swagger — 개발 환경에서 활성화
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    groups-order: DESC
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  packages-to-scan: org.shaloman.pj
+
+# JWT — 개발은 기본값 허용 (운영 전환 시 환경변수만 사용)
+jwt:
+  secret: ${JWT_SECRET:holylife-dev-secret-key-for-jwt-token-generation-2026}
+  expiration: 86400000
+
+# BCrypt — 개발은 중간 strength
+holylife:
+  security:
+    password:
+      bcrypt-strength: 10
+  upload:
+    path: /opt/holylife/uploads
+    url-prefix: /uploads
+  qt:
+    crawl-url: https://www.duranno.com/qt/view/bible.asp
+    sum-crawl-url: https://sum.su.or.kr:8888/bible/today
+
+# Logging — 개발은 INFO 레벨
+logging:
+  level:
+    org.shaloman.pj: DEBUG
+    org.mybatis: INFO
+  file:
+    name: /opt/holylife/logs/holylife-dev.log

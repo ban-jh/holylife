@@ -1,28 +1,50 @@
-# HolyLife Production Configuration (source — deployed copy in /opt/holylife/config/)
+# HolyLife Production Configuration
+# 운영 서버 — prod 프로파일
+# 실행: --spring.profiles.active=prod
+# 배포: /opt/holylife/config/application-prod.yml
 
 spring:
+  # MariaDB DataSource — 환경변수에서 비밀번호 로드
   datasource:
-    password: ${DB_PASSWORD:123321}
-  # 취약점 #10: 파일 업로드 크기 제한
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 50MB
+    url: jdbc:mariadb://localhost:3306/holylife
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: shaloman
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
-# 취약점 #5: 프로덕션에서 Swagger 비활성화
+# Swagger — 운영에서는 활성화 (점검 완료 후 비활성화 권장)
 springdoc:
   swagger-ui:
-    enabled: false
+    enabled: true
   api-docs:
-    enabled: false
+    enabled: true
 
-# 취약점 #1: JWT 시크릿 환경변수화
-# 취약점 #13: 기본값 제거 — 환경변수만 사용
+# JWT — 환경변수만 사용 (기본값 없음)
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
 
+# BCrypt — 운영은 높은 strength
 holylife:
+  security:
+    password:
+      bcrypt-strength: 12
   upload:
     path: /opt/holylife/uploads
     url-prefix: /uploads
+  qt:
+    crawl-url: https://www.duranno.com/qt/view/bible.asp
+    sum-crawl-url: https://sum.su.or.kr:8888/bible/today
+
+# Logging — 운영은 INFO 레벨
+logging:
+  level:
+    org.shaloman.pj: INFO
+    org.mybatis: INFO
+  file:
+    name: /opt/holylife/logs/holylife.log
