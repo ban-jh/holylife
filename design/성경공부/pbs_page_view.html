@@ -14,7 +14,7 @@
     --brown-light: #c8b49a; --brown: #8c6f56; --brown-dark: #5e4a38;
     --accent: #c97d4e; --accent-light: #f0d4ba; --accent-hover: #b06b3c;
     --text-primary: #2d2118; --text-secondary: #7a6655; --text-muted: #a89585;
-    --sidebar-width: 260px; --header-height: 64px;
+    --sidebar-width: 240px; --header-height: 64px;
     --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px;
     --shadow-sm: 0 1px 4px rgba(100,70,40,0.07);
     --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
@@ -31,7 +31,7 @@
 
   .layout { display: flex; height: 100vh; overflow: hidden; }
 
-  /* ── Sidebar (Confluence Page Tree) ── */
+  /* ── Sidebar (기존 메뉴) ── */
   .sidebar { width: var(--sidebar-width); background: var(--brown-dark); display: flex; flex-direction: column; flex-shrink: 0; position: relative; z-index: 100; transition: transform var(--transition), width var(--transition); overflow: hidden; }
   .sidebar-logo { height: var(--header-height); display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .sidebar-logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -39,42 +39,28 @@
   .sidebar-logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; line-height: 1.2; }
   .sidebar-logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 400; letter-spacing: 0.3px; }
 
-  .sidebar-search { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .sidebar-search-box { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 7px 10px; transition: border-color var(--transition), background var(--transition); }
-  .sidebar-search-box:focus-within { border-color: var(--accent); background: rgba(255,255,255,0.10); }
-  .sidebar-search-box svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.4); fill: none; stroke-width: 2; flex-shrink: 0; }
-  .sidebar-search-box input { border: none; background: transparent; outline: none; font-size: 12.5px; color: rgba(255,255,255,0.9); width: 100%; font-family: inherit; }
-  .sidebar-search-box input::placeholder { color: rgba(255,255,255,0.3); }
-
-  .sidebar-newpage { padding: 8px 12px 4px; }
-  .newpage-btn { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; padding: 8px 12px; background: rgba(201,125,78,0.15); border: 1px dashed rgba(201,125,78,0.4); border-radius: var(--radius-sm); color: var(--accent-light); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: inherit; text-decoration: none; }
-  .newpage-btn:hover { background: rgba(201,125,78,0.25); border-color: var(--accent); color: #fff; }
-  .newpage-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-  .sidebar-nav { flex: 1; overflow-y: auto; padding: 6px 8px 20px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 10px 20px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
   .sidebar-nav::-webkit-scrollbar { width: 4px; }
   .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-  .tree-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; padding: 14px 10px 5px; }
-  .tree-item { position: relative; }
-  .tree-link { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.65); cursor: pointer; transition: background var(--transition), color var(--transition); user-select: none; text-decoration: none; }
-  .tree-link:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.92); }
-  .tree-link.active { background: var(--accent); color: #fff; font-weight: 600; }
-  .tree-link.parent-active { background: rgba(201,125,78,0.18); color: rgba(255,255,255,0.92); }
-  .tree-link svg.tree-icon { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .tree-chevron { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--transition); flex-shrink: 0; cursor: pointer; }
-  .tree-chevron.open { transform: rotate(90deg); }
-  .tree-label { flex: 1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tree-count { font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; }
-
-  .tree-sub { overflow: hidden; max-height: 0; transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s; opacity: 0; }
-  .tree-sub.open { max-height: 500px; opacity: 1; }
-  .tree-sub-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 40px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.5); cursor: pointer; font-size: 12.5px; font-weight: 400; transition: background var(--transition), color var(--transition); user-select: none; text-decoration: none; }
-  .tree-sub-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); flex-shrink: 0; transition: background var(--transition); }
-  .tree-sub-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
-  .tree-sub-item:hover::before { background: var(--accent); }
-  .tree-sub-item.active { color: var(--accent-light); font-weight: 600; }
-  .tree-sub-item.active::before { background: var(--accent); }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; padding: 16px 10px 6px; }
+  .nav-item { position: relative; }
+  .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.65); cursor: pointer; transition: background var(--transition), color var(--transition); user-select: none; text-decoration: none; }
+  .nav-link:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.92); }
+  .nav-link.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .nav-link.parent-active { background: rgba(201,125,78,0.18); color: rgba(255,255,255,0.92); }
+  .nav-link svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-link-label { flex: 1; font-size: 13.5px; font-weight: 500; }
+  .nav-chevron { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--transition); flex-shrink: 0; }
+  .nav-chevron.open { transform: rotate(180deg); }
+  .nav-sub { overflow: hidden; max-height: 0; transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s; opacity: 0; }
+  .nav-sub.open { max-height: 300px; opacity: 1; }
+  .nav-sub-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px 7px 40px; border-radius: var(--radius-sm); color: rgba(255,255,255,0.5); cursor: pointer; font-size: 13px; font-weight: 400; transition: background var(--transition), color var(--transition); user-select: none; }
+  .nav-sub-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); flex-shrink: 0; transition: background var(--transition); }
+  .nav-sub-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-sub-item:hover::before { background: var(--accent); }
+  .nav-sub-item.active { color: var(--accent-light); font-weight: 600; }
+  .nav-sub-item.active::before { background: var(--accent); }
 
   .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
   .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition); }
@@ -107,130 +93,172 @@
   .back-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
   .back-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-  /* ── Split Content (Bible | Input) ── */
+  /* ── Tri-Split Content (Tree | Bible | Content) ── */
   .content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-  .split-area { flex: 1; display: grid; grid-template-columns: 2fr 3fr; gap: 0; overflow: hidden; }
+  .split-area { flex: 1; display: grid; grid-template-columns: 240px 1fr 1fr; gap: 0; overflow: hidden; }
   .panel { display: flex; flex-direction: column; overflow: hidden; }
-  .panel-left { border-right: 1px solid var(--sand); background: var(--cream); }
-  .panel-right { background: var(--cream); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
-  .panel-right::-webkit-scrollbar { width: 6px; }
-  .panel-right::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+  .panel-tree { border-right: 1px solid var(--sand); background: var(--cream); }
+  .panel-bible { border-right: 1px solid var(--sand); background: var(--cream); }
+  .panel-content { background: var(--cream); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+  .panel-content::-webkit-scrollbar { width: 6px; }
+  .panel-content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
 
   /* Panel header */
-  .panel-header { padding: 16px 24px 12px; border-bottom: 1px solid var(--sand); background: var(--warm-white); flex-shrink: 0; }
-  .panel-title { font-size: 14px; font-weight: 700; color: var(--brown); display: flex; align-items: center; gap: 8px; }
-  .panel-title svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; }
+  .panel-header { padding: 14px 18px 10px; border-bottom: 1px solid var(--sand); background: var(--warm-white); flex-shrink: 0; }
+  .panel-title { font-size: 13px; font-weight: 700; color: var(--brown); display: flex; align-items: center; gap: 8px; }
+  .panel-title svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 2; }
+
+  /* ── Page Tree Panel ── */
+  .tree-search { padding: 8px 12px 4px; }
+  .tree-search-box { display: flex; align-items: center; gap: 8px; background: var(--cream); border: 1px solid var(--sand); border-radius: var(--radius-sm); padding: 6px 10px; transition: border-color var(--transition); }
+  .tree-search-box:focus-within { border-color: var(--accent); }
+  .tree-search-box svg { width: 13px; height: 13px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .tree-search-box input { border: none; background: transparent; outline: none; font-size: 12px; color: var(--text-primary); width: 100%; font-family: inherit; }
+  .tree-search-box input::placeholder { color: var(--text-muted); }
+
+  .tree-nav { flex: 1; overflow-y: auto; padding: 4px 8px 10px; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+  .tree-nav::-webkit-scrollbar { width: 4px; }
+  .tree-nav::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  .tree-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; padding: 10px 8px 4px; }
+  .tree-node { position: relative; }
+  .tree-row { display: flex; align-items: center; gap: 5px; padding: 6px 8px; border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; transition: background var(--transition), color var(--transition); user-select: none; }
+  .tree-row:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .tree-row.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .tree-row.parent-active { background: rgba(201,125,78,0.12); color: var(--accent-hover); font-weight: 600; }
+  .tree-chevron { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--transition); flex-shrink: 0; cursor: pointer; }
+  .tree-chevron.open { transform: rotate(90deg); }
+  .tree-icon { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tree-label { flex: 1; font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tree-count { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .tree-row.active .tree-count { color: rgba(255,255,255,0.7); }
+
+  .tree-sub { overflow: hidden; max-height: 0; transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s; opacity: 0; }
+  .tree-sub.open { max-height: 500px; opacity: 1; }
+  .tree-sub-item { display: flex; align-items: center; gap: 7px; padding: 5px 8px 5px 32px; border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 400; transition: background var(--transition), color var(--transition); user-select: none; }
+  .tree-sub-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--sand-dark); flex-shrink: 0; transition: background var(--transition); }
+  .tree-sub-item:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .tree-sub-item:hover::before { background: var(--accent); }
+  .tree-sub-item.active { color: var(--accent-hover); font-weight: 600; }
+  .tree-sub-item.active::before { background: var(--accent); }
+
+  .tree-newpage { padding: 6px 12px 10px; border-top: 1px solid var(--sand); }
+  .newpage-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 7px 10px; background: rgba(201,125,78,0.08); border: 1px dashed rgba(201,125,78,0.35); border-radius: var(--radius-sm); color: var(--accent-hover); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: inherit; text-decoration: none; }
+  .newpage-btn:hover { background: rgba(201,125,78,0.15); border-color: var(--accent); color: var(--accent-hover); }
+  .newpage-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* ── Bible Panel ── */
-  .bible-selector { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .selector-select { padding: 6px 10px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 12.5px; color: var(--text-primary); font-family: inherit; cursor: pointer; outline: none; transition: border-color var(--transition); }
+  .bible-selector { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .selector-select { padding: 5px 9px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 12px; color: var(--text-primary); font-family: inherit; cursor: pointer; outline: none; transition: border-color var(--transition); }
   .selector-select:focus { border-color: var(--accent); }
-  .bible-ref-badge { display: inline-block; padding: 2px 10px; background: var(--accent-light); color: var(--accent-hover); border-radius: 6px; font-size: 12px; font-weight: 600; margin-left: auto; }
+  .bible-ref-badge { display: inline-block; padding: 2px 8px; background: var(--accent-light); color: var(--accent-hover); border-radius: 5px; font-size: 11px; font-weight: 600; margin-left: auto; align-self: center; }
 
-  .bible-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin: 0 24px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .bible-body { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+  .bible-body::-webkit-scrollbar { width: 5px; }
+  .bible-body::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
   .bible-tabs { display: flex; border-bottom: 1px solid var(--sand); flex-shrink: 0; }
-  .bible-tab { border: 0; background: transparent; padding: 10px 18px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); font-family: inherit; }
+  .bible-tab { border: 0; background: transparent; padding: 9px 16px; font-size: 12.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); font-family: inherit; }
   .bible-tab:hover { color: var(--text-primary); }
   .bible-tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
-  .bible-content { padding: 22px 26px; line-height: 2.1; font-size: 14.5px; color: var(--text-primary); overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
-  .bible-content::-webkit-scrollbar { width: 5px; }
-  .bible-content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
-  .verse-number { color: var(--accent); font-size: 11px; font-weight: 700; margin-right: 5px; vertical-align: super; }
+
+  .bible-content { padding: 20px 22px; line-height: 2.1; font-size: 14px; color: var(--text-primary); }
+  .verse-number { color: var(--accent); font-size: 10.5px; font-weight: 700; margin-right: 5px; vertical-align: super; }
   .verse-line { padding: 3px 8px; border-radius: 6px; cursor: pointer; transition: background var(--transition); }
   .verse-line:hover { background: var(--accent-light); }
   .verse-line.selected { background: rgba(201,125,78,0.15); }
 
-  /* ── Input Panel ── */
-  .input-body { padding: 24px 28px 100px; }
+  /* ── Content Panel ── */
+  .content-body { padding: 20px 22px 100px; }
 
-  .page-title-area { margin-bottom: 20px; }
-  .page-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
-  .page-meta-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: var(--accent-light); color: var(--accent-hover); border-radius: 12px; font-size: 12px; font-weight: 600; }
-  .page-meta-info { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .page-title-area { margin-bottom: 18px; }
+  .page-meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .page-meta-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; background: var(--accent-light); color: var(--accent-hover); border-radius: 12px; font-size: 11.5px; font-weight: 600; }
+  .page-meta-info { font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .page-meta-info span { display: flex; align-items: center; gap: 4px; }
-  .page-meta-info svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .page-title-display { font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.6px; line-height: 1.25; }
-  .page-title-edit { width: 100%; font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.6px; line-height: 1.25; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none; padding: 2px 0; font-family: inherit; }
+  .page-meta-info svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .page-title-display { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.25; }
+  .page-title-edit { width: 100%; font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.25; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none; padding: 2px 0; font-family: inherit; }
   .page-date-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-  .page-date-label { font-size: 12px; color: var(--text-muted); }
-  .page-date-input { padding: 4px 10px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); font-size: 12.5px; color: var(--text-primary); font-family: inherit; outline: none; }
+  .page-date-label { font-size: 11.5px; color: var(--text-muted); }
+  .page-date-input { padding: 4px 10px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-primary); font-family: inherit; outline: none; }
 
-  /* ── OIA Cards ── */
-  .oia-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
-  .oia-card-header { padding: 14px 20px 10px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; gap: 12px; }
-  .oia-icon { width: 34px; height: 34px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: 700; color: #fff; }
-  .oia-icon.observe { background: #5b8c7f; }
-  .oia-icon.interpret { background: #c97d4e; }
-  .oia-icon.apply { background: #7a6655; }
-  .oia-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
-  .oia-subtitle { font-size: 11.5px; color: var(--text-muted); }
-  .oia-body { padding: 16px 20px; }
-  .oia-display { font-size: 13.5px; color: var(--text-primary); line-height: 1.8; }
-  .oia-display p { margin-bottom: 8px; }
-  .oia-display p:last-child { margin-bottom: 0; }
-  .oia-editor { width: 100%; min-height: 100px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13.5px; color: var(--text-primary); font-family: inherit; line-height: 1.7; resize: vertical; outline: none; background: var(--cream); transition: border-color var(--transition), box-shadow var(--transition); }
-  .oia-editor:focus { border-color: var(--accent); background: var(--warm-white); box-shadow: 0 0 0 3px rgba(201,125,78,0.10); }
+  /* ── Single Content Editor (관찰/해석/적용 통합) ── */
+  .content-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
+  .content-card-header { padding: 12px 18px 10px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; gap: 10px; }
+  .content-card-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); }
+  .content-card-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+  .content-card-subtitle { font-size: 11px; color: var(--text-muted); }
+  .content-card-body { padding: 14px 18px; }
+
+  .content-display { font-size: 13px; color: var(--text-primary); line-height: 1.8; }
+  .content-display p { margin-bottom: 8px; }
+  .content-display p:last-child { margin-bottom: 0; }
+
+  .content-editor { width: 100%; min-height: 200px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: var(--text-primary); font-family: inherit; line-height: 1.7; resize: vertical; outline: none; background: var(--cream); transition: border-color var(--transition), box-shadow var(--transition); }
+  .content-editor:focus { border-color: var(--accent); background: var(--warm-white); box-shadow: 0 0 0 3px rgba(201,125,78,0.10); }
 
   /* Editor toolbar */
   .editor-toolbar { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-bottom: 1px solid var(--cream-dark); background: var(--cream); }
-  .toolbar-btn { width: 28px; height: 28px; border: none; background: transparent; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition), color var(--transition); }
+  .toolbar-btn { width: 26px; height: 26px; border: none; background: transparent; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition), color var(--transition); }
   .toolbar-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
-  .toolbar-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .toolbar-sep { width: 1px; height: 16px; background: var(--sand); margin: 0 4px; }
+  .toolbar-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .toolbar-sep { width: 1px; height: 14px; background: var(--sand); margin: 0 4px; }
 
   /* ── Reference Section ── */
   .ref-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
-  .ref-header { padding: 14px 20px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; gap: 8px; }
-  .ref-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
-  .ref-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
-  .ref-body { padding: 16px 20px; }
-  .ref-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--sand); border-radius: var(--radius-md); background: var(--cream); margin-bottom: 8px; }
+  .ref-header { padding: 12px 18px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; gap: 8px; }
+  .ref-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+  .ref-title svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 2; }
+  .ref-count { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+  .ref-body { padding: 14px 18px; }
+  .ref-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--sand); border-radius: var(--radius-md); background: var(--cream); margin-bottom: 8px; }
   .ref-item:last-child { margin-bottom: 0; }
-  .ref-icon { width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 19px; background: var(--cream-dark); }
+  .ref-icon { width: 34px; height: 34px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 17px; background: var(--cream-dark); }
   .ref-info { flex: 1; min-width: 0; }
-  .ref-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-  .ref-detail { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
-  .ref-link { color: var(--accent); text-decoration: none; font-size: 12.5px; font-weight: 500; word-break: break-all; }
+  .ref-name { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+  .ref-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .ref-link { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500; word-break: break-all; }
   .ref-link:hover { text-decoration: underline; }
-  .ref-remove { width: 26px; height: 26px; border: none; background: transparent; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all var(--transition); }
+  .ref-remove { width: 24px; height: 24px; border: none; background: transparent; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all var(--transition); }
   .ref-remove:hover { color: #c0392b; background: #fdf0ee; }
-  .ref-remove svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .ref-add-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1.5px dashed var(--sand-dark); border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; }
+  .ref-remove svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .ref-add-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1.5px dashed var(--sand-dark); border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 500; cursor: pointer; transition: all var(--transition); font-family: inherit; }
   .ref-add-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(201,125,78,0.04); }
-  .ref-add-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .ref-add-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* ── History Summary ── */
   .history-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
-  .history-header { padding: 14px 20px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; justify-content: space-between; }
-  .history-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-  .history-title svg { width: 16px; height: 16px; stroke: var(--brown); fill: none; stroke-width: 2; }
-  .history-link { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
+  .history-header { padding: 12px 18px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; justify-content: space-between; }
+  .history-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .history-title svg { width: 15px; height: 15px; stroke: var(--brown); fill: none; stroke-width: 2; }
+  .history-link { font-size: 11.5px; color: var(--accent); text-decoration: none; font-weight: 500; }
   .history-link:hover { text-decoration: underline; }
-  .history-body { padding: 6px 20px; }
-  .history-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--cream-dark); }
+  .history-body { padding: 4px 18px; }
+  .history-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--cream-dark); }
   .history-item:last-child { border-bottom: none; }
-  .history-version { width: 30px; height: 30px; border-radius: 50%; background: var(--cream-dark); color: var(--brown); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .history-version { width: 28px; height: 28px; border-radius: 50%; background: var(--cream-dark); color: var(--brown); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; flex-shrink: 0; }
   .history-content { flex: 1; }
-  .history-summary-text { font-size: 13px; color: var(--text-primary); font-weight: 500; }
-  .history-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .history-summary-text { font-size: 12.5px; color: var(--text-primary); font-weight: 500; }
+  .history-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
   /* ── Action Bar ── */
   .action-bar {
     position: sticky; bottom: 0;
     background: var(--warm-white);
     border-top: 1px solid var(--sand);
-    padding: 14px 28px;
+    padding: 12px 22px;
     display: flex; align-items: center; justify-content: flex-end;
     gap: 10px;
     box-shadow: 0 -4px 16px rgba(100,70,40,0.06);
     z-index: 20;
-    margin: 0 -28px -100px;
+    margin: 0 -22px -100px;
   }
 
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 9px 18px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
     border: 1.5px solid transparent; transition: all var(--transition);
     text-decoration: none; font-family: inherit;
   }
@@ -250,21 +278,25 @@
   /* ── Overlay & Animations ── */
   .overlay { display: none; position: fixed; inset: 0; background: rgba(45,33,24,0.45); z-index: 90; backdrop-filter: blur(2px); }
   @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .panel-right > * { animation: fadeSlideIn 0.3s cubic-bezier(.4,0,.2,1) both; }
+  .panel-content > * { animation: fadeSlideIn 0.3s cubic-bezier(.4,0,.2,1) both; }
+
+  /* ── Mobile: tree toggle ── */
+  .tree-toggle-btn { display: none; }
 
   /* ── Responsive ── */
-  @media (max-width: 1024px) {
-    .split-area { grid-template-columns: 2fr 3fr; }
+  @media (max-width: 1100px) {
+    .split-area { grid-template-columns: 200px 1fr 1fr; }
   }
-  @media (max-width: 768px) {
-    .split-area { grid-template-columns: 1fr; grid-template-rows: auto 1fr; overflow-y: auto; }
-    .panel-left { border-right: none; border-bottom: 1px solid var(--sand); max-height: 40vh; }
-    .panel-right { overflow-y: visible; }
-    .bible-card { margin: 0 20px; }
-    .input-body { padding: 20px 20px 100px; }
-    .action-bar { margin: 0 -20px -100px; padding: 14px 20px; }
-    .page-title-display, .page-title-edit { font-size: 20px; }
-    .header { padding: 0 16px; }
+  @media (max-width: 900px) {
+    .split-area { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; overflow-y: auto; }
+    .panel-tree { border-right: none; border-bottom: 1px solid var(--sand); max-height: 30vh; }
+    .panel-tree.collapsed { max-height: 44px; overflow: hidden; }
+    .panel-bible { border-right: none; border-bottom: 1px solid var(--sand); max-height: 35vh; }
+    .panel-content { overflow-y: visible; }
+    .tree-toggle-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); margin-left: auto; }
+    .tree-toggle-btn:hover { background: var(--cream-dark); }
+    .tree-toggle-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .bible-body { overflow-y: auto; }
   }
   @media (max-width: 680px) {
     .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); z-index: 200; }
@@ -274,6 +306,10 @@
     .action-bar { flex-wrap: wrap; }
     .action-bar .btn { flex: 1; min-width: 80px; }
     .page-meta-info { flex-wrap: wrap; gap: 8px; }
+    .page-title-display, .page-title-edit { font-size: 18px; }
+    .header { padding: 0 16px; }
+    .content-body { padding: 16px 16px 100px; }
+    .action-bar { margin: 0 -16px -100px; padding: 12px 16px; }
   }
 </style>
 </head>
@@ -281,7 +317,7 @@
 
 <div class="layout">
 
-  <!-- Sidebar: Confluence Page Tree -->
+  <!-- ── Sidebar: 기존 메뉴 ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">
@@ -293,69 +329,50 @@
       </div>
     </div>
 
-    <div class="sidebar-search">
-      <div class="sidebar-search-box">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="페이지 검색...">
-      </div>
-    </div>
-
-    <div class="sidebar-newpage">
-      <a class="newpage-btn" href="pbs_page_view.html">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        새 페이지
-      </a>
-    </div>
-
     <nav class="sidebar-nav">
-      <!-- 구약 -->
-      <div class="tree-section-label">구약</div>
-      <div class="tree-item">
-        <div class="tree-link parent-active" onclick="toggleTree('ot-genesis', this)">
-          <svg class="tree-chevron open" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-          <svg class="tree-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="tree-label">창세기</span>
-          <span class="tree-count">1</span>
-        </div>
-        <div class="tree-sub open" id="ot-genesis">
-          <a class="tree-sub-item active" href="pbs_page_view.html">창세기 1장</a>
-          <a class="tree-sub-item" href="pbs_page_view.html">창세기 3장</a>
-        </div>
-      </div>
-      <div class="tree-item">
-        <div class="tree-link" onclick="toggleTree('ot-exodus', this)">
-          <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-          <svg class="tree-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="tree-label">출애굽기</span>
-          <span class="tree-count">1</span>
-        </div>
-        <div class="tree-sub" id="ot-exodus">
-          <a class="tree-sub-item" href="pbs_page_view.html">출애굽기 3장</a>
-        </div>
-      </div>
-      <div class="tree-item">
-        <div class="tree-link" onclick="toggleTree('ot-psalms', this)">
-          <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-          <svg class="tree-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="tree-label">시편</span>
-          <span class="tree-count">1</span>
-        </div>
-        <div class="tree-sub" id="ot-psalms">
-          <a class="tree-sub-item" href="pbs_page_view.html">시편 23편</a>
+      <div class="nav-section-label">메인 메뉴</div>
+
+      <div class="nav-item">
+        <div class="nav-link active" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="nav-link-label">P.B.S (성경공부)</span>
         </div>
       </div>
 
-      <!-- 신약 -->
-      <div class="tree-section-label">신약</div>
-      <div class="tree-item">
-        <div class="tree-link" onclick="toggleTree('nt-john', this)">
-          <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-          <svg class="tree-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="tree-label">요한복음</span>
-          <span class="tree-count">1</span>
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="nav-link-label">Q.T</span>
         </div>
-        <div class="tree-sub" id="nt-john">
-          <a class="tree-sub-item" href="pbs_page_view.html">요한복음 1장</a>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-link-label">설교</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(this)">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-link-label">독서</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">관리</div>
+
+      <div class="nav-item">
+        <div class="nav-link" id="system-parent" onclick="toggleSystem()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+          <span class="nav-link-label">시스템</span>
+          <svg class="nav-chevron" id="system-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-sub" id="system-sub">
+          <div class="nav-sub-item" onclick="setSubActive(this)">사용자</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">메뉴</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">공통코드</div>
         </div>
       </div>
     </nav>
@@ -373,7 +390,7 @@
 
   <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-  <!-- Main Area -->
+  <!-- ── Main Area ── -->
   <div class="main">
     <!-- Header -->
     <header class="header">
@@ -402,18 +419,95 @@
       </div>
     </header>
 
-    <!-- Split Content: Bible | Input -->
+    <!-- Tri-Split Content: Tree | Bible | Content -->
     <div class="content">
       <div class="split-area">
 
-        <!-- Left Panel: Bible -->
-        <div class="panel panel-left">
+        <!-- ── Panel 1: Page Tree (Confluence-style) ── -->
+        <div class="panel panel-tree" id="panelTree">
+          <div class="panel-header">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+              페이지 트리
+              <button class="tree-toggle-btn" onclick="toggleTreePanel()" title="트리 접기">
+                <svg id="treeToggleIcon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="tree-search">
+            <div class="tree-search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="페이지 검색...">
+            </div>
+          </div>
+          <nav class="tree-nav">
+            <!-- 구약 -->
+            <div class="tree-section-label">구약</div>
+            <div class="tree-node">
+              <div class="tree-row parent-active" onclick="toggleTreeNode('ot-genesis', this)">
+                <svg class="tree-chevron open" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+                <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="tree-label">창세기</span>
+                <span class="tree-count">2</span>
+              </div>
+              <div class="tree-sub open" id="ot-genesis">
+                <a class="tree-sub-item active" href="pbs_page_view.html">창세기 1장</a>
+                <a class="tree-sub-item" href="pbs_page_view.html">창세기 3장</a>
+              </div>
+            </div>
+            <div class="tree-node">
+              <div class="tree-row" onclick="toggleTreeNode('ot-exodus', this)">
+                <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+                <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="tree-label">출애굽기</span>
+                <span class="tree-count">1</span>
+              </div>
+              <div class="tree-sub" id="ot-exodus">
+                <a class="tree-sub-item" href="pbs_page_view.html">출애굽기 3장</a>
+              </div>
+            </div>
+            <div class="tree-node">
+              <div class="tree-row" onclick="toggleTreeNode('ot-psalms', this)">
+                <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+                <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="tree-label">시편</span>
+                <span class="tree-count">1</span>
+              </div>
+              <div class="tree-sub" id="ot-psalms">
+                <a class="tree-sub-item" href="pbs_page_view.html">시편 23편</a>
+              </div>
+            </div>
+
+            <!-- 신약 -->
+            <div class="tree-section-label">신약</div>
+            <div class="tree-node">
+              <div class="tree-row" onclick="toggleTreeNode('nt-john', this)">
+                <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+                <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="tree-label">요한복음</span>
+                <span class="tree-count">1</span>
+              </div>
+              <div class="tree-sub" id="nt-john">
+                <a class="tree-sub-item" href="pbs_page_view.html">요한복음 1장</a>
+              </div>
+            </div>
+          </nav>
+          <div class="tree-newpage">
+            <a class="newpage-btn" href="pbs_page_view.html">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              새 페이지
+            </a>
+          </div>
+        </div>
+
+        <!-- ── Panel 2: Bible ── -->
+        <div class="panel panel-bible">
           <div class="panel-header">
             <div class="panel-title">
               <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
               성경 본문
             </div>
-            <div class="bible-selector" style="margin-top: 10px;">
+            <div class="bible-selector">
               <select class="selector-select" onchange="showToast('성경책이 변경되었습니다.')">
                 <option>창세기</option>
                 <option>출애굽기</option>
@@ -433,7 +527,7 @@
               <span class="bible-ref-badge">창세기 1:1~3</span>
             </div>
           </div>
-          <div class="bible-card" style="border-radius: 0; border: none; border-top: 1px solid var(--sand); margin: 0; box-shadow: none;">
+          <div class="bible-body">
             <div class="bible-tabs">
               <button class="bible-tab active" onclick="changeBible('new', this)">새번역</button>
               <button class="bible-tab" onclick="changeBible('rkv', this)">개역개정</button>
@@ -447,9 +541,9 @@
           </div>
         </div>
 
-        <!-- Right Panel: Input -->
-        <div class="panel panel-right">
-          <div class="input-body">
+        <!-- ── Panel 3: Title + Content (단일 통합) ── -->
+        <div class="panel panel-content">
+          <div class="content-body">
 
             <!-- Page Title -->
             <div class="page-title-area">
@@ -473,19 +567,20 @@
               </div>
             </div>
 
-            <!-- 관찰 -->
-            <div class="oia-card">
-              <div class="oia-card-header">
-                <div class="oia-icon observe">O</div>
+            <!-- 단일 내용 (관찰/해석/적용 통합) -->
+            <div class="content-card">
+              <div class="content-card-header">
+                <div class="content-card-icon">✎</div>
                 <div>
-                  <div class="oia-title">관찰 (Observe)</div>
-                  <div class="oia-subtitle">본문에서 관찰되는 사실</div>
+                  <div class="content-card-title">내용</div>
+                  <div class="content-card-subtitle">관찰 · 해석 · 적용을 자유롭게 작성하세요</div>
                 </div>
               </div>
-              <div class="oia-body">
-                <div class="view-only oia-display">
-                  <p>태초에 하나님이 말씀으로 천지를 창조하셨다. 첫째 날에 빛과 어둠이 구분되었고, 낮과 밤이 생겼다.</p>
-                  <p>하나님의 영이 물 위에 움직이고 계셨으며, 혼돈과 공허 상태에서 질서가 창조되었다.</p>
+              <div class="content-card-body">
+                <div class="view-only content-display">
+                  <p><strong>[관찰]</strong> 태초에 하나님이 말씀으로 천지를 창조하셨다. 첫째 날에 빛과 어둠이 구분되었고, 낮과 밤이 생겼다. 하나님의 영이 물 위에 움직이고 계셨으며, 혼돈과 공허 상태에서 질서가 창조되었다.</p>
+                  <p><strong>[해석]</strong> 하나님의 말씀은 창조의 도구이다. "빛이 생겨라"라는 말씀으로 빛이 존재하게 되었다. 이는 말씀의 능력과 하나님의 절대 주권을 보여준다. 혼돈과 공허에서 질서가 창조되는 과정은, 하나님께서 무(無)에서 유(有)를 창조하심을 의미한다.</p>
+                  <p><strong>[적용]</strong> 하나님의 말씀에 순종하며 살아가자. 내 삶의 혼돈과 공허함도 하나님의 말씀으로 질서와 의미가 창조될 수 있다. 매일의 삶에서 "빛이 생겨라"라고 선포하며, 어둠을 물리치고 빛을 선택하는 삶을 살자.</p>
                 </div>
                 <div class="edit-only">
                   <div class="editor-toolbar">
@@ -495,67 +590,14 @@
                     <div class="toolbar-sep"></div>
                     <button class="toolbar-btn" title="링크"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
                   </div>
-                  <textarea class="oia-editor" placeholder="본문에서 관찰되는 사실을 입력하세요.">태초에 하나님이 말씀으로 천지를 창조하셨다. 첫째 날에 빛과 어둠이 구분되었고, 낮과 밤이 생겼다.
+                  <textarea class="content-editor" placeholder="관찰, 해석, 적용을 자유롭게 작성하세요.">[관찰]
+태초에 하나님이 말씀으로 천지를 창조하셨다. 첫째 날에 빛과 어둠이 구분되었고, 낮과 밤이 생겼다. 하나님의 영이 물 위에 움직이고 계셨으며, 혼돈과 공허 상태에서 질서가 창조되었다.
 
-하나님의 영이 물 위에 움직이고 계셨으며, 혼돈과 공허 상태에서 질서가 창조되었다.</textarea>
-                </div>
-              </div>
-            </div>
+[해석]
+하나님의 말씀은 창조의 도구이다. "빛이 생겨라"라는 말씀으로 빛이 존재하게 되었다. 이는 말씀의 능력과 하나님의 절대 주권을 보여준다. 혼돈과 공허에서 질서가 창조되는 과정은, 하나님께서 무(無)에서 유(有)를 창조하심을 의미한다.
 
-            <!-- 해석 -->
-            <div class="oia-card">
-              <div class="oia-card-header">
-                <div class="oia-icon interpret">I</div>
-                <div>
-                  <div class="oia-title">해석 (Interpret)</div>
-                  <div class="oia-subtitle">본문의 의미와 신학적 통찰</div>
-                </div>
-              </div>
-              <div class="oia-body">
-                <div class="view-only oia-display">
-                  <p>하나님의 말씀은 창조의 도구이다. "빛이 생겨라"라는 말씀으로 빛이 존재하게 되었다. 이는 말씀의 능력과 하나님의 절대 주권을 보여준다.</p>
-                  <p>혼돈과 공허에서 질서가 창조되는 과정은, 하나님께서 무(無)에서 유(有)를 창조하심을 의미한다.</p>
-                </div>
-                <div class="edit-only">
-                  <div class="editor-toolbar">
-                    <button class="toolbar-btn" title="굵게"><svg viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
-                    <button class="toolbar-btn" title="기울임"><svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
-                    <button class="toolbar-btn" title="목록"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-                    <div class="toolbar-sep"></div>
-                    <button class="toolbar-btn" title="링크"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
-                  </div>
-                  <textarea class="oia-editor" placeholder="본문의 의미와 신학적 통찰을 입력하세요.">하나님의 말씀은 창조의 도구이다. "빛이 생겨라"라는 말씀으로 빛이 존재하게 되었다. 이는 말씀의 능력과 하나님의 절대 주권을 보여준다.
-
-혼돈과 공허에서 질서가 창조되는 과정은, 하나님께서 무(無)에서 유(有)를 창조하심을 의미한다.</textarea>
-                </div>
-              </div>
-            </div>
-
-            <!-- 적용 -->
-            <div class="oia-card">
-              <div class="oia-card-header">
-                <div class="oia-icon apply">A</div>
-                <div>
-                  <div class="oia-title">적용 (Apply)</div>
-                  <div class="oia-subtitle">삶에 적용할 점</div>
-                </div>
-              </div>
-              <div class="oia-body">
-                <div class="view-only oia-display">
-                  <p>하나님의 말씀에 순종하며 살아가자. 내 삶의 혼돈과 공허함도 하나님의 말씀으로 질서와 의미가 창조될 수 있다.</p>
-                  <p>매일의 삶에서 "빛이 생겨라"라고 선포하며, 어둠을 물리치고 빛을 선택하는 삶을 살자.</p>
-                </div>
-                <div class="edit-only">
-                  <div class="editor-toolbar">
-                    <button class="toolbar-btn" title="굵게"><svg viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
-                    <button class="toolbar-btn" title="기울임"><svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
-                    <button class="toolbar-btn" title="목록"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
-                    <div class="toolbar-sep"></div>
-                    <button class="toolbar-btn" title="링크"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
-                  </div>
-                  <textarea class="oia-editor" placeholder="삶에 적용할 점을 입력하세요.">하나님의 말씀에 순종하며 살아가자. 내 삶의 혼돈과 공허함도 하나님의 말씀으로 질서와 의미가 창조될 수 있다.
-
-매일의 삶에서 "빛이 생겨라"라고 선포하며, 어둠을 물리치고 빛을 선택하는 삶을 살자.</textarea>
+[적용]
+하나님의 말씀에 순종하며 살아가자. 내 삶의 혼돈과 공허함도 하나님의 말씀으로 질서와 의미가 창조될 수 있다. 매일의 삶에서 "빛이 생겨라"라고 선포하며, 어둠을 물리치고 빛을 선택하는 삶을 살자.</textarea>
                 </div>
               </div>
             </div>
@@ -563,7 +605,10 @@
             <!-- Reference Section -->
             <div class="ref-card">
               <div class="ref-header">
-                <div class="ref-title">참고자료</div>
+                <div class="ref-title">
+                  <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  참고자료
+                </div>
                 <div class="ref-count">3개 첨부됨</div>
               </div>
               <div class="ref-body">
@@ -613,7 +658,7 @@
                 <div class="history-item">
                   <div class="history-version">v3</div>
                   <div class="history-content">
-                    <div class="history-summary-text">적용 부분 추가</div>
+                    <div class="history-summary-text">내용 통합 및 적용 부분 추가</div>
                     <div class="history-meta">2026.08.25 14:30 · 관리자</div>
                   </div>
                 </div>
@@ -639,15 +684,15 @@
               <!-- View mode actions -->
               <div class="view-only" style="display: flex; gap: 10px; width: 100%; justify-content: flex-end;">
                 <a class="btn btn-secondary" href="pbs_page_history.html">
-                  <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
                   히스토리
                 </a>
                 <button class="btn btn-danger" onclick="if(confirm('이 페이지를 삭제하시겠습니까?')) { showToast('페이지가 삭제되었습니다.'); setTimeout(function(){ location.href='pbs_page_list.html'; }, 1500); }">
-                  <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   삭제
                 </button>
                 <button class="btn btn-primary" onclick="enterEditMode()">
-                  <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   수정
                 </button>
               </div>
@@ -657,11 +702,11 @@
                   취소
                 </button>
                 <button class="btn btn-secondary" onclick="showToast('미리보기 모드입니다.')">
-                  <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   미리보기
                 </button>
                 <button class="btn btn-primary" onclick="savePage()">
-                  <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                   저장
                 </button>
               </div>
@@ -676,13 +721,45 @@
 </div>
 
 <!-- Toast -->
-<div id="toast" style="position: fixed; bottom: 28px; right: 28px; background: var(--brown-dark); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: var(--shadow-lg); transform: translateY(80px); opacity: 0; transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s; pointer-events: none; z-index: 9999; display: flex; align-items: center; gap: 10px;">
+<div id="toast" style="position: fixed; bottom: 28px; right: 28px; background: var(--brown-dark); color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); transform: translateY(80px); opacity: 0; transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s; pointer-events: none; z-index: 9999; display: flex; align-items: center; gap: 10px;">
   <svg style="width:16px;height:16px;stroke:#a8d8bc;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
   <span id="toast-msg"></span>
 </div>
 
 <script>
-  function toggleTree(id, el) {
+  // ── Sidebar navigation (기존 메뉴) ──
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  var systemOpen = false;
+  function toggleSystem() {
+    systemOpen = !systemOpen;
+    var sub = document.getElementById('system-sub');
+    var chevron = document.getElementById('system-chevron');
+    var parent = document.getElementById('system-parent');
+    if (systemOpen) {
+      sub.classList.add('open');
+      chevron.classList.add('open');
+      parent.classList.add('parent-active');
+    } else {
+      sub.classList.remove('open');
+      chevron.classList.remove('open');
+      parent.classList.remove('parent-active');
+    }
+  }
+
+  function setSubActive(el) {
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
+
+  // ── Page tree toggle ──
+  function toggleTreeNode(id, el) {
     var sub = document.getElementById(id);
     var chevron = el.querySelector('.tree-chevron');
     if (sub.classList.contains('open')) {
@@ -696,9 +773,18 @@
     }
   }
 
-  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
-  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
+  function toggleTreePanel() {
+    var panel = document.getElementById('panelTree');
+    var icon = document.getElementById('treeToggleIcon');
+    panel.classList.toggle('collapsed');
+    if (panel.classList.contains('collapsed')) {
+      icon.innerHTML = '<polyline points="18 9 12 15 6 9"/>';
+    } else {
+      icon.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+    }
+  }
 
+  // ── Bible tab change ──
   function changeBible(type, btn) {
     document.querySelectorAll('.bible-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
@@ -712,6 +798,7 @@
     }
   }
 
+  // ── Edit / View mode ──
   function enterEditMode() {
     document.body.classList.add('edit-mode');
     document.body.classList.remove('view-mode');
@@ -732,6 +819,7 @@
     showToast('페이지가 저장되었습니다.');
   }
 
+  // ── Toast ──
   var toastTimer;
   function showToast(msg) {
     clearTimeout(toastTimer);
