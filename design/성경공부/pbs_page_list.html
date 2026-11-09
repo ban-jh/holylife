@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P.B.S / 페이지 목록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #faf7f2; --cream-dark: #f2ece0; --warm-white: #fffcf8;
+    --sand: #e8ddd0; --sand-dark: #d4c5b0;
+    --brown-light: #c8b49a; --brown: #8c6f56; --brown-dark: #5e4a38;
+    --accent: #c97d4e; --accent-light: #f0d4ba; --accent-hover: #b06b3c;
+    --text-primary: #2d2118; --text-secondary: #7a6655; --text-muted: #a89585;
+    --sidebar-width: 240px; --header-height: 64px;
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px;
+    --shadow-sm: 0 1px 4px rgba(100,70,40,0.07);
+    --shadow-md: 0 4px 16px rgba(100,70,40,0.10);
+    --shadow-lg: 0 8px 32px rgba(100,70,40,0.13);
+    --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: var(--cream);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--brown-dark);
+    display: flex; flex-direction: column; flex-shrink: 0;
+    position: relative; z-index: 100;
+    transition: transform var(--transition), width var(--transition);
+    overflow: hidden;
+  }
+  .sidebar-logo {
+    height: var(--header-height);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .sidebar-logo-icon {
+    width: 34px; height: 34px;
+    background: var(--accent); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sidebar-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 1.8; }
+  .sidebar-logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; line-height: 1.2; }
+  .sidebar-logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 400; letter-spacing: 0.3px; }
+
+  .sidebar-nav {
+    flex: 1; overflow-y: auto; padding: 12px 10px 20px;
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar { width: 4px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+  .nav-section-label {
+    font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
+    letter-spacing: 1px; text-transform: uppercase; padding: 16px 10px 6px;
+  }
+  .nav-item { position: relative; }
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.65); cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    user-select: none; text-decoration: none;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.92); }
+  .nav-link.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .nav-link.parent-active { background: rgba(201,125,78,0.18); color: rgba(255,255,255,0.92); }
+  .nav-link svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-link-label { flex: 1; font-size: 13.5px; font-weight: 500; }
+  .nav-chevron { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--transition); flex-shrink: 0; }
+  .nav-chevron.open { transform: rotate(180deg); }
+  .nav-sub { overflow: hidden; max-height: 0; transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.22s; opacity: 0; }
+  .nav-sub.open { max-height: 300px; opacity: 1; }
+  .nav-sub-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 12px 7px 40px; border-radius: var(--radius-sm);
+    color: rgba(255,255,255,0.5); cursor: pointer;
+    font-size: 13px; font-weight: 400;
+    transition: background var(--transition), color var(--transition);
+    user-select: none;
+  }
+  .nav-sub-item::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); flex-shrink: 0; transition: background var(--transition); }
+  .nav-sub-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-sub-item:hover::before { background: var(--accent); }
+  .nav-sub-item.active { color: var(--accent-light); font-weight: 600; }
+  .nav-sub-item.active::before { background: var(--accent); }
+
+  .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition); }
+  .sidebar-user:hover { background: rgba(255,255,255,0.07); }
+  .sidebar-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.38); }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--cream); }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-height);
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--sand);
+    display: flex; align-items: center;
+    padding: 0 28px; gap: 14px; flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    position: relative; z-index: 10;
+  }
+  .mobile-menu-btn { display: none; width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition); }
+  .mobile-menu-btn:hover { background: var(--cream-dark); }
+  .mobile-menu-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .breadcrumb { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .breadcrumb-item { font-size: 13px; color: var(--text-muted); font-weight: 400; text-decoration: none; }
+  .breadcrumb-item.current { color: var(--text-primary); font-weight: 600; }
+  .breadcrumb-sep { color: var(--sand-dark); font-size: 12px; }
+
+  .header-actions { display: flex; align-items: center; gap: 6px; }
+  .header-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--cream); border: 1.5px solid var(--sand);
+    border-radius: 22px; padding: 7px 14px;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+  .header-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,125,78,0.12); }
+  .header-search svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .header-search input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text-primary); width: 160px; font-family: inherit; }
+  .header-search input::placeholder { color: var(--text-muted); }
+
+  .icon-btn { width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--transition), color var(--transition); position: relative; }
+  .icon-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .badge { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; border: 1.5px solid var(--warm-white); }
+  .header-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: opacity var(--transition); margin-left: 4px; border: 2px solid var(--accent-light); }
+  .header-avatar:hover { opacity: 0.85; }
+
+  /* ── Content ── */
+  .content { flex: 1; overflow-y: auto; padding: 32px 36px; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  .page-header-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.3; }
+  .page-desc { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid transparent; transition: all var(--transition);
+    text-decoration: none; font-family: inherit;
+  }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(201,125,78,0.25); }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-secondary { background: var(--warm-white); color: var(--text-secondary); border-color: var(--sand); }
+  .btn-secondary:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .btn-danger { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+  .btn-danger:hover { background: #c0392b; border-color: #c0392b; }
+
+  /* ── Page Card Grid ── */
+  .page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .page-card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--sand);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow var(--transition), transform var(--transition);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    text-decoration: none;
+    position: relative;
+  }
+  .page-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .page-card-header {
+    padding: 18px 22px 14px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .page-card-icon {
+    width: 40px; height: 40px;
+    background: var(--cream-dark);
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .page-card-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
+  .page-card-title-area { flex: 1; min-width: 0; }
+  .page-card-title { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; line-height: 1.35; }
+  .page-card-verse { font-size: 12.5px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+
+  .page-card-menu {
+    position: absolute; top: 14px; right: 14px;
+    width: 30px; height: 30px;
+    border: none; background: transparent; border-radius: 6px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: background var(--transition), color var(--transition);
+    flex-shrink: 0;
+  }
+  .page-card-menu:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .page-card-menu svg { width: 18px; height: 18px; fill: currentColor; stroke: none; }
+
+  .page-card-body {
+    padding: 0 22px 16px;
+    flex: 1;
+  }
+  .page-card-summary { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .page-card-summary .summary-label { font-weight: 600; color: var(--brown); margin-right: 4px; }
+  .page-card-summary .summary-item { margin-bottom: 4px; display: flex; gap: 2px; }
+
+  .page-card-footer {
+    padding: 12px 22px;
+    border-top: 1px solid var(--cream-dark);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    background: var(--cream);
+  }
+  .page-card-date { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+  .page-card-date svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .page-card-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+  .page-card-meta svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ── Dropdown Menu ── */
+  .dropdown-menu {
+    display: none;
+    position: absolute; top: 42px; right: 14px;
+    background: var(--warm-white);
+    border: 1px solid var(--sand);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    min-width: 140px;
+    z-index: 200;
+  }
+  .dropdown-menu.show { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text-secondary);
+    cursor: pointer; transition: background var(--transition), color var(--transition);
+    border: none; background: transparent; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .dropdown-item:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .dropdown-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .dropdown-item.danger { color: #c0392b; }
+  .dropdown-item.danger:hover { background: #fdf0ee; }
+
+  /* ── Empty State ── */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 20px; text-align: center;
+  }
+  .empty-state-icon {
+    width: 80px; height: 80px;
+    background: var(--cream-dark);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .empty-state-icon svg { width: 36px; height: 36px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; }
+  .empty-state-title { font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .empty-state-desc { font-size: 13.5px; color: var(--text-muted); margin-bottom: 24px; }
+
+  /* ── Pagination ── */
+  .pagination-container {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px;
+  }
+  .pagination-info { font-size: 13px; color: var(--text-muted); }
+  .pagination { display: flex; align-items: center; gap: 4px; }
+  .page-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--sand); background: var(--warm-white);
+    color: var(--text-secondary); font-size: 13px; cursor: pointer;
+    transition: all var(--transition); font-family: inherit;
+  }
+  .page-btn:hover { background: var(--cream-dark); color: var(--text-primary); }
+  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+  .page-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ── Overlay & Animations ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(45,33,24,0.45); z-index: 90; backdrop-filter: blur(2px); }
+  @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .content > * { animation: fadeSlideIn 0.35s cubic-bezier(.4,0,.2,1) both; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .page-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  }
+  @media (max-width: 768px) {
+    .page-header-row { flex-direction: column; align-items: flex-start; }
+    .content { padding: 24px 20px; }
+  }
+  @media (max-width: 680px) {
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); z-index: 200; }
+    .sidebar.open { transform: translateX(0); }
+    .overlay.active { display: block; }
+    .mobile-menu-btn { display: flex; }
+    .content { padding: 20px 16px; }
+    .header { padding: 0 16px; }
+    .header-search { display: none; }
+    .page-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7L12 2z"/><path d="M12 22V12"/><path d="M3 7l9 5 9-5"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">말씀 관리자</div>
+        <div class="sidebar-logo-sub">Word Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">메인 메뉴</div>
+
+      <div class="nav-item">
+        <a class="nav-link active" href="pbs_page_list.html" onclick="setActive(event, this)">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="nav-link-label">P.B.S (성경공부)</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(event, this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="nav-link-label">Q.T</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(event, this)">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-link-label">설교</span>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-link" onclick="setActive(event, this)">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="nav-link-label">독서</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">관리</div>
+
+      <div class="nav-item">
+        <div class="nav-link" id="system-parent" onclick="toggleSystem()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+          <span class="nav-link-label">시스템</span>
+          <svg class="nav-chevron" id="system-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-sub" id="system-sub">
+          <div class="nav-sub-item" onclick="setSubActive(this)">사용자</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">메뉴</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">권한</div>
+          <div class="nav-sub-item" onclick="setSubActive(this)">공통코드</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">박</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">박성민 관리자</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main Area -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <button class="mobile-menu-btn" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <div class="breadcrumb">
+        <a class="breadcrumb-item" href="pbs_page_list.html">P.B.S</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-item current">페이지 목록</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="페이지 검색...">
+        </div>
+
+        <button class="icon-btn" title="알림">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge"></span>
+        </button>
+
+        <div class="header-avatar">박</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <!-- Page Header -->
+      <div class="page-header-row">
+        <div>
+          <div class="page-title">PBS 페이지 목록</div>
+          <div class="page-desc">Confluence 스타일 페이지 기반 성경 공부 콘텐츠를 관리합니다.</div>
+        </div>
+        <a class="btn btn-primary" href="pbs_page_view.html">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          새 페이지
+        </a>
+      </div>
+
+      <!-- Page Grid -->
+      <div class="page-grid">
+
+        <!-- Page Card 1: 창세기 1장 -->
+        <a class="page-card" href="pbs_page_view.html" onclick="return !event.target.closest('.page-card-menu')">
+          <div class="page-card-header">
+            <div class="page-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="page-card-title-area">
+              <div class="page-card-title">창세기 1장 — 하나님이 세상을 창조하셨다</div>
+              <div class="page-card-verse">창세기 1:1 ~ 1:3</div>
+            </div>
+          </div>
+          <button class="page-card-menu" onclick="toggleDropdown(event, 'dd1')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="dropdown-menu" id="dd1">
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('수정 모드로 전환합니다.');">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              수정
+            </button>
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('페이지가 복사되었습니다.');">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              복사
+            </button>
+            <button class="dropdown-item danger" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 페이지를 삭제하시겠습니까?')) showToast('페이지가 삭제되었습니다.');">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              삭제
+            </button>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-summary">
+              <div class="summary-item"><span class="summary-label">관찰:</span><span>태초에 하나님이 말씀으로 천지를 창조하셨다. 빛과 어둠, 낮과 밤이 구분되었다.</span></div>
+              <div class="summary-item"><span class="summary-label">해석:</span><span>하나님의 말씀은 창조의 도구이며, 질서와 생명의 근원이다.</span></div>
+              <div class="summary-item"><span class="summary-label">적용:</span><span>매일의 삶에서 하나님의 말씀에 순종하며 살아가자.</span></div>
+            </div>
+          </div>
+          <div class="page-card-footer">
+            <div class="page-card-date">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              2026.08.25
+            </div>
+            <div class="page-card-meta">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              참고 3
+            </div>
+          </div>
+        </a>
+
+        <!-- Page Card 2: 출애굽기 3장 -->
+        <a class="page-card" href="pbs_page_view.html" onclick="return !event.target.closest('.page-card-menu')">
+          <div class="page-card-header">
+            <div class="page-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="page-card-title-area">
+              <div class="page-card-title">출애굽기 3장 — 모세를 부르신 하나님</div>
+              <div class="page-card-verse">출애굽기 3:1 ~ 3:12</div>
+            </div>
+          </div>
+          <button class="page-card-menu" onclick="toggleDropdown(event, 'dd2')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="dropdown-menu" id="dd2">
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('수정 모드로 전환합니다.');">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              수정
+            </button>
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('페이지가 복사되었습니다.');">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              복사
+            </button>
+            <button class="dropdown-item danger" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 페이지를 삭제하시겠습니까?')) showToast('페이지가 삭제되었습니다.');">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              삭제
+            </button>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-summary">
+              <div class="summary-item"><span class="summary-label">관찰:</span><span>모세가 호렙산에서 떨기나무 불꽃 중에 나타난 하나님을 만났다.</span></div>
+              <div class="summary-item"><span class="summary-label">해석:</span><span>하나님은 이스라엘의 고통을 보시고 기억하사 구원자를 보내신다.</span></div>
+              <div class="summary-item"><span class="summary-label">적용:</span><span>하나님의 부르심에 "내가 여기 있나이다"로 응답하자.</span></div>
+            </div>
+          </div>
+          <div class="page-card-footer">
+            <div class="page-card-date">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              2026.08.20
+            </div>
+            <div class="page-card-meta">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              참고 2
+            </div>
+          </div>
+        </a>
+
+        <!-- Page Card 3: 시편 23편 -->
+        <a class="page-card" href="pbs_page_view.html" onclick="return !event.target.closest('.page-card-menu')">
+          <div class="page-card-header">
+            <div class="page-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="page-card-title-area">
+              <div class="page-card-title">시편 23편 — 여호와는 나의 목자</div>
+              <div class="page-card-verse">시편 23:1 ~ 23:6</div>
+            </div>
+          </div>
+          <button class="page-card-menu" onclick="toggleDropdown(event, 'dd3')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="dropdown-menu" id="dd3">
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('수정 모드로 전환합니다.');">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              수정
+            </button>
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('페이지가 복사되었습니다.');">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              복사
+            </button>
+            <button class="dropdown-item danger" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 페이지를 삭제하시겠습니까?')) showToast('페이지가 삭제되었습니다.');">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              삭제
+            </button>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-summary">
+              <div class="summary-item"><span class="summary-label">관찰:</span><span>다윗이 여호와를 목자로 고백하며, 푸른 초장과 잔잔한 물 가로 인도하심을 노래한다.</span></div>
+              <div class="summary-item"><span class="summary-label">해석:</span><span>하나님은 양을 돌보는 목자처럼 우리를 인도하시고 보호하신다.</span></div>
+              <div class="summary-item"><span class="summary-label">적용:</span><span>삶의 어두운 골짜기에서도 주님께서 함께하심을 신뢰하자.</span></div>
+            </div>
+          </div>
+          <div class="page-card-footer">
+            <div class="page-card-date">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              2026.08.15
+            </div>
+            <div class="page-card-meta">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              참고 5
+            </div>
+          </div>
+        </a>
+
+        <!-- Page Card 4: 요한복음 1장 -->
+        <a class="page-card" href="pbs_page_view.html" onclick="return !event.target.closest('.page-card-menu')">
+          <div class="page-card-header">
+            <div class="page-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="page-card-title-area">
+              <div class="page-card-title">요한복음 1장 — 태초에 계신 말씀</div>
+              <div class="page-card-verse">요한복음 1:1 ~ 1:14</div>
+            </div>
+          </div>
+          <button class="page-card-menu" onclick="toggleDropdown(event, 'dd4')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="dropdown-menu" id="dd4">
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('수정 모드로 전환합니다.');">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              수정
+            </button>
+            <button class="dropdown-item" onclick="event.preventDefault(); event.stopPropagation(); showToast('페이지가 복사되었습니다.');">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              복사
+            </button>
+            <button class="dropdown-item danger" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 페이지를 삭제하시겠습니까?')) showToast('페이지가 삭제되었습니다.');">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              삭제
+            </button>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-summary">
+              <div class="summary-item"><span class="summary-label">관찰:</span><span>태초에 말씀이 계셨고, 말씀이 하나님과 함께 계셨으니 이 말씀이 곧 하나님이셨다.</span></div>
+              <div class="summary-item"><span class="summary-label">해석:</span><span>예수 그리스도는 성육신한 말씀이시며, 생명과 빛의 근원이시다.</span></div>
+              <div class="summary-item"><span class="summary-label">적용:</span><span>말씀이 육신이 되어 우리 가운데 거하신 은혜를 찬양하자.</span></div>
+            </div>
+          </div>
+          <div class="page-card-footer">
+            <div class="page-card-date">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              2026.08.10
+            </div>
+            <div class="page-card-meta">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              참고 1
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container">
+        <div class="pagination-info">전체 <strong>4</strong> 페이지 중 1 — 4 표시</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--brown-dark); color: #fff;
+  padding: 12px 20px; border-radius: var(--radius-md);
+  font-size: 13.5px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px); opacity: 0;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+  pointer-events: none; z-index: 9999;
+  display: flex; align-items: center; gap: 10px;
+">
+  <svg style="width:16px;height:16px;stroke:#a8d8bc;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  function setActive(e, el) {
+    if (e) e.preventDefault();
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  var systemOpen = false;
+  function toggleSystem() {
+    systemOpen = !systemOpen;
+    var sub = document.getElementById('system-sub');
+    var chevron = document.getElementById('system-chevron');
+    var parent = document.getElementById('system-parent');
+    if (systemOpen) {
+      sub.classList.add('open'); chevron.classList.add('open'); parent.classList.add('parent-active');
+    } else {
+      sub.classList.remove('open'); chevron.classList.remove('open'); parent.classList.remove('parent-active');
+    }
+  }
+
+  function setSubActive(el) {
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('active');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  function toggleDropdown(e, id) {
+    e.preventDefault();
+    e.stopPropagation();
+    var menu = document.getElementById(id);
+    var isOpen = menu.classList.contains('show');
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    if (!isOpen) menu.classList.add('show');
+  }
+
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+  });
+
+  var toastTimer;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    var toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    toastTimer = setTimeout(function() {
+      toast.style.transform = 'translateY(80px)';
+      toast.style.opacity = '0';
+    }, 2800);
+  }
+</script>
+</body>
+</html>
