@@ -25,25 +25,23 @@ public class BibleController {
     }
 
     @GetMapping("/verses")
-    @Operation(summary = "성경 구절 조회", description = "특정 책/장의 구절을 조회한다. verseFrom/verseTo 지정 시 해당 범위, 미지정 시 전체 장을 반환한다.")
+    @Operation(summary = "성경 구절 조회", description = "장 범위(chapterFrom~chapterTo)와 절 범위(verseFrom~verseTo)로 구절을 조회한다. chapterTo 미지정 시 단일 장, verseFrom/verseTo 미지정 시 전체 장.")
     public ResponseEntity<List<BibleBook>> getVerses(
             @Parameter(description = "책 코드", example = "Gen", required = true)
             @RequestParam String bookCode,
-            @Parameter(description = "장", example = "1", required = true)
-            @RequestParam Integer chapter,
-            @Parameter(description = "시작 절 (선택)", example = "1")
+            @Parameter(description = "시작 장", example = "1", required = true)
+            @RequestParam Integer chapterFrom,
+            @Parameter(description = "시작 절 (선택)", example = "20")
             @RequestParam(required = false) Integer verseFrom,
-            @Parameter(description = "종료 절 (선택)", example = "3")
+            @Parameter(description = "종료 장 (선택, 미지정 시 chapterFrom 단일 장)", example = "2")
+            @RequestParam(required = false) Integer chapterTo,
+            @Parameter(description = "종료 절 (선택)", example = "5")
             @RequestParam(required = false) Integer verseTo,
             @Parameter(description = "번역본 ID (기본값 2 = 개역개정)", example = "2")
             @RequestParam(defaultValue = "2") Long versionId) {
 
-        List<BibleBook> result;
-        if (verseFrom != null && verseTo != null) {
-            result = bibleBookMapper.findVerses(versionId, bookCode, chapter, verseFrom, verseTo);
-        } else {
-            result = bibleBookMapper.findChapter(versionId, bookCode, chapter);
-        }
+        List<BibleBook> result = bibleBookMapper.findVerses(
+                versionId, bookCode, chapterFrom, verseFrom, chapterTo, verseTo);
         return ResponseEntity.ok(result);
     }
 

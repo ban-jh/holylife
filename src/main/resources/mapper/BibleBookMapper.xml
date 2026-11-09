@@ -23,15 +23,33 @@
         testament, chapter, verse, content, created_at
     </sql>
 
-    <!-- 절 범위 조회 -->
+    <!--
+        장 범위 조회 (chapterFrom ~ chapterTo)
+        - chapterTo 지정 시: chapterFrom 장(verseFrom~) + 중간 장(전체) + chapterTo 장(~verseTo)
+        - chapterTo 미지정 시: chapterFrom 단일 장 (verseFrom~verseTo 적용)
+    -->
     <select id="findVerses" resultMap="bibleBookResultMap">
         SELECT <include refid="commonColumns"/>
         FROM bible_books
         WHERE version_id = #{versionId}
           AND book_code = #{bookCode}
-          AND chapter = #{chapter}
-          AND verse BETWEEN #{verseFrom} AND #{verseTo}
-        ORDER BY verse
+          AND (
+            <if test="chapterTo != null">
+              (chapter = #{chapterFrom}
+                <if test="verseFrom != null"> AND verse &gt;= #{verseFrom}</if>
+              )
+              OR (chapter &gt; #{chapterFrom} AND chapter &lt; #{chapterTo})
+              OR (chapter = #{chapterTo}
+                <if test="verseTo != null"> AND verse &lt;= #{verseTo}</if>
+              )
+            </if>
+            <if test="chapterTo == null">
+              chapter = #{chapterFrom}
+              <if test="verseFrom != null"> AND verse &gt;= #{verseFrom}</if>
+              <if test="verseTo != null"> AND verse &lt;= #{verseTo}</if>
+            </if>
+          )
+        ORDER BY chapter, verse
     </select>
 
     <!-- 특정 장 전체 조회 -->

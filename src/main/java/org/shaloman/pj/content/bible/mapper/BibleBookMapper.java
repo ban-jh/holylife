@@ -13,11 +13,12 @@ import java.util.List;
 @Mapper
 public interface BibleBookMapper {
 
-    /** 절 범위 조회 (version_id, book_code, chapter, verse BETWEEN verseFrom AND verseTo) */
+    /** 장 범위 조회 (chapterFrom~chapterTo, 절 범위 포함) */
     List<BibleBook> findVerses(@Param("versionId") Long versionId,
                                @Param("bookCode") String bookCode,
-                               @Param("chapter") Integer chapter,
+                               @Param("chapterFrom") Integer chapterFrom,
                                @Param("verseFrom") Integer verseFrom,
+                               @Param("chapterTo") Integer chapterTo,
                                @Param("verseTo") Integer verseTo);
 
     /** 특정 장 전체 조회 */
