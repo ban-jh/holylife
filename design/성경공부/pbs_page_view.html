@@ -227,48 +227,6 @@
   .ref-add-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(201,125,78,0.04); }
   .ref-add-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-  /* ── History Summary ── */
-  .history-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
-  .history-header { padding: 12px 18px; border-bottom: 1px solid var(--cream-dark); display: flex; align-items: center; justify-content: space-between; }
-  .history-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-  .history-title svg { width: 15px; height: 15px; stroke: var(--brown); fill: none; stroke-width: 2; }
-  .history-link { font-size: 11.5px; color: var(--accent); text-decoration: none; font-weight: 500; }
-  .history-link:hover { text-decoration: underline; }
-  .history-body { padding: 4px 18px; }
-  .history-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--cream-dark); }
-  .history-item:last-child { border-bottom: none; }
-  .history-version { width: 28px; height: 28px; border-radius: 50%; background: var(--cream-dark); color: var(--brown); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; flex-shrink: 0; }
-  .history-content { flex: 1; }
-  .history-summary-text { font-size: 12.5px; color: var(--text-primary); font-weight: 500; }
-  .history-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-  /* ── Action Bar ── */
-  .action-bar {
-    position: sticky; bottom: 0;
-    background: var(--warm-white);
-    border-top: 1px solid var(--sand);
-    padding: 12px 22px;
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 10px;
-    box-shadow: 0 -4px 16px rgba(100,70,40,0.06);
-    z-index: 20;
-    margin: 0 -22px -100px;
-  }
-
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 8px 16px; border-radius: var(--radius-sm);
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
-    border: 1.5px solid transparent; transition: all var(--transition);
-    text-decoration: none; font-family: inherit;
-  }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(201,125,78,0.25); }
-  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn-secondary { background: var(--warm-white); color: var(--text-secondary); border-color: var(--sand); }
-  .btn-secondary:hover { background: var(--cream-dark); color: var(--text-primary); }
-  .btn-danger { background: transparent; color: #c0392b; border-color: #e8c5c0; }
-  .btn-danger:hover { background: #fdf0ee; border-color: #c0392b; }
-
   /* ── View/Edit Mode ── */
   .edit-only { display: none; }
   .view-only { display: block; }
@@ -303,13 +261,10 @@
     .sidebar.open { transform: translateX(0); }
     .overlay.active { display: block; }
     .mobile-menu-btn { display: flex; }
-    .action-bar { flex-wrap: wrap; }
-    .action-bar .btn { flex: 1; min-width: 80px; }
     .page-meta-info { flex-wrap: wrap; gap: 8px; }
     .page-title-display, .page-title-edit { font-size: 18px; }
     .header { padding: 0 16px; }
     .content-body { padding: 16px 16px 100px; }
-    .action-bar { margin: 0 -16px -100px; padding: 12px 16px; }
   }
 </style>
 </head>
@@ -642,73 +597,6 @@
                     참고자료 추가
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <!-- History Summary -->
-            <div class="history-card">
-              <div class="history-header">
-                <div class="history-title">
-                  <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                  수정 이력
-                </div>
-                <a class="history-link" href="pbs_page_history.html">전체 보기 →</a>
-              </div>
-              <div class="history-body">
-                <div class="history-item">
-                  <div class="history-version">v3</div>
-                  <div class="history-content">
-                    <div class="history-summary-text">내용 통합 및 적용 부분 추가</div>
-                    <div class="history-meta">2026.08.25 14:30 · 관리자</div>
-                  </div>
-                </div>
-                <div class="history-item">
-                  <div class="history-version">v2</div>
-                  <div class="history-content">
-                    <div class="history-summary-text">해석 부분 수정</div>
-                    <div class="history-meta">2026.08.24 16:00 · 관리자</div>
-                  </div>
-                </div>
-                <div class="history-item">
-                  <div class="history-version">v1</div>
-                  <div class="history-content">
-                    <div class="history-summary-text">최초 작성</div>
-                    <div class="history-meta">2026.08.24 10:00 · 관리자</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Bar -->
-            <div class="action-bar">
-              <!-- View mode actions -->
-              <div class="view-only" style="display: flex; gap: 10px; width: 100%; justify-content: flex-end;">
-                <a class="btn btn-secondary" href="pbs_page_history.html">
-                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                  히스토리
-                </a>
-                <button class="btn btn-danger" onclick="if(confirm('이 페이지를 삭제하시겠습니까?')) { showToast('페이지가 삭제되었습니다.'); setTimeout(function(){ location.href='pbs_page_list.html'; }, 1500); }">
-                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  삭제
-                </button>
-                <button class="btn btn-primary" onclick="enterEditMode()">
-                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  수정
-                </button>
-              </div>
-              <!-- Edit mode actions -->
-              <div class="edit-only" style="display: flex; gap: 10px; width: 100%; justify-content: flex-end;">
-                <button class="btn btn-secondary" onclick="cancelEdit()">
-                  취소
-                </button>
-                <button class="btn btn-secondary" onclick="showToast('미리보기 모드입니다.')">
-                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  미리보기
-                </button>
-                <button class="btn btn-primary" onclick="savePage()">
-                  <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  저장
-                </button>
               </div>
             </div>
 
