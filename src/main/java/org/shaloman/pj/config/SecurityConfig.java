@@ -68,8 +68,11 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(List.of(
             "http://localhost",
             "http://localhost:80",
+            "http://localhost:38080",
             "http://123.143.232.180",
-            "http://192.168.2.15"
+            "http://123.143.232.180:38080",
+            "http://192.168.2.15",
+            "http://192.168.2.15:38080"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

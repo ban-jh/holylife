@@ -3,7 +3,7 @@
 # 실행: --spring.profiles.active=dev
 
 server:
-  port: 8080
+  port: 38081
 
 spring:
   datasource:

@@ -3,7 +3,7 @@
 # 실행: --spring.profiles.active=local
 
 server:
-  port: 8080
+  port: 38081
 
 spring:
   # H2 또는 로컬 MariaDB — 환경에 맞게 조정
