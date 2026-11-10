@@ -98,7 +98,29 @@
   .split-area { flex: 1; display: grid; grid-template-columns: 240px 1fr 1fr; gap: 0; overflow: hidden; }
   .panel { display: flex; flex-direction: column; overflow: hidden; }
   .panel-tree { border-right: 1px solid var(--sand); background: var(--cream); }
-  .panel-bible { border-right: 1px solid var(--sand); background: var(--cream); }
+  .panel-bible { border-right: 1px solid var(--sand); background: var(--warm-white); }
+  .panel-bible-body { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; display: flex; flex-direction: column; }
+  .panel-bible-body::-webkit-scrollbar { width: 5px; }
+  .panel-bible-body::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+  /* ── Bible Select Row (기존 포맷 통일) ── */
+  .bible-select-row { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; padding: 12px 16px; border-bottom: 1px solid var(--sand); }
+  .bible-select-row select { padding: 7px 6px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 12px; color: var(--text-primary); outline: none; cursor: pointer; transition: border-color var(--transition); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
+  .bible-select-row select:focus { border-color: var(--accent); }
+  .bible-testament-select { flex: 1 1 0; min-width: 50px; }
+  .bible-book-select { flex: 2 1 0; min-width: 70px; }
+  .bible-num-select { flex: 0 0 9%; min-width: 38px; max-width: 50px; padding: 7px 3px; text-align: center; }
+  .bible-range-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+
+  /* ── Tabs (기존 포맷 통일) ── */
+  .tabs { display: flex; border-bottom: 1px solid var(--sand); flex-shrink: 0; }
+  .tab { border: 0; background: transparent; padding: 9px 16px; font-size: 12.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); font-family: inherit; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+
+  /* ── Bible Content (기존 포맷 통일) ── */
+  .bible-content { padding: 20px 22px; line-height: 2; font-size: 14px; color: var(--text-primary); flex: 1; }
+  .verse-number { color: var(--accent); font-size: 12px; font-weight: 700; margin-right: 6px; }
   .panel-content { background: var(--cream); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
   .panel-content::-webkit-scrollbar { width: 6px; }
   .panel-content::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
@@ -164,25 +186,7 @@
   .newpage-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* ── Bible Panel ── */
-  .bible-selector { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  .selector-select { padding: 5px 9px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 12px; color: var(--text-primary); font-family: inherit; cursor: pointer; outline: none; transition: border-color var(--transition); }
-  .selector-select:focus { border-color: var(--accent); }
-  .bible-ref-badge { display: inline-block; padding: 2px 8px; background: var(--accent-light); color: var(--accent-hover); border-radius: 5px; font-size: 11px; font-weight: 600; margin-left: auto; align-self: center; }
-
-  .bible-body { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--sand) transparent; }
-  .bible-body::-webkit-scrollbar { width: 5px; }
-  .bible-body::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
-
-  .bible-tabs { display: flex; border-bottom: 1px solid var(--sand); flex-shrink: 0; }
-  .bible-tab { border: 0; background: transparent; padding: 9px 16px; font-size: 12.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; transition: all var(--transition); font-family: inherit; }
-  .bible-tab:hover { color: var(--text-primary); }
-  .bible-tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
-
-  .bible-content { padding: 20px 22px; line-height: 2.1; font-size: 14px; color: var(--text-primary); }
-  .verse-number { color: var(--accent); font-size: 10.5px; font-weight: 700; margin-right: 5px; vertical-align: super; }
-  .verse-line { padding: 3px 8px; border-radius: 6px; cursor: pointer; transition: background var(--transition); }
-  .verse-line:hover { background: var(--accent-light); }
-  .verse-line.selected { background: rgba(201,125,78,0.15); }
+  /* (bible-selector, bible-tabs — 기존 포맷으로 통합, 중복 CSS 제거됨) */
 
   /* ── Content Panel ── */
   .content-body { padding: 20px 22px 100px; }
@@ -265,7 +269,11 @@
     .split-area { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; overflow-y: auto; }
     .panel-tree { border-right: none; border-bottom: 1px solid var(--sand); max-height: 30vh; }
     .panel-tree.collapsed { max-height: 44px; overflow: hidden; }
-    .panel-bible { border-right: none; border-bottom: 1px solid var(--sand); max-height: 35vh; }
+    .panel-bible { border-right: none; border-bottom: 1px solid var(--sand); max-height: 40vh; }
+    .panel-bible-body { overflow-y: auto; }
+    .bible-select-row { flex-wrap: wrap; padding: 8px 12px; }
+    .bible-select-row select { font-size: 11px; padding: 6px 4px; }
+    .bible-num-select { min-width: 34px; max-width: 42px; }
     .panel-content { overflow-y: visible; }
     .tree-toggle-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); margin-left: auto; }
     .tree-toggle-btn:hover { background: var(--cream-dark); }
@@ -513,38 +521,58 @@
           <div class="panel-header">
             <div class="panel-title">
               <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              성경 본문
+              성경 말씀
             </div>
-            <div class="bible-selector">
-              <select class="selector-select" onchange="showToast('성경책이 변경되었습니다.')">
-                <option>창세기</option>
+          </div>
+          <div class="panel-bible-body">
+            <div class="bible-select-row">
+              <select class="bible-testament-select" onchange="showToast('신구약이 변경되었습니다.')">
+                <option value="">신구약</option>
+                <option value="old" selected>구약</option>
+                <option value="new">신약</option>
+              </select>
+              <select class="bible-book-select" onchange="showToast('성경책이 변경되었습니다.')">
+                <option selected>창세기</option>
                 <option>출애굽기</option>
+                <option>레위기</option>
+                <option>민수기</option>
+                <option>신명기</option>
                 <option>시편</option>
                 <option>요한복음</option>
               </select>
-              <select class="selector-select" onchange="showToast('장이 변경되었습니다.')">
-                <option>1장</option>
-                <option>2장</option>
-                <option>3장</option>
+              <select class="bible-num-select" onchange="showToast('장이 변경되었습니다.')">
+                <option>1</option>
+                <option selected>1</option>
+                <option>2</option>
+                <option>3</option>
               </select>
-              <select class="selector-select" onchange="showToast('절 범위가 변경되었습니다.')">
-                <option>1-3절</option>
-                <option>1-10절</option>
+              <select class="bible-num-select" onchange="showToast('시작 절이 변경되었습니다.')">
+                <option selected>1</option>
+                <option>2</option>
+                <option>3</option>
+              </select>
+              <span class="bible-range-sep">~</span>
+              <select class="bible-num-select" onchange="showToast('끝 장이 변경되었습니다.')">
+                <option selected>1</option>
+                <option>2</option>
+                <option>3</option>
+              </select>
+              <select class="bible-num-select" onchange="showToast('끝 절이 변경되었습니다.')">
+                <option selected>3</option>
+                <option>5</option>
+                <option>10</option>
                 <option>전체</option>
               </select>
-              <span class="bible-ref-badge">창세기 1:1~3</span>
             </div>
-          </div>
-          <div class="bible-body">
-            <div class="bible-tabs">
-              <button class="bible-tab active" onclick="changeBible('new', this)">새번역</button>
-              <button class="bible-tab" onclick="changeBible('rkv', this)">개역개정</button>
-              <button class="bible-tab" onclick="changeBible('niv', this)">NIV</button>
+            <div class="tabs">
+              <button class="tab active" onclick="changeBible('new', this)">새번역</button>
+              <button class="tab" onclick="changeBible('rkv', this)">개역개정</button>
+              <button class="tab" onclick="changeBible('niv', this)">NIV</button>
             </div>
             <div id="bibleContent" class="bible-content">
-              <div class="verse-line"><span class="verse-number">1</span>태초에 하나님이 천지를 창조하셨다.</div>
-              <div class="verse-line"><span class="verse-number">2</span>땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고, 하나님의 영은 물 위에 움직이고 계셨다.</div>
-              <div class="verse-line"><span class="verse-number">3</span>하나님이 말씀하시기를 "빛이 생겨라" 하시니, 빛이 생겼다.</div>
+              <span class="verse-number">1</span> 태초에 하나님이 천지를 창조하셨다.<br>
+              <span class="verse-number">2</span> 땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고, 하나님의 영은 물 위에 움직이고 계셨다.<br>
+              <span class="verse-number">3</span> 하나님이 말씀하시기를 "빛이 생겨라" 하시니, 빛이 생겼다.
             </div>
           </div>
         </div>
@@ -727,15 +755,15 @@
 
   // ── Bible tab change ──
   function changeBible(type, btn) {
-    document.querySelectorAll('.bible-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    var content = document.getElementById('bibleContent');
+    const content = document.getElementById('bibleContent');
     if (type === 'new') {
-      content.innerHTML = '<div class="verse-line"><span class="verse-number">1</span>태초에 하나님이 천지를 창조하셨다.</div><div class="verse-line"><span class="verse-number">2</span>땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고, 하나님의 영은 물 위에 움직이고 계셨다.</div><div class="verse-line"><span class="verse-number">3</span>하나님이 말씀하시기를 "빛이 생겨라" 하시니, 빛이 생겼다.</div>';
+      content.innerHTML = '<span class="verse-number">1</span> 태초에 하나님이 천지를 창조하셨다.<br><span class="verse-number">2</span> 땅이 혼돈하고 공허하며, 어둠이 깊음 위에 있고, 하나님의 영은 물 위에 움직이고 계셨다.<br><span class="verse-number">3</span> 하나님이 말씀하시기를 "빛이 생겨라" 하시니, 빛이 생겼다.';
     } else if (type === 'rkv') {
-      content.innerHTML = '<div class="verse-line"><span class="verse-number">1</span>태초에 하나님이 천지를 창조하시니라</div><div class="verse-line"><span class="verse-number">2</span>땅이 혼돈하고 공허하며 흑암이 깊음 위에 있고 하나님의 영은 수면 위에 운행하시니라</div><div class="verse-line"><span class="verse-number">3</span>하나님이 이르시되 빛이 있으라 하시니 빛이 있었고</div>';
-    } else {
-      content.innerHTML = '<div class="verse-line"><span class="verse-number">1</span>In the beginning God created the heavens and the earth.</div><div class="verse-line"><span class="verse-number">2</span>Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters.</div><div class="verse-line"><span class="verse-number">3</span>And God said, "Let there be light," and there was light.</div>';
+      content.innerHTML = '<span class="verse-number">1</span> 태초에 하나님이 천지를 창조하시니라<br><span class="verse-number">2</span> 땅이 혼돈하고 공허하며 흑암이 깊음 위에 있고 하나님의 영은 수면 위에 운행하시니라<br><span class="verse-number">3</span> 하나님이 이르시되 빛이 있으라 하시니 빛이 있었고';
+    } else if (type === 'niv') {
+      content.innerHTML = '<span class="verse-number">1</span> In the beginning God created the heavens and the earth.<br><span class="verse-number">2</span> Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters.<br><span class="verse-number">3</span> And God said, "Let there be light," and there was light.';
     }
   }
 
