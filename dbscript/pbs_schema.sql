@@ -63,7 +63,23 @@ CREATE TABLE pbs_page (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='PBS 페이지 (Confluence 스타일)';
 
 -- ═══════════════════════════════════════════════════════════════
--- 3. pbs_reference — 참고자료 (URL, 이미지, 문서 첨부)
+-- 3. pbs_page_section — 영역별 내용 (관찰/해석/적용)
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE pbs_page_section (
+  section_id    BIGINT       NOT NULL AUTO_INCREMENT COMMENT '영역 ID (PK)',
+  page_id       BIGINT       NOT NULL                COMMENT '페이지 ID (FK)',
+  section_title VARCHAR(100) NOT NULL                COMMENT '영역 제목',
+  content       LONGTEXT     DEFAULT NULL            COMMENT '영역 내용',
+  sort_order    INT          NOT NULL DEFAULT 0      COMMENT '정렬 순서',
+  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+  updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+  PRIMARY KEY (section_id),
+  KEY idx_section_page (page_id),
+  CONSTRAINT fk_section_page FOREIGN KEY (page_id) REFERENCES pbs_page (page_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='PBS 영역별 내용 (관찰/해석/적용)';
+
+-- ═══════════════════════════════════════════════════════════════
+-- 4. pbs_reference — 참고자료 (URL, 이미지, 문서 첨부)
 -- ═══════════════════════════════════════════════════════════════
 CREATE TABLE pbs_reference (
   ref_id       BIGINT       NOT NULL AUTO_INCREMENT COMMENT '참고자료 ID (PK)',
@@ -80,7 +96,7 @@ CREATE TABLE pbs_reference (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='PBS 참고자료';
 
 -- ═══════════════════════════════════════════════════════════════
--- 4. pbs_tag_map — PBS-태그 매핑
+-- 5. pbs_tag_map — PBS-태그 매핑
 -- ═══════════════════════════════════════════════════════════════
 CREATE TABLE pbs_tag_map (
   map_id       BIGINT       NOT NULL AUTO_INCREMENT COMMENT '매핑 ID (PK)',

@@ -19,9 +19,11 @@ CREATE INDEX idx_qts_visibility   ON qts (visibility);
 -- qt_daily: 날짜별 조회 (UNIQUE KEY로 이미覆盖, 참고용)
 -- uk_qt_date_source (qt_date, source) — 이미 CREATE TABLE에 있음
 
--- pbs: 날짜별 조회, 상태별 조회
-CREATE INDEX idx_pbs_date          ON pbs (pbs_date);
-CREATE INDEX idx_pbs_status        ON pbs (status);
+-- pbs: 페이지/폴더별 조회 (pbs_folder, pbs_page — CREATE TABLE에 인덱스 포함)
+-- idx_page_folder, idx_page_status, idx_page_book — 이미 CREATE TABLE에 있음
+
+-- pbs_page: 수정일 정렬 (최근 편집순)
+CREATE INDEX idx_pbs_page_updated  ON pbs_page (updated_at);
 
 -- reading_notes: 날짜별 조회
 CREATE INDEX idx_reading_date     ON reading_notes (read_date);

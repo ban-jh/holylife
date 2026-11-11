@@ -87,34 +87,85 @@ CREATE TABLE qt_daily (
     UNIQUE KEY uk_qt_date_source (qt_date, source)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='매일 QT (자동 수집 데이터)';
 
--- ---------- pbs (P.B.S 성경공부 정보) ----------
-CREATE TABLE pbs (
-    pbs_id              BIGINT       NOT NULL AUTO_INCREMENT  COMMENT 'PBS ID (PK)',
-    user_id              BIGINT       NOT NULL                COMMENT '작성자 ID (FK)',
-    title               VARCHAR(200) NOT NULL                COMMENT 'PBS 제목',
-    pbs_date            DATE         NOT NULL                COMMENT 'PBS 날짜',
-    book_from           VARCHAR(50)  NULL                    COMMENT '시작 성경 구절',
-    book_to             VARCHAR(50)  NULL                    COMMENT '종료 성경 구절',
-    bible_text          TEXT         NULL                    COMMENT '성경 본문',
-    content             TEXT         NULL                    COMMENT 'PBS 내용 (관찰/해석/적용)',
-    status              VARCHAR(20)  NOT NULL DEFAULT 'DRAFT' COMMENT '상태 (DRAFT/PUBLISHED)',
-    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP                          COMMENT '생성일시',
+-- ---------- pbs_folder (P.B.S 폴더 트리) ----------
+CREATE TABLE pbs_folder (
+    folder_id            BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '폴더 ID (PK)',
+    parent_id            BIGINT       NULL                    COMMENT '부모 폴더 ID (FK, NULL=루트)',
+    folder_name          VARCHAR(100) NOT NULL                COMMENT '폴더명 (예: 창세기)',
+    sort_order           INT          NOT NULL DEFAULT 0      COMMENT '정렬 순서',
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (pbs_id),
-    KEY fk_pbs_user (user_id),
-    CONSTRAINT fk_pbs_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S 성경공부 정보';
+    PRIMARY KEY (folder_id),
+    KEY idx_folder_parent (parent_id),
+    CONSTRAINT fk_folder_parent FOREIGN KEY (parent_id) REFERENCES pbs_folder (folder_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S 폴더 (트리)';
 
--- ---------- pbs_tags (PBS-태그 매핑) ----------
-CREATE TABLE pbs_tags (
-    pbs_tag_id           BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '매핑 ID (PK)',
-    pbs_id              BIGINT       NOT NULL                COMMENT 'PBS ID (FK)',
-    tag_id              BIGINT       NOT NULL                COMMENT '태그 ID (FK)',
-    PRIMARY KEY (pbs_tag_id),
-    UNIQUE KEY uk_pbs_tags (pbs_id, tag_id),
-    CONSTRAINT fk_pbs_tags_pbs  FOREIGN KEY (pbs_id) REFERENCES pbs (pbs_id) ON DELETE CASCADE,
-    CONSTRAINT fk_pbs_tags_tag FOREIGN KEY (tag_id)  REFERENCES tags (tag_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='PBS-태그 매핑';
+-- ---------- pbs_page (P.B.S 페이지 — Confluence 스타일) ----------
+CREATE TABLE pbs_page (
+    page_id              BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '페이지 ID (PK)',
+    folder_id            BIGINT       NOT NULL                COMMENT '폴더 ID (FK)',
+    user_id              BIGINT       NOT NULL                COMMENT '작성자 ID (FK)',
+    title                VARCHAR(200) NOT NULL DEFAULT '새 페이지' COMMENT '페이지 제목',
+    content              LONGTEXT     NULL                    COMMENT '페이지 내용 (자동 저장)',
+    status               VARCHAR(20)  NOT NULL DEFAULT 'DRAFT' COMMENT '상태 (DRAFT/PUBLISHED)',
+    testament            VARCHAR(10)  NULL                    COMMENT '신구약 (OLD/NEW)',
+    book_code            VARCHAR(20)  NULL                    COMMENT '성경책 코드 (예: Gen)',
+    chapter_from         INT          NULL                    COMMENT '시작 장',
+    verse_from           INT          NULL                    COMMENT '시작 절',
+    chapter_to           INT          NULL                    COMMENT '종료 장 (NULL=단일 장)',
+    verse_to             INT          NULL                    COMMENT '종료 절 (NULL=장 전체)',
+    sort_order           INT          NOT NULL DEFAULT 0      COMMENT '폴더 내 정렬 순서',
+    published_at         DATETIME     NULL                    COMMENT '배포 일시',
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    updated_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (page_id),
+    KEY idx_page_folder (folder_id),
+    KEY idx_page_user (user_id),
+    KEY idx_page_status (status),
+    KEY idx_page_book (book_code, chapter_from, verse_from),
+    CONSTRAINT fk_page_folder FOREIGN KEY (folder_id) REFERENCES pbs_folder (folder_id) ON DELETE CASCADE,
+    CONSTRAINT fk_page_user   FOREIGN KEY (user_id)   REFERENCES users (user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S 페이지';
+
+-- ---------- pbs_page_section (영역별 내용 — 관찰/해석/적용) ----------
+CREATE TABLE pbs_page_section (
+    section_id           BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '영역 ID (PK)',
+    page_id              BIGINT       NOT NULL                COMMENT '페이지 ID (FK)',
+    section_title        VARCHAR(100) NOT NULL                COMMENT '영역 제목',
+    content              LONGTEXT     NULL                    COMMENT '영역 내용',
+    sort_order           INT          NOT NULL DEFAULT 0      COMMENT '정렬 순서',
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    updated_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (section_id),
+    KEY idx_section_page (page_id),
+    CONSTRAINT fk_section_page FOREIGN KEY (page_id) REFERENCES pbs_page (page_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S 영역별 내용';
+
+-- ---------- pbs_reference (참고자료) ----------
+CREATE TABLE pbs_reference (
+    ref_id               BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '참고자료 ID (PK)',
+    page_id              BIGINT       NOT NULL                COMMENT '페이지 ID (FK)',
+    ref_type             VARCHAR(20)  NOT NULL                COMMENT '유형 (URL/IMAGE/DOCUMENT)',
+    ref_name             VARCHAR(200) NOT NULL                COMMENT '자료명',
+    ref_url              VARCHAR(500) NULL                    COMMENT 'URL',
+    file_path            VARCHAR(500) NULL                    COMMENT '파일 경로',
+    file_size            BIGINT       NULL                    COMMENT '파일 크기 (bytes)',
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    PRIMARY KEY (ref_id),
+    KEY idx_ref_page (page_id),
+    CONSTRAINT fk_ref_page FOREIGN KEY (page_id) REFERENCES pbs_page (page_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S 참고자료';
+
+-- ---------- pbs_tag_map (P.B.S-태그 매핑) ----------
+CREATE TABLE pbs_tag_map (
+    map_id               BIGINT       NOT NULL AUTO_INCREMENT  COMMENT '매핑 ID (PK)',
+    page_id              BIGINT       NOT NULL                COMMENT '페이지 ID (FK)',
+    tag_id               BIGINT       NOT NULL                COMMENT '태그 ID (FK)',
+    PRIMARY KEY (map_id),
+    UNIQUE KEY uk_pbs_tag (page_id, tag_id),
+    CONSTRAINT fk_pbs_tag_page FOREIGN KEY (page_id) REFERENCES pbs_page (page_id) ON DELETE CASCADE,
+    CONSTRAINT fk_pbs_tag_tag  FOREIGN KEY (tag_id)  REFERENCES tags (tag_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='P.B.S-태그 매핑';
 
 -- ---------- reading_notes (독서 노트 정보) ----------
 CREATE TABLE reading_notes (
