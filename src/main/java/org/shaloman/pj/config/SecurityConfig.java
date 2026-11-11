@@ -50,6 +50,8 @@ public class SecurityConfig {
                 auth.requestMatchers("/swagger-ui.html").permitAll();
                 auth.requestMatchers("/v3/api-docs/**").permitAll();
                 auth.requestMatchers("/uploads/**").permitAll();
+                // PBS API — 공개 접근 허용 (Confluence 스타일 콘텐츠)
+                auth.requestMatchers("/api/pbs/**").permitAll();
                 // 나머지 /api/** 는 인증 필요
                 auth.requestMatchers("/api/**").authenticated();
                 // 그 외 모든 요청 허용

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.content.pbs.mapper.PbsFolderMapper">
+
+    <!-- ResultMap (트리용: pages collection 포함) -->
+    <resultMap id="folderTreeResultMap" type="org.shaloman.pj.content.pbs.domain.PbsFolder">
+        <id property="folderId" column="folder_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="folderName" column="folder_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="pages" ofType="org.shaloman.pj.content.pbs.domain.PbsPage"
+                    column="folder_id" select="org.shaloman.pj.content.pbs.mapper.PbsPageMapper.findByFolderId"/>
+    </resultMap>
+
+    <!-- 단순 ResultMap (페이징/목록용) -->
+    <resultMap id="folderResultMap" type="org.shaloman.pj.content.pbs.domain.PbsFolder">
+        <id property="folderId" column="folder_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="folderName" column="folder_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        folder_id, parent_id, folder_name, sort_order, created_at, updated_at
+    </sql>
+
+    <!-- 전체 조회 (정렬순 오름차순) -->
+    <select id="findAll" resultMap="folderResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_folder
+        ORDER BY sort_order ASC, folder_id ASC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" resultMap="folderResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_folder
+        WHERE folder_id = #{folderId}
+    </select>
+
+    <!-- 하위 폴더 조회 -->
+    <select id="findByParentId" resultMap="folderResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_folder
+        WHERE parent_id = #{parentId}
+        ORDER BY sort_order ASC, folder_id ASC
+    </select>
+
+    <!-- 트리 조회 (각 폴더 + 하위 페이지, 중복 방지 위해 DISTINCT) -->
+    <select id="findTree" resultMap="folderTreeResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_folder
+        ORDER BY sort_order ASC, folder_id ASC
+    </select>
+
+    <!-- 폴더 등록 (useGeneratedKeys로 PK 자동 주입) -->
+    <insert id="insert" parameterType="org.shaloman.pj.content.pbs.domain.PbsFolder"
+            useGeneratedKeys="true" keyProperty="folderId">
+        INSERT INTO pbs_folder (
+            parent_id, folder_name, sort_order
+        ) VALUES (
+            #{parentId}, #{folderName},
+            <choose>
+                <when test="sortOrder != null">#{sortOrder}</when>
+                <otherwise>0</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 폴더 수정 (동적 SET) -->
+    <update id="update" parameterType="org.shaloman.pj.content.pbs.domain.PbsFolder">
+        UPDATE pbs_folder
+        <set>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="folderName != null">folder_name = #{folderName},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            updated_at = NOW()
+        </set>
+        WHERE folder_id = #{folderId}
+    </update>
+
+    <!-- 폴더 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM pbs_folder WHERE folder_id = #{folderId}
+    </delete>
+
+</mapper>
