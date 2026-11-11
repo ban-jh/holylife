@@ -1,520 +1,635 @@
 # Faith Pathway (Holylife) ERD
 
-> 현재 데이터베이스 스키마를 기반으로 작성된 ERD
-> (Spring Batch 메타테이블 8개는 제외, 비즈니스 테이블 21개 포함)
+> **기준**: 실제 운영 DB 스키마 (`holylife`, MariaDB 10.11) · 2026-11-11 조회
+> **구성**: 비즈니스 테이블 **22개** + Spring Batch 메타 테이블 **6개** + 시퀀스 **3개**
+> 이 문서는 DB `information_schema`에서 자동 추출한 결과를 기반으로 작성되었습니다.
 
-## ERD 다이어그램
+---
 
+## 1. ERD 다이어그램
+
+```mermaid
+erDiagram
+    USERS ||--o{ USER_ROLES : "역할 할당"
+    ROLES ||--o{ USER_ROLES : "역할"
+    MENUS ||--o{ MENUS : "하위 메뉴"
+    ROLES ||--o{ PERMISSIONS : "권한"
+    MENUS ||--o{ PERMISSIONS : "대상 메뉴"
+    GROUP_CODES ||--o{ COMMON_CODES : "소속 그룹"
+    USERS ||--o{ SERMONS : "작성"
+    SERMONS ||--o{ SERMON_TAGS : "태그"
+    TAGS ||--o{ SERMON_TAGS : "태그"
+    USERS ||--o{ QTS : "작성"
+    TAGS ||--o{ QT_TAGS : "태그"
+    QTS ||--o{ QT_TAGS : "태그"
+    USERS ||--o{ READING_NOTES : "작성"
+    PBS_FOLDER ||--o{ PBS_FOLDER : "하위 폴더"
+    PBS_FOLDER ||--o{ PBS_PAGE : "소속"
+    USERS ||--o{ PBS_PAGE : "작성"
+    PBS_PAGE ||--o{ PBS_PAGE_SECTION : "영역"
+    PBS_PAGE ||--o{ PBS_REFERENCE : "참고자료"
+    PBS_PAGE ||--o{ PBS_TAG_MAP : "태그 연결"
+    TAGS ||--o{ PBS_TAG_MAP : "태그"
+    BIBLE_VERSIONS ||--o{ BIBLE_BOOKS : "역본"
+
+    USERS {
+        bigint user_id PK "사용자 ID"
+        varchar email "이메일 주소 (로그인 ID)"
+        varchar password "비밀번호 (BCrypt 암호화)"
+        varchar name "이름"
+        varchar nickname "닉네임"
+        varchar phone "전화번호"
+        varchar role_group "권한 그룹 코드"
+        varchar account_status "계정 상태 (ACTIVE/INACTIVE/PENDING)"
+        varchar bible_version "선호 성경 버전"
+        varchar qt_source "QT 출처"
+        varchar memo "메모"
+        boolean email_notification "이메일 알림 수신 여부"
+        boolean two_factor_auth "2단계 인증 사용 여부"
+        boolean session_auto_expiry "세션 자동 만료 여부"
+        boolean activity_log "활동 로그 기록 여부"
+        datetime last_login "최종 로그인 일시"
+    }
+    ROLES {
+        bigint role_id PK "권한 ID"
+        varchar group_code "그룹 코드"
+        varchar group_name "그룹명"
+        varchar group_desc "그룹 설명"
+        boolean use_yn "사용 여부"
+    }
+    USER_ROLES {
+        bigint user_role_id PK "매핑 ID"
+        bigint user_id FK "사용자 ID"
+        bigint role_id FK "권한 ID"
+    }
+    MENUS {
+        bigint menu_id PK "메뉴 ID"
+        bigint parent_id FK "상위 메뉴 ID (self-reference, NULL=1Depth)"
+        varchar parent_name "상위 메뉴명 (표시용)"
+        varchar menu_name "메뉴명"
+        varchar menu_code "메뉴 코드"
+        varchar menu_url "메뉴 URL"
+        int depth "메뉴 깊이 (1=1Depth, 2=2Depth)"
+        int sort_order "정렬 순서"
+        varchar icon "메뉴 아이콘"
+        boolean use_yn "사용 여부"
+        boolean display_yn "노출 여부"
+    }
+    PERMISSIONS {
+        bigint permission_id PK "권한 매핑 ID"
+        bigint role_id FK "권한 그룹 ID"
+        bigint menu_id FK "메뉴 ID"
+        boolean can_read "읽기 권한"
+        boolean can_write "쓰기 권한"
+        boolean can_delete "삭제 권한"
+    }
+    GROUP_CODES {
+        varchar group_code PK "그룹 코드"
+        varchar group_name "그룹 코드명"
+        datetime modified_date "최종 수정일시"
+    }
+    COMMON_CODES {
+        bigint code_id PK "코드 ID"
+        varchar group_code FK "그룹 코드"
+        varchar code "코드값"
+        varchar code_name "코드명"
+        int sort_order "정렬 순서"
+        boolean use_yn "사용 여부"
+        datetime modified_date "최종 수정일시"
+    }
+    SERMONS {
+        bigint sermon_id PK "설교 ID"
+        bigint user_id FK "작성자 ID"
+        varchar title "설교 제목"
+        date sermon_date "설교 날짜"
+        varchar preacher "설교자"
+        varchar bible_ref "성경 구절 참조"
+        text bible_text "성경 본문"
+        text content "설교 내용"
+        varchar status "상태 (DRAFT/PUBLISHED)"
+    }
+    SERMON_TAGS {
+        bigint sermon_tag_id PK "매핑 ID"
+        bigint sermon_id FK "설교 ID"
+        bigint tag_id FK "태그 ID"
+    }
+    QTS {
+        bigint qt_id PK "QT ID"
+        bigint user_id FK "작성자 ID"
+        varchar title "QT 제목"
+        date qt_date "QT 날짜"
+        varchar bible_ref "성경 구절 참조"
+        text bible_text "성경 본문"
+        text content "QT 내용 (묵상/적용)"
+        varchar visibility "공개 범위 (PUBLIC/PRIVATE)"
+    }
+    QT_TAGS {
+        bigint qt_tag_id PK "매핑 ID"
+        bigint qt_id FK "QT ID"
+        bigint tag_id FK "태그 ID"
+    }
+    QT_DAILY {
+        bigint qt_id PK "QT ID"
+        date qt_date "QT 날짜"
+        varchar bible_ref "성경 구절 참조"
+        varchar title "QT 제목"
+        varchar hymn_info "찬송가 정보"
+        text hymn_text "찬송가 가사"
+        varchar bible_section_title "성경 구절 제목"
+        text bible_text "성경 본문"
+        text prayer "기도문"
+        varchar source "출처"
+    }
+    READING_NOTES {
+        bigint reading_id PK "독서 노트 ID"
+        bigint user_id FK "작성자 ID"
+        varchar book_title "도서 제목"
+        date read_date "독서 날짜"
+        varchar author "저자"
+        varchar translator "번역자"
+        text toc "목차"
+        varchar cover_image "책 표지 이미지 경로"
+        text summary "요약"
+        text impression "감상/소감"
+    }
+    TAGS {
+        bigint tag_id PK "태그 ID"
+        varchar tag_name "태그명"
+    }
+    REFERENCE_RESOURCES {
+        bigint ref_id PK "참고자료 ID"
+        varchar ref_type "참조 대상 타입 (SERMON/QT/PBS/READING)"
+        bigint target_id "참조 대상 ID"
+        varchar ref_category "자료 카테고리 (URL/FILE)"
+        varchar url "URL"
+        varchar file_path "파일 경로"
+        varchar file_name "파일명"
+        varchar file_type "파일 타입"
+        varchar file_size "파일 크기"
+        text description "설명"
+        int sort_order "정렬 순서"
+    }
+    PBS_FOLDER {
+        bigint folder_id PK "폴더 ID"
+        bigint parent_id FK "부모 폴더 ID (FK, NULL=루트)"
+        varchar folder_name "폴더명 (예: 창세기, 출애굽기)"
+        int sort_order "정렬 순서"
+    }
+    PBS_PAGE {
+        bigint page_id PK "페이지 ID"
+        bigint folder_id FK "폴더 ID"
+        bigint user_id FK "작성자 ID"
+        varchar title "페이지 제목 (생성시 임시 제목)"
+        text content "페이지 내용 (자동 저장)"
+        varchar status "상태 (DRAFT=임시저장, PUBLISHED=배포됨)"
+        varchar testament "신구약 (OLD/NEW)"
+        varchar book_code "성경책 코드 (예: Gen, Exod, Ps, John)"
+        int chapter_from "시작 장"
+        int verse_from "시작 절"
+        int chapter_to "종료 장 (NULL=단일 장)"
+        int verse_to "종료 절 (NULL=해당 장 전체)"
+        int sort_order "폴더 내 정렬 순서"
+        datetime published_at "배포 일시 (status=PUBLISHED 시 설정)"
+    }
+    PBS_PAGE_SECTION {
+        bigint section_id PK "섹션 ID"
+        bigint page_id FK "페이지 ID"
+        varchar section_title "영역 제목 (예: 관찰, 해석, 적용)"
+        text content "영역 내용"
+        int sort_order "정렬 순서"
+    }
+    PBS_REFERENCE {
+        bigint ref_id PK "참고자료 ID"
+        bigint page_id FK "페이지 ID"
+        varchar ref_type "자료 유형 (URL/IMAGE/DOCUMENT)"
+        varchar ref_name "자료명"
+        varchar ref_url "URL (ref_type=URL)"
+        varchar file_path "파일 경로 (ref_type=IMAGE/DOCUMENT)"
+        bigint file_size "파일 크기 (bytes)"
+    }
+    PBS_TAG_MAP {
+        bigint map_id PK "매핑 ID"
+        bigint page_id FK "페이지 ID"
+        bigint tag_id FK "태그 ID"
+    }
+    BIBLE_VERSIONS {
+        bigint version_id PK "버전 ID"
+        varchar version_name "버전명"
+        varchar language "언어"
+        boolean use_yn "사용 여부"
+    }
+    BIBLE_BOOKS {
+        bigint book_id PK "본문 ID"
+        bigint version_id FK "버전 ID"
+        varchar book_code "권 코드 (예: GEN, EXO)"
+        varchar book_name_kr "권명 (한글)"
+        varchar book_name_en "권명 (영문)"
+        varchar testament "구분 (OT=구약, NT=신약)"
+        int chapter "장 번호"
+        int verse "절 번호"
+        text content "성경 본문 내용"
+    }
 ```
-┌──────────────────────────────┐         ┌──────────────────────────┐
-│           USER               │         │       COMMON_CODE        │
-│──────────────────────────────│         │──────────────────────────│
-│ PK  user_id        BIGINT    │         │ PK  code_id      BIGINT  │
-│     email          VARCHAR   │         │     group_code   VARCHAR │
-│     password       VARCHAR   │         │     code         VARCHAR │
-│     name           VARCHAR   │         │     code_name    VARCHAR │
-│     nickname       VARCHAR   │         │     description  TEXT    │
-│     bible_version  VARCHAR   │         │     sort_order   INT     │
-│     qt_source      VARCHAR   │         │     use_yn       BOOLEAN │
-│     status         VARCHAR   │         │     created_at   DATETIME│
-│     created_at     DATETIME  │         │     updated_at   DATETIME│
-│     updated_at     DATETIME  │         └──────────────────────────┘
-└────────────┬─────────────────┘
-             │ 1
-             │
-             ├──────────────────────────────────┐
-             │                                  │
-             │ N (작성자)                        │
-             ▼                                  ▼
-┌──────────────────────────┐         ┌──────────────────────────┐
-│      SERMON              │         │     GROUP_CODE           │
-│──────────────────────────│         │──────────────────────────│
-│ PK  sermon_id    BIGINT  │         │ PK  group_code   VARCHAR │
-│ FK  user_id      BIGINT  │         │     group_name   VARCHAR │
-│     title        VARCHAR │         │     modified_date DATETIME│
-│     sermon_date  DATE    │         └──────────────────────────┘
-│     preacher     VARCHAR │
-│     bible_ref    VARCHAR │         ┌──────────────────────────┐
-│     bible_text   TEXT    │         │          MENU            │
-│     content      TEXT    │         │──────────────────────────│
-│     status       VARCHAR │         │ PK  menu_id      BIGINT  │
-│     created_at   DATETIME│         │ FK  parent_id    BIGINT  │
-│     updated_at   DATETIME│         │     menu_name    VARCHAR │
-└────────────┬─────────────┘         │     menu_url     VARCHAR │
-             │ N                     │     sort_order   INT     │
-             ▼                       │     icon        VARCHAR │
-┌──────────────────────────┐         │     use_yn       BOOLEAN │
-│     SERMON_TAG           │         │     created_at   DATETIME│
-│──────────────────────────│         │     updated_at   DATETIME│
-│ PK  sermon_tag_id BIGINT │         └──────────────┬───────────┘
-│ FK  sermon_id    BIGINT  │                        │
-│ FK  tag_id       BIGINT  │         ┌──────────────┴───────────┐
-└──────┬───────────────────┘         │    PERMISSION            │
-       │                             │──────────────────────────│
-       │ N                           │ PK  permission_id BIGINT │
-       ▼                             │ FK  role_id      BIGINT  │
-┌──────────────────────────┐         │ FK  menu_id      BIGINT  │
-│         TAG              │         │     can_read    BOOLEAN │
-│──────────────────────────│         │     can_write   BOOLEAN │
-│ PK  tag_id       BIGINT  │         │     can_delete  BOOLEAN │
-│     tag_name     VARCHAR │         │     created_at   DATETIME│
-│     created_at   DATETIME│         └──────────────────────────┘
-└──────────────────────────┘
-                                     ┌──────────────────────────┐
-┌──────────────────────────┐         │         ROLE             │
-│         PBS              │         │──────────────────────────│
-│──────────────────────────│         │ PK  role_id      BIGINT  │
-│ PK  pbs_id       BIGINT  │         │     group_code   VARCHAR │
-│ FK  user_id      BIGINT  │         │     group_name   VARCHAR │
-│     title        VARCHAR │         │     group_desc   VARCHAR │
-│     pbs_date     DATE    │         │     use_yn       BOOLEAN │
-│     book_from    VARCHAR │         │     created_at   DATETIME│
-│     book_to      VARCHAR │         └──────────────┬───────────┘
-│     bible_text   TEXT    │                        │
-│     content      TEXT    │                        │ 1
-│     status       VARCHAR │                        ▼
-│     created_at   DATETIME│         ┌──────────────────────────┐
-│     updated_at   DATETIME│         │    USER_ROLE             │
-└────────────┬─────────────┘         │──────────────────────────│
-             │ N                     │ PK  user_role_id  BIGINT │
-             ▼                       │ FK  user_id      BIGINT  │
-┌──────────────────────────┐         │ FK  role_id      BIGINT  │
-│     PBS_TAG              │         └──────────────────────────┘
-│──────────────────────────│
-│ PK  pbs_tag_id   BIGINT  │
-│ FK  pbs_id       BIGINT  │
-│ FK  tag_id       BIGINT  │
-└──────────────────────────┘
+---
 
+## 2. 테이블 상세
 
-┌──────────────────────────┐         ┌──────────────────────────┐
-│          QT              │         │     READING_NOTE         │
-│──────────────────────────│         │──────────────────────────│
-│ PK  qt_id        BIGINT  │         │ PK  reading_id   BIGINT  │
-│ FK  user_id      BIGINT  │         │ FK  user_id      BIGINT  │
-│     title        VARCHAR │         │     book_title   VARCHAR │
-│     qt_date      DATE    │         │     read_date    DATE    │
-│     bible_ref    VARCHAR │         │     author      VARCHAR │
-│     bible_text   TEXT    │         │     translator   VARCHAR │
-│     content      TEXT    │         │     toc         TEXT    │
-│     visibility   VARCHAR │         │     cover_image  VARCHAR │
-│     created_at   DATETIME│         │     summary     TEXT    │
-│     updated_at   DATETIME│         │     impression  TEXT    │
-└────────────┬─────────────┘         │     created_at   DATETIME│
-             │ N                     │     updated_at   DATETIME│
-             ▼                       └──────────────────────────┘
-┌──────────────────────────┐
-│     QT_TAG               │
-│──────────────────────────│
-│ PK  qt_tag_id    BIGINT  │
-│ FK  qt_id        BIGINT  │
-│ FK  tag_id       BIGINT  │
-└──────────────────────────┘
+### 2.1 시스템 (7개)
 
+#### `users`
 
-┌──────────────────────────────┐
-│   REFERENCE_RESOURCE         │
-│──────────────────────────────│
-│ PK  ref_id         BIGINT    │
-│     ref_type       VARCHAR   │
-│     target_id      BIGINT    │
-│     ref_category   VARCHAR   │
-│     url            VARCHAR   │
-│     file_path      VARCHAR   │
-│     file_name      VARCHAR   │
-│     file_type      VARCHAR   │
-│     file_size      VARCHAR   │
-│     description    TEXT      │
-│     sort_order     INT       │
-│     created_at     DATETIME  │
-└──────────────────────────────┘
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `user_id` | bigint(20) | NO | PK | NULL | 사용자 ID auto_increment |
+| `email` | varchar(255) | NO | UNIQUE | NULL | 이메일 주소 (로그인 ID) |
+| `password` | varchar(255) | NO |  | NULL | 비밀번호 (BCrypt 암호화) |
+| `name` | varchar(100) | NO |  | NULL | 이름 |
+| `nickname` | varchar(100) | NO |  | NULL | 닉네임 |
+| `phone` | varchar(20) | YES |  | NULL | 전화번호 |
+| `role_group` | varchar(50) | NO |  | NULL | 권한 그룹 코드 |
+| `account_status` | varchar(20) | NO |  | NULL | 계정 상태 (ACTIVE/INACTIVE/PENDING) |
+| `bible_version` | varchar(20) | YES |  | NULL | 선호 성경 버전 |
+| `qt_source` | varchar(20) | YES |  | NULL | QT 출처 |
+| `memo` | varchar(500) | YES |  | NULL | 메모 |
+| `email_notification` | tinyint(1) | NO |  | NULL | 이메일 알림 수신 여부 |
+| `two_factor_auth` | tinyint(1) | NO |  | NULL | 2단계 인증 사용 여부 |
+| `session_auto_expiry` | tinyint(1) | NO |  | NULL | 세션 자동 만료 여부 |
+| `activity_log` | tinyint(1) | NO |  | NULL | 활동 로그 기록 여부 |
+| `last_login` | datetime | YES |  | NULL | 최종 로그인 일시 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
 
+#### `roles`
 
-┌──────────────────────────┐         ┌──────────────────────────────┐
-│     BIBLE_VERSION        │         │     BIBLE_BOOKS              │
-│──────────────────────────│         │──────────────────────────────│
-│ PK  version_id   BIGINT  │         │ PK  book_id        BIGINT    │
-│     version_name VARCHAR │◄────────│ FK  version_id     BIGINT    │
-│     language    VARCHAR │         │     book_code      VARCHAR   │
-│     use_yn      BOOLEAN │         │     book_name_kr   VARCHAR   │
-└──────────────────────────┘         │     book_name_en   VARCHAR   │
-                                     │     testament      VARCHAR   │
-┌──────────────────────────┐         │     chapter        INT      │
-│     QT_DAILY             │         │     verse          INT      │
-│──────────────────────────│         │     content        TEXT     │
-│ PK  qt_id        BIGINT  │         │     created_at     DATETIME  │
-│     qt_date      DATE    │         └──────────────────────────────┘
-│     bible_ref    VARCHAR │
-│     title        VARCHAR │
-│     hymn_info    VARCHAR │
-│     hymn_text    TEXT    │
-│ bible_section_title VARCHAR│
-│     bible_text   TEXT    │
-│     prayer       TEXT    │
-│     source       VARCHAR │
-│     created_at   DATETIME│
-└──────────────────────────┘
-```
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `role_id` | bigint(20) | NO | PK | NULL | 권한 ID auto_increment |
+| `group_code` | varchar(20) | NO | UNIQUE | NULL | 그룹 코드 |
+| `group_name` | varchar(50) | NO |  | NULL | 그룹명 |
+| `group_desc` | varchar(200) | YES |  | NULL | 그룹 설명 |
+| `use_yn` | tinyint(1) | NO |  | NULL | 사용 여부 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
 
-## 엔티티 상세 정의
+#### `user_roles`
 
-### 1. USER (사용자)
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `user_role_id` | bigint(20) | NO | PK | NULL | 매핑 ID auto_increment |
+| `user_id` | bigint(20) | NO | FK | NULL | 사용자 ID |
+| `role_id` | bigint(20) | NO | FK | NULL | 권한 ID |
 
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| user_id | BIGINT PK | 사용자 ID |
-| email | VARCHAR(255) | 이메일 (로그인 ID, 필수) |
-| password | VARCHAR(255) | 비밀번호 (암호화, 최소 8자) |
-| name | VARCHAR(100) | 이름 (필수) |
-| nickname | VARCHAR(100) | 닉네임 (필수) |
-| phone | VARCHAR(20) | 연락처 (010-0000-0000 형식) |
-| role_group | VARCHAR(50) | 권한 그룹 (Super Admin / Admin / Editor / Viewer) |
-| account_status | VARCHAR(20) | 계정 상태 (ACTIVE / INACTIVE / PENDING) |
-| bible_version | VARCHAR(20) | 기본 성경 버전 (사용자 선호 설정) |
-| qt_source | VARCHAR(20) | 기본 QT 출처 (사용자 선호 설정) |
-| memo | VARCHAR(500) | 메모/설명 |
-| email_notification | BOOLEAN | 이메일 알림 수신 여부 |
-| two_factor_auth | BOOLEAN | 2단계 인증(2FA) 사용 여부 |
-| session_auto_expiry | BOOLEAN | 세션 자동 만료 여부 |
-| activity_log | BOOLEAN | 활동 로그 기록 여부 |
-| last_login | DATETIME | 최근 접속 일시 |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
+#### `menus`
 
-**출처:** login.html, signup.html, WarmAdminUserList_nickname.html, WarmAdminDashboard_nickname.html
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `menu_id` | bigint(20) | NO | PK | NULL | 메뉴 ID auto_increment |
+| `parent_id` | bigint(20) | YES | FK | NULL | 상위 메뉴 ID (self-reference, NULL=1Depth) |
+| `parent_name` | varchar(100) | YES |  | NULL | 상위 메뉴명 (표시용) |
+| `menu_name` | varchar(100) | NO |  | NULL | 메뉴명 |
+| `menu_code` | varchar(50) | NO |  | NULL | 메뉴 코드 |
+| `menu_url` | varchar(255) | NO |  | NULL | 메뉴 URL |
+| `depth` | int(11) | NO |  | NULL | 메뉴 깊이 (1=1Depth, 2=2Depth) |
+| `sort_order` | int(11) | NO |  | NULL | 정렬 순서 |
+| `icon` | varchar(100) | YES |  | NULL | 메뉴 아이콘 |
+| `use_yn` | tinyint(1) | NO |  | NULL | 사용 여부 |
+| `display_yn` | tinyint(1) | NO |  | NULL | 노출 여부 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `permissions`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `permission_id` | bigint(20) | NO | PK | NULL | 권한 매핑 ID auto_increment |
+| `role_id` | bigint(20) | NO | FK | NULL | 권한 그룹 ID |
+| `menu_id` | bigint(20) | NO | FK | NULL | 메뉴 ID |
+| `can_read` | tinyint(1) | NO |  | NULL | 읽기 권한 |
+| `can_write` | tinyint(1) | NO |  | NULL | 쓰기 권한 |
+| `can_delete` | tinyint(1) | NO |  | NULL | 삭제 권한 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+
+#### `group_codes`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `group_code` | varchar(50) | NO | PK | NULL | 그룹 코드 |
+| `group_name` | varchar(100) | NO |  | NULL | 그룹 코드명 |
+| `modified_date` | datetime | NO |  | current_timestamp() | 최종 수정일시 |
+
+#### `common_codes`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `code_id` | bigint(20) | NO | PK | NULL | 코드 ID auto_increment |
+| `group_code` | varchar(50) | NO | FK | NULL | 그룹 코드 |
+| `code` | varchar(50) | NO |  | NULL | 코드값 |
+| `code_name` | varchar(100) | NO |  | NULL | 코드명 |
+| `sort_order` | int(11) | NO |  | NULL | 정렬 순서 |
+| `use_yn` | tinyint(1) | NO |  | NULL | 사용 여부 |
+| `modified_date` | datetime | NO |  | current_timestamp() | 최종 수정일시 |
+
+### 2.2 콘텐츠 (8개)
+
+#### `sermons`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `sermon_id` | bigint(20) | NO | PK | NULL | 설교 ID auto_increment |
+| `user_id` | bigint(20) | NO | FK | NULL | 작성자 ID |
+| `title` | varchar(200) | NO |  | NULL | 설교 제목 |
+| `sermon_date` | date | NO |  | NULL | 설교 날짜 |
+| `preacher` | varchar(100) | NO |  | NULL | 설교자 |
+| `bible_ref` | varchar(100) | YES |  | NULL | 성경 구절 참조 |
+| `bible_text` | text | YES |  | NULL | 성경 본문 |
+| `content` | text | YES |  | NULL | 설교 내용 |
+| `status` | varchar(20) | NO |  | NULL | 상태 (DRAFT/PUBLISHED) |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `sermon_tags`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `sermon_tag_id` | bigint(20) | NO | PK | NULL | 매핑 ID auto_increment |
+| `sermon_id` | bigint(20) | NO | FK | NULL | 설교 ID |
+| `tag_id` | bigint(20) | NO | FK | NULL | 태그 ID |
+
+#### `qts`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `qt_id` | bigint(20) | NO | PK | NULL | QT ID auto_increment |
+| `user_id` | bigint(20) | NO | FK | NULL | 작성자 ID |
+| `title` | varchar(200) | NO |  | NULL | QT 제목 |
+| `qt_date` | date | NO |  | NULL | QT 날짜 |
+| `bible_ref` | varchar(100) | YES |  | NULL | 성경 구절 참조 |
+| `bible_text` | text | YES |  | NULL | 성경 본문 |
+| `content` | text | YES |  | NULL | QT 내용 (묵상/적용) |
+| `visibility` | varchar(20) | NO |  | NULL | 공개 범위 (PUBLIC/PRIVATE) |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `qt_tags`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `qt_tag_id` | bigint(20) | NO | PK | NULL | 매핑 ID auto_increment |
+| `qt_id` | bigint(20) | NO | FK | NULL | QT ID |
+| `tag_id` | bigint(20) | NO | FK | NULL | 태그 ID |
+
+#### `qt_daily`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `qt_id` | bigint(20) | NO | PK | NULL | QT ID auto_increment |
+| `qt_date` | date | NO |  | NULL | QT 날짜 |
+| `bible_ref` | varchar(100) | NO |  | NULL | 성경 구절 참조 |
+| `title` | varchar(200) | NO |  | NULL | QT 제목 |
+| `hymn_info` | varchar(200) | YES |  | NULL | 찬송가 정보 |
+| `hymn_text` | text | YES |  | NULL | 찬송가 가사 |
+| `bible_section_title` | varchar(200) | YES |  | NULL | 성경 구절 제목 |
+| `bible_text` | text | YES |  | NULL | 성경 본문 |
+| `prayer` | text | YES |  | NULL | 기도문 |
+| `source` | varchar(50) | YES |  | NULL | 출처 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+
+#### `reading_notes`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `reading_id` | bigint(20) | NO | PK | NULL | 독서 노트 ID auto_increment |
+| `user_id` | bigint(20) | NO | FK | NULL | 작성자 ID |
+| `book_title` | varchar(200) | NO |  | NULL | 도서 제목 |
+| `read_date` | date | NO |  | NULL | 독서 날짜 |
+| `author` | varchar(100) | YES |  | NULL | 저자 |
+| `translator` | varchar(100) | YES |  | NULL | 번역자 |
+| `toc` | text | YES |  | NULL | 목차 |
+| `cover_image` | varchar(500) | YES |  | NULL | 책 표지 이미지 경로 |
+| `summary` | text | YES |  | NULL | 요약 |
+| `impression` | text | YES |  | NULL | 감상/소감 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `tags`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `tag_id` | bigint(20) | NO | PK | NULL | 태그 ID auto_increment |
+| `tag_name` | varchar(50) | NO | UNIQUE | NULL | 태그명 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+
+#### `reference_resources`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `ref_id` | bigint(20) | NO | PK | NULL | 참고자료 ID auto_increment |
+| `ref_type` | varchar(30) | NO |  | NULL | 참조 대상 타입 (SERMON/QT/PBS/READING) |
+| `target_id` | bigint(20) | NO |  | NULL | 참조 대상 ID |
+| `ref_category` | varchar(20) | NO |  | NULL | 자료 카테고리 (URL/FILE) |
+| `url` | varchar(500) | YES |  | NULL | URL |
+| `file_path` | varchar(500) | YES |  | NULL | 파일 경로 |
+| `file_name` | varchar(200) | YES |  | NULL | 파일명 |
+| `file_type` | varchar(20) | YES |  | NULL | 파일 타입 |
+| `file_size` | varchar(20) | YES |  | NULL | 파일 크기 |
+| `description` | text | YES |  | NULL | 설명 |
+| `sort_order` | int(11) | NO |  | NULL | 정렬 순서 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+
+### 2.3 P.B.S (5개)
+
+#### `pbs_folder`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `folder_id` | bigint(20) | NO | PK | NULL | 폴더 ID auto_increment |
+| `parent_id` | bigint(20) | YES | FK | NULL | 부모 폴더 ID (FK, NULL=루트) |
+| `folder_name` | varchar(100) | NO |  | NULL | 폴더명 (예: 창세기, 출애굽기) |
+| `sort_order` | int(11) | NO |  | 0 | 정렬 순서 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `pbs_page`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `page_id` | bigint(20) | NO | PK | NULL | 페이지 ID auto_increment |
+| `folder_id` | bigint(20) | NO | FK | NULL | 폴더 ID |
+| `user_id` | bigint(20) | NO | FK | NULL | 작성자 ID |
+| `title` | varchar(200) | NO |  | '새 페이지' | 페이지 제목 (생성시 임시 제목) |
+| `content` | longtext | YES |  | NULL | 페이지 내용 (자동 저장) |
+| `status` | varchar(20) | NO |  | 'DRAFT' | 상태 (DRAFT=임시저장, PUBLISHED=배포됨) |
+| `testament` | varchar(10) | YES |  | NULL | 신구약 (OLD/NEW) |
+| `book_code` | varchar(20) | YES |  | NULL | 성경책 코드 (예: Gen, Exod, Ps, John) |
+| `chapter_from` | int(11) | YES |  | NULL | 시작 장 |
+| `verse_from` | int(11) | YES |  | NULL | 시작 절 |
+| `chapter_to` | int(11) | YES |  | NULL | 종료 장 (NULL=단일 장) |
+| `verse_to` | int(11) | YES |  | NULL | 종료 절 (NULL=해당 장 전체) |
+| `sort_order` | int(11) | NO |  | 0 | 폴더 내 정렬 순서 |
+| `published_at` | datetime | YES |  | NULL | 배포 일시 (status=PUBLISHED 시 설정) |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `pbs_page_section`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `section_id` | bigint(20) | NO | PK | NULL | 섹션 ID auto_increment |
+| `page_id` | bigint(20) | NO | FK | NULL | 페이지 ID |
+| `section_title` | varchar(100) | NO |  | NULL | 영역 제목 (예: 관찰, 해석, 적용) |
+| `content` | longtext | YES |  | NULL | 영역 내용 |
+| `sort_order` | int(11) | NO |  | 0 | 정렬 순서 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+| `updated_at` | datetime | NO |  | current_timestamp() | 수정일시 |
+
+#### `pbs_reference`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `ref_id` | bigint(20) | NO | PK | NULL | 참고자료 ID auto_increment |
+| `page_id` | bigint(20) | NO | FK | NULL | 페이지 ID |
+| `ref_type` | varchar(20) | NO |  | NULL | 자료 유형 (URL/IMAGE/DOCUMENT) |
+| `ref_name` | varchar(200) | NO |  | NULL | 자료명 |
+| `ref_url` | varchar(500) | YES |  | NULL | URL (ref_type=URL) |
+| `file_path` | varchar(500) | YES |  | NULL | 파일 경로 (ref_type=IMAGE/DOCUMENT) |
+| `file_size` | bigint(20) | YES |  | NULL | 파일 크기 (bytes) |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
+
+#### `pbs_tag_map`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `map_id` | bigint(20) | NO | PK | NULL | 매핑 ID auto_increment |
+| `page_id` | bigint(20) | NO | FK | NULL | 페이지 ID |
+| `tag_id` | bigint(20) | NO | FK | NULL | 태그 ID |
+
+### 2.4 성경 (2개)
+
+#### `bible_versions`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `version_id` | bigint(20) | NO | PK | NULL | 버전 ID auto_increment |
+| `version_name` | varchar(50) | NO | UNIQUE | NULL | 버전명 |
+| `language` | varchar(10) | NO |  | NULL | 언어 |
+| `use_yn` | tinyint(1) | NO |  | NULL | 사용 여부 |
+
+#### `bible_books`
+
+| 컬럼 | 타입 | NULL | 키 | 기본값 | 설명 |
+|---|---|---|---|---|---|
+| `book_id` | bigint(20) | NO | PK | NULL | 본문 ID auto_increment |
+| `version_id` | bigint(20) | NO | FK | NULL | 버전 ID |
+| `book_code` | varchar(10) | NO |  | NULL | 권 코드 (예: GEN, EXO) |
+| `book_name_kr` | varchar(20) | NO |  | NULL | 권명 (한글) |
+| `book_name_en` | varchar(50) | NO |  | NULL | 권명 (영문) |
+| `testament` | varchar(5) | NO |  | NULL | 구분 (OT=구약, NT=신약) |
+| `chapter` | int(11) | NO |  | NULL | 장 번호 |
+| `verse` | int(11) | NO |  | NULL | 절 번호 |
+| `content` | text | NO |  | NULL | 성경 본문 내용 |
+| `created_at` | datetime | NO |  | current_timestamp() | 생성일시 |
 
 ---
 
-### 2. ROLE (역할 / 권한 그룹)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| role_id | BIGINT PK | 역할 ID |
-| group_code | VARCHAR(20) | 권한 그룹 코드 (ADMIN / MANAGER / EDITOR / USER / GUEST) |
-| group_name | VARCHAR(50) | 권한 그룹명 (관리자 / 운영 관리자 / 콘텐츠 관리자 / 일반 사용자 / 게스트) |
-| group_desc | VARCHAR(200) | 그룹 설명 |
-| use_yn | BOOLEAN | 사용 여부 |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** WarmAdminPermissionMenuManagement.html, WarmAdminUserList_nickname.html (role_group: Super Admin, Admin, Editor, Viewer)
-
----
-
-### 3. USER_ROLE (사용자-역할 매핑)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| user_role_id | BIGINT PK | 매핑 ID |
-| user_id | BIGINT FK → USER | 사용자 ID |
-| role_id | BIGINT FK → ROLE | 역할 ID |
-
-**출처:** WarmAdminUserList_nickname.html, WarmAdminPermissionMenuManagement.html
-
----
-
-### 4. MENU (메뉴)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| menu_id | BIGINT PK | 메뉴 ID |
-| parent_id | BIGINT FK → MENU | 상위 메뉴 ID (자기참조, NULL이면 최상위) |
-| parent_name | VARCHAR(100) | 상위메뉴명 (1Depth는 "-") |
-| menu_name | VARCHAR(100) | 메뉴명 (P.B.S, Q.T, 설교, 독서, 시스템 등) |
-| menu_code | VARCHAR(50) | 메뉴 코드 (CONTENT, BIBLE_CONTENT 등) |
-| menu_url | VARCHAR(255) | 메뉴 URL 경로 |
-| depth | INT | 메뉴 깊이 (1=1Depth, 2=2Depth) |
-| sort_order | INT | 정렬 순서 |
-| icon | VARCHAR(100) | 아이콘 (SVG 경로 또는 이름) |
-| use_yn | BOOLEAN | 사용 여부 |
-| display_yn | BOOLEAN | 노출 여부 |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
-
-**출처:** WarmAdminMenuManagement_UserFormat.html, 모든 화면의 사이드바
-
----
-
-### 5. PERMISSION (권한)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| permission_id | BIGINT PK | 권한 ID |
-| role_id | BIGINT FK → ROLE | 역할 ID |
-| menu_id | BIGINT FK → MENU | 메뉴 ID |
-| can_read | BOOLEAN | 조회 권한 |
-| can_write | BOOLEAN | 작성 권한 |
-| can_delete | BOOLEAN | 삭제 권한 |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** WarmAdminPermissionMenuManagement.html
-
----
-
-### 6. COMMON_CODE (공통 코드)
-
-공통 코드는 그룹 코드와 상세 코드의 2단계 구조로 관리됩니다.
-
-**6-1. GROUP_CODE (그룹 코드)**
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| group_code | VARCHAR(50) PK | 그룹 코드 (STATUS, BIBLE_BOOK, TAG_CATEGORY 등) |
-| group_name | VARCHAR(100) | 그룹코드명 (필수) |
-| modified_date | DATETIME | 등록/최종수정일자 |
-
-**6-2. COMMON_CODE (상세 코드)**
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| code_id | BIGINT PK | 코드 ID |
-| group_code | VARCHAR(50) FK → GROUP_CODE | 소속 그룹코드 |
-| code | VARCHAR(50) | 코드값 (필수) |
-| code_name | VARCHAR(100) | 코드명 (필수) |
-| sort_order | INT | 정렬 순서 |
-| use_yn | BOOLEAN | 사용 여부 |
-| modified_date | DATETIME | 등록/최종수정일자 |
-
-**출처:** WarmAdminCommonCodeManagement_v2.html
-
----
-
-### 7. SERMON (설교)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| sermon_id | BIGINT PK | 설교 ID |
-| user_id | BIGINT FK → USER | 작성자 ID |
-| title | VARCHAR(200) | 설교 제목 |
-| sermon_date | DATE | 설교 날짜 |
-| preacher | VARCHAR(100) | 설교자 |
-| bible_ref | VARCHAR(100) | 성경 구절 (예: 고린도전서 1:1-4) |
-| bible_text | TEXT | 성경 본문 (JSON 또는 버전별 저장) |
-| content | TEXT | 설교 내용 |
-| status | VARCHAR(20) | 상태 (PUBLISHED / DRAFT / ARCHIVED) |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
-
-**출처:** sermon_list.html, sermon_content.html
-
----
-
-### 8. PBS (성경공부)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| pbs_id | BIGINT PK | 성경공부 ID |
-| user_id | BIGINT FK → USER | 작성자 ID |
-| title | VARCHAR(200) | 콘텐츠 제목 |
-| pbs_date | DATE | 작성일 |
-| book_from | VARCHAR(50) | 시작 성경책 (예: 창세기) |
-| book_to | VARCHAR(50) | 종료 성경책 |
-| bible_text | TEXT | 성경 본문 (버전별 JSON) |
-| content | TEXT | 묵상 및 설명 내용 |
-| status | VARCHAR(20) | 상태 (PUBLISHED / DRAFT / ARCHIVED) |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
-
-**출처:** pbs_list.html, pbs_content.html
-
----
-
-### 9. QT (큐티)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| qt_id | BIGINT PK | QT ID |
-| user_id | BIGINT FK → USER | 작성자 ID |
-| title | VARCHAR(200) | QT 제목 |
-| qt_date | DATE | QT 날짜 |
-| bible_ref | VARCHAR(100) | 말씀 (예: 시편 23:1-6) |
-| bible_text | TEXT | 성경 본문 (버전별 JSON) |
-| content | TEXT | 묵상 내용 |
-| visibility | VARCHAR(20) | 공개여부 (PUBLIC / PRIVATE) |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
-
-**출처:** qt_list.html, qt_content.html
-
----
-
-### 10. READING_NOTE (독서 노트)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| reading_id | BIGINT PK | 독서 노트 ID |
-| user_id | BIGINT FK → USER | 작성자 ID |
-| book_title | VARCHAR(200) | 책 제목 |
-| read_date | DATE | 읽은 날짜 |
-| author | VARCHAR(100) | 저자 |
-| translator | VARCHAR(100) | 옮긴이 |
-| toc | TEXT | 목차 (여러 줄 입력 가능) |
-| cover_image | VARCHAR(500) | 책 표지 이미지 경로 |
-| summary | TEXT | 요약 |
-| impression | TEXT | 느낀점 |
-| created_at | DATETIME | 생성일시 |
-| updated_at | DATETIME | 수정일시 |
-
-**출처:** reading_list.html, reading_content.html
-
----
-
-### 11. TAG (태그)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| tag_id | BIGINT PK | 태그 ID |
-| tag_name | VARCHAR(50) | 태그명 (은혜, 회개, 믿음, 소망, 사랑 등) |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** sermon_list.html, sermon_content.html, qt_list.html, qt_content.html
-
----
-
-### 12. SERMON_TAG (설교-태그 매핑)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| sermon_tag_id | BIGINT PK | 매핑 ID |
-| sermon_id | BIGINT FK → SERMON | 설교 ID |
-| tag_id | BIGINT FK → TAG | 태그 ID |
-
----
-
-### 13. PBS_TAG (성경공부-태그 매핑)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| pbs_tag_id | BIGINT PK | 매핑 ID |
-| pbs_id | BIGINT FK → PBS | 성경공부 ID |
-| tag_id | BIGINT FK → TAG | 태그 ID |
-
----
-
-### 14. QT_TAG (큐티-태그 매핑)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| qt_tag_id | BIGINT PK | 매핑 ID |
-| qt_id | BIGINT FK → QT | QT ID |
-| tag_id | BIGINT FK → TAG | 태그 ID |
-
----
-
-### 15. REFERENCE_RESOURCE (참고자료)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| ref_id | BIGINT PK | 참고자료 ID |
-| ref_type | VARCHAR(30) | 대상 타입 (PBS / SERMON / QT) |
-| target_id | BIGINT | 대상 ID (다형성 참조) |
-| ref_category | VARCHAR(20) | 자료 유형 (URL / IMAGE / DOCUMENT / MAP) |
-| url | VARCHAR(500) | URL (ref_category=URL인 경우) |
-| file_path | VARCHAR(500) | 파일 경로 (IMAGE, DOCUMENT인 경우) |
-| file_name | VARCHAR(200) | 파일명 |
-| file_type | VARCHAR(20) | 파일 유형 (확장자) |
-| file_size | VARCHAR(20) | 파일 크기 |
-| description | TEXT | 설명 |
-| sort_order | INT | 정렬 순서 |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** pbs_content.html의 참고자료 탭 (URL, 이미지, 문서, 지도)
-
----
-
-### 16. BIBLE_VERSION (성경 버전)
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| version_id | BIGINT PK | 버전 ID |
-| version_name | VARCHAR(50) | 버전명 (새번역, NIV, 현대인) |
-| language | VARCHAR(10) | 언어 (KO, EN) |
-| use_yn | BOOLEAN | 사용 여부 |
-
-**출처:** pbs_content.html, sermon_content.html, qt_content.html의 성경 말씀 탭
-
----
-
-### 17. BIBLE_BOOKS (성경책별 본문)
-
-> 이전 `BIBLE_TEXT` 테이블을 대체한 테이블입니다.
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| book_id | BIGINT PK | 본문 ID |
-| version_id | BIGINT FK → BIBLE_VERSION | 버전 ID |
-| book_code | VARCHAR(10) | 성경책 코드 (예: GEN, MAT) |
-| book_name_kr | VARCHAR(20) | 성경책명 (한글, 예: 창세기) |
-| book_name_en | VARCHAR(50) | 성경책명 (영문, 예: Genesis) |
-| testament | VARCHAR(5) | 구약/신약 구분 (OT / NT) |
-| chapter | INT | 장 |
-| verse | INT | 절 |
-| content | TEXT | 본문 내용 |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** pbs_content.html, sermon_content.html, qt_content.html의 성경 말씀 표시, bible_versions setup
-
----
-
-### 18. QT_DAILY (QT 크롤링 데이터)
-
-> 크롤링된 일일 QT 데이터를 저장하는 테이블입니다.
-
-| 컬럼 | 타입 | 설명 |
-|---|---|---|
-| qt_id | BIGINT PK | QT 데이터 ID |
-| qt_date | DATE | QT 날짜 |
-| bible_ref | VARCHAR(100) | 성경 구절 참조 |
-| title | VARCHAR(200) | QT 제목 |
-| hymn_info | VARCHAR(200) | 찬송가 정보 |
-| hymn_text | TEXT | 찬송가 가사 |
-| bible_section_title | VARCHAR(200) | 성경 구절 소제목 |
-| bible_text | TEXT | 성경 본문 |
-| prayer | TEXT | 기도문 |
-| source | VARCHAR(50) | 출처 (크롤링 소스) |
-| created_at | DATETIME | 생성일시 |
-
-**출처:** qt_content.html, QtScheduler (크롤링 배치)
-
----
-
-## 관계 요약
-
-| 관계 | 카디널리티 | 설명 |
-|---|---|---|
-| USER → USER_ROLE | 1:N | 한 사용자는 여러 역할을 가질 수 있음 |
-| ROLE → USER_ROLE | 1:N | 한 역할은 여러 사용자에게 할당됨 |
-| ROLE → PERMISSION | 1:N | 한 역할은 여러 메뉴 권한을 가짐 |
-| MENU → PERMISSION | 1:N | 한 메뉴는 여러 역할에 대해 권한을 가짐 |
-| MENU → MENU | 1:N (자기참조) | 상위 메뉴-하위 메뉴 계층 구조 |
-| USER → SERMON | 1:N | 한 사용자가 여러 설교를 작성 |
-| USER → PBS | 1:N | 한 사용자가 여러 성경공부를 작성 |
-| USER → QT | 1:N | 한 사용자가 여러 QT를 작성 |
-| USER → READING_NOTE | 1:N | 한 사용자가 여러 독서 노트를 작성 |
-| SERMON ↔ TAG | N:M | 설교와 태그는 다대다 (SERMON_TAG 매핑) |
-| PBS ↔ TAG | N:M | 성경공부와 태그는 다대다 (PBS_TAG 매핑) |
-| QT ↔ TAG | N:M | QT와 태그는 다대다 (QT_TAG 매핑) |
-| REFERENCE_RESOURCE → (PBS/SERMON/QT) | N:1 (다형성) | 참고자료는 타입에 따라 여러 콘텐츠에 연결 |
-| BIBLE_VERSION → BIBLE_BOOKS | 1:N | 한 버전에 여러 성경책 본문이 속함 |
-| COMMON_CODE | 독립 | 그룹 코드 기반 공통 코드 관리 |
-| QT_DAILY | 독립 | 크롤링된 일일 QT 데이터 (독립 테이블) |
-
----
-
-## 출처 파일 매핑
-
-| 엔티티 | 출처 HTML 파일 |
+## 3. 관계 요약
+
+| 부모 | 자식 | 카디널리티 | FK 컬럼 | 설명 |
+|---|---|---|---|---|
+| `bible_versions` | `bible_books` | 1:N | `version_id` | 역본 |
+| `group_codes` | `common_codes` | 1:N | `group_code` | 소속 그룹 |
+| `menus` | `menus` | 1:N | `parent_id` | 하위 메뉴 |
+| `pbs_folder` | `pbs_folder` | 1:N | `parent_id` | 하위 폴더 |
+| `pbs_folder` | `pbs_page` | 1:N | `folder_id` | 소속 |
+| `users` | `pbs_page` | 1:N | `user_id` | 작성 |
+| `pbs_page` | `pbs_page_section` | 1:N | `page_id` | 영역 |
+| `pbs_page` | `pbs_reference` | 1:N | `page_id` | 참고자료 |
+| `pbs_page` | `pbs_tag_map` | 1:N | `page_id` | 태그 연결 |
+| `tags` | `pbs_tag_map` | 1:N | `tag_id` | 태그 |
+| `roles` | `permissions` | 1:N | `role_id` | 권한 |
+| `menus` | `permissions` | 1:N | `menu_id` | 대상 메뉴 |
+| `users` | `qts` | 1:N | `user_id` | 작성 |
+| `tags` | `qt_tags` | 1:N | `tag_id` | 태그 |
+| `qts` | `qt_tags` | 1:N | `qt_id` | 태그 |
+| `users` | `reading_notes` | 1:N | `user_id` | 작성 |
+| `users` | `sermons` | 1:N | `user_id` | 작성 |
+| `sermons` | `sermon_tags` | 1:N | `sermon_id` | 태그 |
+| `tags` | `sermon_tags` | 1:N | `tag_id` | 태그 |
+| `users` | `user_roles` | 1:N | `user_id` | 역할 할당 |
+| `roles` | `user_roles` | 1:N | `role_id` | 역할 |
+
+### FK가 아닌 논리 참조
+
+| 관계 | 설명 |
 |---|---|
-| USER | login.html, signup.html, WarmAdminUserList_nickname.html |
-| ROLE, USER_ROLE | WarmAdminUserList_nickname.html, WarmAdminPermissionMenuManagement.html |
-| MENU | WarmAdminMenuManagement_UserFormat.html, 모든 화면 사이드바 |
-| PERMISSION | WarmAdminPermissionMenuManagement.html |
-| COMMON_CODE, GROUP_CODE | WarmAdminCommonCodeManagement_v2.html |
-| SERMON | sermon_list.html, sermon_content.html |
-| PBS | pbs_list.html, pbs_content.html |
-| QT | qt_list.html, qt_content.html |
-| READING_NOTE | reading_list.html, reading_content.html |
-| TAG | sermon_list/content, qt_list/content |
-| REFERENCE_RESOURCE | pbs_content.html (참고자료 탭) |
-| BIBLE_VERSION | pbs_content, sermon_content, qt_content (성경 말씀 탭) |
-| BIBLE_BOOKS | pbs_content, sermon_content, qt_content (성경 말씀 표시), bible_versions setup |
-| QT_DAILY | qt_content.html, QtScheduler (크롤링 배치) |
+| `users.role_group` → `roles.group_code` | 사용자 권한 그룹 (문자열 참조, FK 미설정) |
+| `roles.group_code` → `group_codes.group_code` | 권한 그룹 코드 (문자열 참조) |
+| `reference_resources.ref_type` + `target_id` | 다형성 참조 (SERMON / QT / PBS 등) |
+| `qt_daily` | 크롤링 데이터로 독립. UNIQUE(`qt_date`, `source`) |
+
+---
+
+## 4. Spring Batch 메타 테이블
+
+QT 자동 수집 배치(`qtCrawlJob`, `qtSumCrawlJob`)의 실행 이력이 저장됩니다. **Spring Batch 6** 기준입니다.
+
+| 테이블/객체 | 유형 | 설명 |
+|---|---|---|
+| `BATCH_JOB_INSTANCE` | TABLE | Job 인스턴스 (Job 이름 + 파라미터 해시) |
+| `BATCH_JOB_EXECUTION` | TABLE | Job 실행 1회 단위 (상태, 시작/종료 시각) |
+| `BATCH_JOB_EXECUTION_PARAMS` | TABLE | Job 파라미터 (`job.type`, `job.date`, `run.id`) |
+| `BATCH_JOB_EXECUTION_CONTEXT` | TABLE | JobExecutionContext 직렬화 저장 |
+| `BATCH_STEP_EXECUTION` | TABLE | Step 실행 (읽기/쓰기/커밋 건수) |
+| `BATCH_STEP_EXECUTION_CONTEXT` | TABLE | StepExecutionContext 직렬화 저장 |
+| `BATCH_JOB_INSTANCE_SEQ` | **SEQUENCE** | Job 인스턴스 ID 시퀀스 |
+| `BATCH_JOB_EXECUTION_SEQ` | **SEQUENCE** | Job 실행 ID 시퀀스 |
+| `BATCH_STEP_EXECUTION_SEQ` | **SEQUENCE** | Step 실행 ID 시퀀스 |
+
+> ⚠️ Spring Batch 6는 테이블 기반 시퀀스(`BATCH_JOB_SEQ`)가 아니라 **네이티브 `CREATE SEQUENCE`** 를 사용합니다. (`dbscript/batch_schema.sql`)
+
+```mermaid
+erDiagram
+    BATCH_JOB_INSTANCE ||--o{ BATCH_JOB_EXECUTION : "실행"
+    BATCH_JOB_EXECUTION ||--o{ BATCH_JOB_EXECUTION_PARAMS : "파라미터"
+    BATCH_JOB_EXECUTION ||--|| BATCH_JOB_EXECUTION_CONTEXT : "컨텍스트"
+    BATCH_JOB_EXECUTION ||--o{ BATCH_STEP_EXECUTION : "Step"
+    BATCH_STEP_EXECUTION ||--|| BATCH_STEP_EXECUTION_CONTEXT : "컨텍스트"
+```
+
+---
+
+## 5. 데이터 현황
+
+| 테이블 | 건수 | 비고 |
+|---|---:|---|
+| `users` | 6 | 관리자 1 + 테스트 5 |
+| `roles` | 2 | AGENT_DEV, SYS_ADMIN |
+| `user_roles` | 0 |  |
+| `menus` | 11 |  |
+| `permissions` | 16 |  |
+| `group_codes` | 3 |  |
+| `common_codes` | 9 |  |
+| `sermons` | 2 |  |
+| `sermon_tags` | 0 |  |
+| `qts` | 1 |  |
+| `qt_tags` | 0 |  |
+| `qt_daily` | 22 | duranno 18 + SUM 4 · 매일 04:00/04:05 배치 수집 |
+| `reading_notes` | 3 |  |
+| `tags` | 0 |  |
+| `reference_resources` | 0 |  |
+| `pbs_folder` | 6 |  |
+| `pbs_page` | 8 | 폴더 6개에 분산 |
+| `pbs_page_section` | 5 | 관찰/해석/적용 |
+| `pbs_reference` | 3 |  |
+| `pbs_tag_map` | 0 |  |
+| `bible_versions` | 6 | 개역한글, 개역개정, 새번역, 현대인성경, KJV, NIV |
+| `bible_books` | 90,878 | 개역개정 29,888 / 새번역 29,887 / NIV 31,103 (66권 전체) |
+
+---
+
+## 6. 주요 변경 이력
+
+| 시점 | 변경 |
+|---|---|
+| 2026-11-09 | **P.B.S 구조 전환**: `pbs`, `pbs_tags` → `pbs_folder`, `pbs_page`, `pbs_page_section`, `pbs_reference`, `pbs_tag_map` (Confluence 스타일 페이지 기반) |
+| 2026-11-11 | **Spring Batch 6 메타 스키마 정비**: 테이블 시퀀스 → 네이티브 SEQUENCE, `IDENTIFYING_CHAR` → `IDENTIFYING` |
+| 2026-11-11 | P.B.S 레거시 API·도메인 제거 (`pbs` 테이블 의존 코드 삭제) |
+
