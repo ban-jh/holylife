@@ -281,7 +281,18 @@ sudo /opt/holylife/sh/start.sh
 
 ---
 
-## 10. 요구사항
+## 10. 문서
+
+| 문서 | 경로 | 내용 |
+|------|------|------|
+| 문서 인덱스 | [`docs/README.md`](docs/README.md) | 최소 문서 세트 안내 |
+| 프로젝트 개요 | [`docs/00-overview.md`](docs/00-overview.md) | 목적·범위·역할·구성도 |
+| 화면 목록 | [`docs/02-screen-list.md`](docs/02-screen-list.md) | 18개 라우트, 권한, 화면-API 매핑 |
+| ERD | [`docs/erd.md`](docs/erd.md) | 22개 테이블 + Batch 6개 |
+| API 명세 | [`docs/06-api-spec.md`](docs/06-api-spec.md) | 84개 엔드포인트 |
+| 운영 매뉴얼 | [`docs/10-operations.md`](docs/10-operations.md) | 배포·배치·백업·장애 대응 |
+
+## 11. 요구사항
 
 - Java 17 이상
 - MariaDB 10.11 (네이티브 SEQUENCE 지원)
