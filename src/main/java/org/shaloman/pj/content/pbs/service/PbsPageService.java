@@ -147,4 +147,42 @@ public class PbsPageService {
         Object folderId = request.get("folderId");
         if (folderId != null) page.setFolderId(Long.valueOf(folderId.toString()));
     }
+
+    /**
+     * 페이지 순서 변경 (drag&drop, 동일 폴더 내 순서 변경 + 다른 폴더로 이동 지원).
+     * items: [{pageId, sortOrder, folderId?(optional)}, ...]
+     * folderId가 있으면 다른 폴더로 이동, 없으면 sort_order만 변경.
+     */
+    public void reorderPages(List<Map<String, Object>> items) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("items는 필수입니다.");
+        }
+        for (Map<String, Object> item : items) {
+            Object pageIdObj = item.get("pageId");
+            Object sortOrderObj = item.get("sortOrder");
+            if (pageIdObj == null || sortOrderObj == null) {
+                throw new IllegalArgumentException("pageId, sortOrder는 필수입니다.");
+            }
+            Long pageId = Long.valueOf(pageIdObj.toString());
+            Integer sortOrder = Integer.valueOf(sortOrderObj.toString());
+            Object folderIdObj = item.get("folderId");
+            if (folderIdObj != null) {
+                Long folderId = Long.valueOf(folderIdObj.toString());
+                pageMapper.updateFolderId(pageId, folderId, sortOrder);
+            } else {
+                pageMapper.updateSortOrder(pageId, sortOrder);
+            }
+        }
+    }
+
+    /**
+     * 단일 페이지를 다른 폴더로 이동 (폴더 이동 + 정렬순서 지정).
+     */
+    public void movePage(Long pageId, Long folderId, Integer sortOrder) {
+        PbsPage existing = pageMapper.findById(pageId);
+        if (existing == null) {
+            throw new IllegalArgumentException("페이지를 찾을 수 없습니다: " + pageId);
+        }
+        pageMapper.updateFolderId(pageId, folderId, sortOrder);
+    }
 }

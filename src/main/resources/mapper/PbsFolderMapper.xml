@@ -85,6 +85,13 @@
         WHERE folder_id = #{folderId}
     </update>
 
+    <!-- 정렬순서 변경 (drag&drop) -->
+    <update id="updateSortOrder">
+        UPDATE pbs_folder
+        SET sort_order = #{sortOrder}, updated_at = NOW()
+        WHERE folder_id = #{folderId}
+    </update>
+
     <!-- 폴더 삭제 -->
     <delete id="deleteById">
         DELETE FROM pbs_folder WHERE folder_id = #{folderId}

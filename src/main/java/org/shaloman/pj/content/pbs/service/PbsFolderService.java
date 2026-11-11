@@ -118,4 +118,24 @@ public class PbsFolderService {
         }
         folderMapper.deleteById(folderId);
     }
+
+    /**
+     * 폴더 순서 변경 (drag&drop).
+     * items: [{folderId, sortOrder}, ...]
+     */
+    public void reorderFolders(List<Map<String, Object>> items) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("items는 필수입니다.");
+        }
+        for (Map<String, Object> item : items) {
+            Object folderIdObj = item.get("folderId");
+            Object sortOrderObj = item.get("sortOrder");
+            if (folderIdObj == null || sortOrderObj == null) {
+                throw new IllegalArgumentException("folderId, sortOrder는 필수입니다.");
+            }
+            Long folderId = Long.valueOf(folderIdObj.toString());
+            Integer sortOrder = Integer.valueOf(sortOrderObj.toString());
+            folderMapper.updateSortOrder(folderId, sortOrder);
+        }
+    }
 }

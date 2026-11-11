@@ -40,6 +40,13 @@ public class PbsFolderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PutMapping("/reorder")
+    @Operation(summary = "폴더 순서 변경 (drag&drop)", description = "폴더들의 정렬 순서를 일괄 변경한다. body: [{folderId, sortOrder}, ...]")
+    public ResponseEntity<Void> reorderFolders(@RequestBody List<Map<String, Object>> items) {
+        folderService.reorderFolders(items);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{folderId}")
     @Operation(summary = "폴더 수정", description = "기존 폴더 정보(이름, 부모, 정렬순서)를 수정한다.")
     public ResponseEntity<PbsFolder> updateFolder(

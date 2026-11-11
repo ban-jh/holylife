@@ -31,6 +31,9 @@ public interface PbsFolderMapper {
     /** 폴더 수정 (동적 SET) */
     int update(PbsFolder folder);
 
+    /** 폴더 정렬순서 변경 (drag&drop) */
+    int updateSortOrder(@Param("folderId") Long folderId, @Param("sortOrder") Integer sortOrder);
+
     /** 폴더 ID로 삭제 */
     int deleteById(@Param("folderId") Long folderId);
 }

@@ -34,6 +34,12 @@ public interface PbsPageMapper {
     /** 페이지 상태 변경 (배포용: DRAFT → PUBLISHED, published_at 설정) */
     int updateStatus(@Param("pageId") Long pageId, @Param("status") String status);
 
+    /** 페이지 정렬순서 변경 (drag&drop) */
+    int updateSortOrder(@Param("pageId") Long pageId, @Param("sortOrder") Integer sortOrder);
+
+    /** 페이지 폴더 이동 (다른 폴더로 이동 + 정렬순서 변경) */
+    int updateFolderId(@Param("pageId") Long pageId, @Param("folderId") Long folderId, @Param("sortOrder") Integer sortOrder);
+
     /** 페이지 ID로 삭제 */
     int deleteById(@Param("pageId") Long pageId);
 }

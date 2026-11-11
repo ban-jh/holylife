@@ -42,6 +42,13 @@ public class PbsPageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PutMapping("/reorder")
+    @Operation(summary = "페이지 순서 변경 (drag&drop)", description = "페이지들의 정렬 순서를 일괄 변경한다. folderId가 포함된 항목은 다른 폴더로 이동. body: [{pageId, sortOrder, folderId?}, ...]")
+    public ResponseEntity<Void> reorderPages(@RequestBody List<Map<String, Object>> items) {
+        pageService.reorderPages(items);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{pageId}/content")
     @Operation(summary = "본문 자동저장", description = "페이지의 본문 내용(content)만 업데이트한다. 에디터 자동저장용.")
     public ResponseEntity<PbsPage> updateContent(

@@ -123,6 +123,20 @@
         WHERE page_id = #{pageId}
     </update>
 
+    <!-- 정렬순서 변경 (drag&drop) -->
+    <update id="updateSortOrder">
+        UPDATE pbs_page
+        SET sort_order = #{sortOrder}, updated_at = NOW()
+        WHERE page_id = #{pageId}
+    </update>
+
+    <!-- 폴더 이동 (다른 폴더로 이동 + 정렬순서 변경) -->
+    <update id="updateFolderId">
+        UPDATE pbs_page
+        SET folder_id = #{folderId}, sort_order = #{sortOrder}, updated_at = NOW()
+        WHERE page_id = #{pageId}
+    </update>
+
     <!-- 페이지 삭제 -->
     <delete id="deleteById">
         DELETE FROM pbs_page WHERE page_id = #{pageId}
