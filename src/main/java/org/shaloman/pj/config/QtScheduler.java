@@ -33,6 +33,8 @@ public class QtScheduler {
             JobParameters params = new JobParametersBuilder()
                     .addString("job.type", "duranno")
                     .addString("job.date", today)
+                    // 매일 새 JobInstance 생성 (동일 파라미터 재실행 충돌 방지)
+                    .addLong("run.id", System.currentTimeMillis())
                     .toJobParameters();
             log.info("QT 크롤링 배치 잡 시작 (Duranno) date={}", today);
             jobLauncher.run(qtCrawlJob, params);
@@ -53,6 +55,8 @@ public class QtScheduler {
             JobParameters params = new JobParametersBuilder()
                     .addString("job.type", "sum")
                     .addString("job.date", today)
+                    // 매일 새 JobInstance 생성 (동일 파라미터 재실행 충돌 방지)
+                    .addLong("run.id", System.currentTimeMillis())
                     .toJobParameters();
             log.info("QT 크롤링 배치 잡 시작 (SUM) date={}", today);
             jobLauncher.run(qtSumCrawlJob, params);

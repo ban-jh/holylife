@@ -9,6 +9,10 @@ spring:
   application:
     name: holylife
 
+  # BatchConfig에서 정의한 JDBC JobRepository가 Boot 자동설정 빈을 덮어쓸 수 있도록 허용
+  main:
+    allow-bean-definition-overriding: true
+
   servlet:
     multipart:
       max-file-size: 10MB

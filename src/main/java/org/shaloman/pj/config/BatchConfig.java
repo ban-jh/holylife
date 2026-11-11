@@ -8,13 +8,16 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.sql.DataSource;
 import java.time.LocalDate;
 
 /**
@@ -24,6 +27,23 @@ import java.time.LocalDate;
 @Slf4j
 @Configuration
 public class BatchConfig {
+
+    /**
+     * JDBC 기반 JobRepository (배치 메타데이터를 DB에 영속화).
+     * Spring Batch 6 기본값은 Resourceless(인메모리) 저장소라
+     * 실행 이력이 남지 않고 JobInstance 판별도 부정확해진다.
+     */
+    @Bean
+    @Primary
+    public JobRepository jdbcJobRepository(DataSource dataSource,
+                                           PlatformTransactionManager transactionManager) throws Exception {
+        JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setTransactionManager(transactionManager);
+        factory.setDatabaseType("MARIADB");
+        factory.afterPropertiesSet();
+        return factory.getObject();
+    }
 
     @Bean
     public Job qtCrawlJob(JobRepository jobRepository, Step qtCrawlStep) {
