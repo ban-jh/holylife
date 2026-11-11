@@ -23,6 +23,8 @@
         <result property="updatedAt" column="updated_at"/>
         <collection property="references" ofType="org.shaloman.pj.content.pbs.domain.PbsReference"
                     column="page_id" select="org.shaloman.pj.content.pbs.mapper.PbsReferenceMapper.findByPageId"/>
+        <collection property="sections" ofType="org.shaloman.pj.content.pbs.domain.PbsPageSection"
+                    column="page_id" select="org.shaloman.pj.content.pbs.mapper.PbsPageSectionMapper.findByPageId"/>
     </resultMap>
 
     <!-- 공통 컬럼 -->

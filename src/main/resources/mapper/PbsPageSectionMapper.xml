@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.shaloman.pj.content.pbs.mapper.PbsPageSectionMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="sectionResultMap" type="org.shaloman.pj.content.pbs.domain.PbsPageSection">
+        <id property="sectionId" column="section_id"/>
+        <result property="pageId" column="page_id"/>
+        <result property="sectionTitle" column="section_title"/>
+        <result property="content" column="content"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 컬럼 -->
+    <sql id="commonColumns">
+        section_id, page_id, section_title, content, sort_order, created_at, updated_at
+    </sql>
+
+    <!-- 페이지 ID로 섹션 목록 조회 (sort_order ASC) -->
+    <select id="findByPageId" resultMap="sectionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_page_section
+        WHERE page_id = #{pageId}
+        ORDER BY sort_order ASC, section_id ASC
+    </select>
+
+    <!-- 섹션 ID로 단일 조회 -->
+    <select id="findById" resultMap="sectionResultMap">
+        SELECT <include refid="commonColumns"/>
+        FROM pbs_page_section
+        WHERE section_id = #{sectionId}
+    </select>
+
+    <!-- 섹션 등록 (useGeneratedKeys로 PK 자동 주입) -->
+    <insert id="insert" parameterType="org.shaloman.pj.content.pbs.domain.PbsPageSection"
+            useGeneratedKeys="true" keyProperty="sectionId">
+        INSERT INTO pbs_page_section (
+            page_id, section_title, content, sort_order
+        ) VALUES (
+            #{pageId}, #{sectionTitle},
+            <choose>
+                <when test="content != null">#{content}</when>
+                <otherwise>''</otherwise>
+            </choose>,
+            <choose>
+                <when test="sortOrder != null">#{sortOrder}</when>
+                <otherwise>0</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 섹션 전체 수정 (동적 SET) -->
+    <update id="update" parameterType="org.shaloman.pj.content.pbs.domain.PbsPageSection">
+        UPDATE pbs_page_section
+        <set>
+            <if test="sectionTitle != null">section_title = #{sectionTitle},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            updated_at = NOW()
+        </set>
+        WHERE section_id = #{sectionId}
+    </update>
+
+    <!-- 섹션 내용만 수정 (자동저장용) -->
+    <update id="updateContent">
+        UPDATE pbs_page_section
+        SET content = #{content}, updated_at = NOW()
+        WHERE section_id = #{sectionId}
+    </update>
+
+    <!-- 섹션 정렬순서 업데이트 (reorder용) -->
+    <update id="updateSortOrder">
+        UPDATE pbs_page_section
+        SET sort_order = #{sortOrder}, updated_at = NOW()
+        WHERE section_id = #{sectionId}
+    </update>
+
+    <!-- 섹션 ID로 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM pbs_page_section WHERE section_id = #{sectionId}
+    </delete>
+
+    <!-- 페이지 ID로 모든 섹션 삭제 -->
+    <delete id="deleteByPageId">
+        DELETE FROM pbs_page_section WHERE page_id = #{pageId}
+    </delete>
+
+</mapper>

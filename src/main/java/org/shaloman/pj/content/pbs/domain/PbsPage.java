@@ -64,4 +64,7 @@ public class PbsPage {
 
     /** 첨부 참조 목록 (URL / IMAGE / DOCUMENT) */
     private List<PbsReference> references;
+
+    /** 페이지 섹션 목록 (영역별 페이징: 관찰/해석/적용 등) */
+    private List<PbsPageSection> sections;
 }
