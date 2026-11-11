@@ -108,7 +108,7 @@
   .bible-select-row select { padding: 7px 6px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); background: var(--cream); font-size: 12px; color: var(--text-primary); outline: none; cursor: pointer; transition: border-color var(--transition); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
   .bible-select-row select:focus { border-color: var(--accent); }
   .bible-testament-select { flex: 1 1 0; min-width: 50px; }
-  .bible-book-select { flex: 2 1 0; min-width: 70px; }
+  .bible-book-select { flex: 0 1 90px; min-width: 60px; max-width: 100px; }
   .bible-num-select { flex: 0 0 9%; min-width: 38px; max-width: 50px; padding: 7px 3px; text-align: center; }
   .bible-range-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
 
@@ -178,7 +178,29 @@
   /* Tree register button */
   .tree-register-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: var(--accent); border-radius: 5px; cursor: pointer; color: #fff; flex-shrink: 0; margin-left: 6px; transition: background var(--transition); }
   .tree-register-btn:hover { background: var(--accent-hover); }
-  .tree-register-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+  .tree-register-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Tree folder button */
+  .tree-folder-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: var(--cream-dark); border-radius: 5px; cursor: pointer; color: var(--brown); flex-shrink: 0; margin-left: 4px; transition: all var(--transition); }
+  .tree-folder-btn:hover { background: var(--accent-light); color: var(--accent-hover); }
+  .tree-folder-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Tree folder delete button — hidden until hover */
+  .tree-folder-delete-btn { display: none; width: 22px; height: 22px; border: none; background: transparent; border-radius: 4px; cursor: pointer; align-items: center; justify-content: center; color: var(--text-muted); flex-shrink: 0; transition: all var(--transition); }
+  .tree-row:hover .tree-folder-delete-btn { display: flex; }
+  .tree-folder-delete-btn:hover { color: #c0392b; background: #fdf0ee; }
+  .tree-folder-delete-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Bible num label */
+  .bible-num-label { font-size: 11px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
+
+  /* Page status tag */
+  .page-status-tag { display: inline-flex; align-items: center; padding: 3px 10px; background: #fff3cd; color: #856404; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .page-status-tag.published { background: #d4edda; color: #155724; }
+
+  /* Publish button */
+  .btn-publish { display: inline-flex; align-items: center; gap: 6px; padding: 7px 18px; border: none; background: #155724; color: #fff; border-radius: var(--radius-sm); font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all var(--transition); font-family: inherit; }
+  .btn-publish:hover { background: #0d3622; }
 
   .tree-newpage { padding: 6px 12px 10px; border-top: 1px solid var(--sand); }
   .newpage-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 7px 10px; background: rgba(201,125,78,0.08); border: 1px dashed rgba(201,125,78,0.35); border-radius: var(--radius-sm); color: var(--accent-hover); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: inherit; text-decoration: none; }
@@ -199,9 +221,6 @@
   .page-meta-info svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
   .page-title-display { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.25; }
   .page-title-edit { width: 100%; font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.25; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none; padding: 2px 0; font-family: inherit; }
-  .page-date-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-  .page-date-label { font-size: 11.5px; color: var(--text-muted); }
-  .page-date-input { padding: 4px 10px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-primary); font-family: inherit; outline: none; }
 
   /* ── Single Content Editor (관찰/해석/적용 통합) ── */
   .content-card { background: var(--warm-white); border: 1px solid var(--sand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
@@ -292,7 +311,7 @@
   }
 </style>
 </head>
-<body class="view-mode">
+<body class="edit-mode">
 
 <div class="layout">
 
@@ -391,9 +410,6 @@
         <button class="icon-btn view-only" title="편집" onclick="enterEditMode()">
           <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
-        <button class="icon-btn" title="공유" onclick="showToast('공유 링크가 복사되었습니다.')">
-          <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
         <div class="header-avatar">박</div>
       </div>
     </header>
@@ -408,8 +424,11 @@
             <div class="panel-title">
               <svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
               성경공부
-              <button class="tree-register-btn" onclick="showToast('새 성경공부 페이지를 등록합니다.')" title="등록">
-                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <button class="tree-folder-btn" onclick="createFolder()" title="폴더 생성">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              </button>
+              <button class="tree-register-btn" onclick="createPage()" title="페이지 등록">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
               </button>
               <button class="tree-toggle-btn" onclick="toggleTreePanel()" title="트리 접기">
                 <svg id="treeToggleIcon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -423,14 +442,15 @@
             </div>
           </div>
           <nav class="tree-nav">
-            <!-- 구약 -->
-            <div class="tree-section-label">구약</div>
-            <div class="tree-node">
-              <div class="tree-row parent-active" onclick="toggleTreeNode('ot-genesis', this)">
+            <div class="tree-node" data-node-id="genesis" data-node-type="folder">
+              <div class="tree-row parent-active" onclick="toggleTreeNode('ot-genesis', this)" onfocus="setFocusedNode('genesis')" tabindex="0">
                 <svg class="tree-chevron open" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                 <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <span class="tree-label">창세기</span>
                 <span class="tree-count">2</span>
+                <button class="tree-folder-delete-btn" onclick="event.stopPropagation(); if(confirm('창세기 폴더와 하위 페이지를 모두 삭제하시겠습니까?')) { showToast('폴더가 삭제되었습니다.'); }" title="폴더 삭제">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
               <div class="tree-sub open" id="ot-genesis">
                 <div class="tree-sub-item-wrapper">
@@ -453,12 +473,15 @@
                 </div>
               </div>
             </div>
-            <div class="tree-node">
-              <div class="tree-row" onclick="toggleTreeNode('ot-exodus', this)">
+            <div class="tree-node" data-node-id="exodus" data-node-type="folder">
+              <div class="tree-row" onclick="toggleTreeNode('ot-exodus', this)" onfocus="setFocusedNode('exodus')" tabindex="0">
                 <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                 <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <span class="tree-label">출애굽기</span>
                 <span class="tree-count">1</span>
+                <button class="tree-folder-delete-btn" onclick="event.stopPropagation(); if(confirm('출애굽기 폴더와 하위 페이지를 모두 삭제하시겠습니까?')) { showToast('폴더가 삭제되었습니다.'); }" title="폴더 삭제">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
               <div class="tree-sub" id="ot-exodus">
                 <div class="tree-sub-item-wrapper">
@@ -472,12 +495,15 @@
                 </div>
               </div>
             </div>
-            <div class="tree-node">
-              <div class="tree-row" onclick="toggleTreeNode('ot-psalms', this)">
+            <div class="tree-node" data-node-id="psalms" data-node-type="folder">
+              <div class="tree-row" onclick="toggleTreeNode('ot-psalms', this)" onfocus="setFocusedNode('psalms')" tabindex="0">
                 <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                 <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <span class="tree-label">시편</span>
                 <span class="tree-count">1</span>
+                <button class="tree-folder-delete-btn" onclick="event.stopPropagation(); if(confirm('시편 폴더와 하위 페이지를 모두 삭제하시겠습니까?')) { showToast('폴더가 삭제되었습니다.'); }" title="폴더 삭제">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
               <div class="tree-sub" id="ot-psalms">
                 <div class="tree-sub-item-wrapper">
@@ -492,14 +518,16 @@
               </div>
             </div>
 
-            <!-- 신약 -->
-            <div class="tree-section-label">신약</div>
-            <div class="tree-node">
-              <div class="tree-row" onclick="toggleTreeNode('nt-john', this)">
+            <!-- 신약 라벨 삭제 -->
+            <div class="tree-node" data-node-id="john" data-node-type="folder">
+              <div class="tree-row" onclick="toggleTreeNode('nt-john', this)" onfocus="setFocusedNode('john')" tabindex="0">
                 <svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                 <svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 <span class="tree-label">요한복음</span>
                 <span class="tree-count">1</span>
+                <button class="tree-folder-delete-btn" onclick="event.stopPropagation(); if(confirm('요한복음 폴더와 하위 페이지를 모두 삭제하시겠습니까?')) { showToast('폴더가 삭제되었습니다.'); }" title="폴더 삭제">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
               <div class="tree-sub" id="nt-john">
                 <div class="tree-sub-item-wrapper">
@@ -526,11 +554,6 @@
           </div>
           <div class="panel-bible-body">
             <div class="bible-select-row">
-              <select class="bible-testament-select" onchange="showToast('신구약이 변경되었습니다.')">
-                <option value="">신구약</option>
-                <option value="old" selected>구약</option>
-                <option value="new">신약</option>
-              </select>
               <select class="bible-book-select" onchange="showToast('성경책이 변경되었습니다.')">
                 <option selected>창세기</option>
                 <option>출애굽기</option>
@@ -540,23 +563,26 @@
                 <option>시편</option>
                 <option>요한복음</option>
               </select>
+              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('장이 변경되었습니다.')">
-                <option>1</option>
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
+              <label class="bible-num-label">절</label>
               <select class="bible-num-select" onchange="showToast('시작 절이 변경되었습니다.')">
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
               <span class="bible-range-sep">~</span>
+              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('끝 장이 변경되었습니다.')">
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
+              <label class="bible-num-label">절</label>
               <select class="bible-num-select" onchange="showToast('끝 절이 변경되었습니다.')">
                 <option selected>3</option>
                 <option>5</option>
@@ -585,21 +611,19 @@
             <div class="page-title-area">
               <div class="page-meta-row">
                 <span class="page-meta-tag">성경공부</span>
+                <span class="page-status-tag edit-only" id="draftTag">임시저장</span>
                 <div class="page-meta-info">
-                  <span><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> 2026.08.25</span>
                   <span><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 관리자</span>
-                  <span><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> v3</span>
+                </div>
+                <div class="page-actions" style="margin-left: auto; display: flex; gap: 8px;">
+                  <button class="btn-publish edit-only" onclick="publishPage()">배포</button>
                 </div>
               </div>
               <div class="view-only">
                 <div class="page-title-display">창세기 1장 — 하나님이 세상을 창조하셨다</div>
               </div>
               <div class="edit-only">
-                <input class="page-title-edit" type="text" value="창세기 1장 — 하나님이 세상을 창조하셨다">
-                <div class="page-date-row">
-                  <span class="page-date-label">날짜:</span>
-                  <input class="page-date-input" type="date" value="2026-08-25">
-                </div>
+                <input class="page-title-edit" id="pageTitleInput" type="text" value="창세기 1장 — 하나님이 세상을 창조하셨다" oninput="autoSave()">
               </div>
             </div>
 
@@ -609,7 +633,7 @@
                 <div class="content-card-icon">✎</div>
                 <div>
                   <div class="content-card-title">내용</div>
-                  <div class="content-card-subtitle">관찰 · 해석 · 적용을 자유롭게 작성하세요</div>
+                  <div class="content-card-subtitle edit-only">입력하는 즉시 자동 저장됩니다</div>
                 </div>
               </div>
               <div class="content-card-body">
@@ -626,7 +650,7 @@
                     <div class="toolbar-sep"></div>
                     <button class="toolbar-btn" title="링크"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
                   </div>
-                  <textarea class="content-editor" placeholder="관찰, 해석, 적용을 자유롭게 작성하세요.">[관찰]
+                  <textarea class="content-editor" id="contentEditor" placeholder="내용을 자유롭게 작성하세요." oninput="autoSave()">[관찰]
 태초에 하나님이 말씀으로 천지를 창조하셨다. 첫째 날에 빛과 어둠이 구분되었고, 낮과 밤이 생겼다. 하나님의 영이 물 위에 움직이고 계셨으며, 혼돈과 공허 상태에서 질서가 창조되었다.
 
 [해석]
@@ -726,6 +750,102 @@
 
   function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
   function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
+
+  // ── Tree node focus tracking ──
+  var focusedNode = 'genesis'; // default focused folder
+  function setFocusedNode(nodeId) {
+    focusedNode = nodeId;
+  }
+
+  // ── Create page (임시 제목으로 페이지 생성, 현재 포커스된 폴더 하위에) ──
+  function createPage() {
+    var folderName = '새 폴더';
+    var folderEl = document.querySelector('[data-node-id="' + focusedNode + '"]');
+    if (folderEl) {
+      var label = folderEl.querySelector('.tree-label');
+      if (label) folderName = label.textContent;
+    }
+    var tempTitle = '새 페이지';
+    // 트리에 새 페이지 아이템 추가
+    var subId = focusedNode === 'genesis' ? 'ot-genesis' : focusedNode === 'exodus' ? 'ot-exodus' : focusedNode === 'psalms' ? 'ot-psalms' : 'nt-john';
+    var subEl = document.getElementById(subId);
+    if (subEl) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'tree-sub-item-wrapper';
+      var thumb = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27%3E%3Crect width=%2740%27 height=%2740%27 rx=%276%27 fill=%27%23f0d4ba%27/%3E%3Ctext x=%2720%27 y=%2726%27 font-size=%2716%27 text-anchor=%27middle%27 fill=%27%23c97d4e%27 font-family=%27sans-serif%27%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E';
+      wrapper.innerHTML = '<a class="tree-sub-item" href="pbs_page_view.html"><img class="tree-thumb" src="' + thumb + '" alt="' + tempTitle + '"><span>' + tempTitle + '</span></a>' +
+        '<button class="tree-delete-btn" onclick="if(confirm(\'' + tempTitle + ' 페이지를 삭제하시겠습니까?\')) { showToast(\'페이지가 삭제되었습니다.\'); }" title="삭제"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+      subEl.appendChild(wrapper);
+      // 폴더 열기
+      subEl.classList.add('open');
+      var chevron = folderEl.querySelector('.tree-chevron');
+      if (chevron) chevron.classList.add('open');
+      var row = folderEl.querySelector('.tree-row');
+      if (row) row.classList.add('parent-active');
+    }
+    // 편집 모드로 진입 + 임시 제목 설정
+    document.body.classList.add('edit-mode');
+    document.body.classList.remove('view-mode');
+    var titleInput = document.getElementById('pageTitleInput');
+    if (titleInput) { titleInput.value = tempTitle; titleInput.focus(); titleInput.select(); }
+    var editor = document.getElementById('contentEditor');
+    if (editor) editor.value = '';
+    showToast('새 페이지가 생성되었습니다. 제목과 내용을 입력하세요.');
+  }
+
+  // ── Create folder ──
+  function createFolder() {
+    var nav = document.querySelector('.tree-nav');
+    var folderName = prompt('폴더 이름을 입력하세요', '새 폴더');
+    if (!folderName) return;
+    var nodeId = 'folder-' + Date.now();
+    var node = document.createElement('div');
+    node.className = 'tree-node';
+    node.setAttribute('data-node-id', nodeId);
+    node.setAttribute('data-node-type', 'folder');
+    node.innerHTML = '<div class="tree-row" onclick="toggleTreeNode(\'' + nodeId + '-sub\', this)" onfocus="setFocusedNode(\'' + nodeId + '\')" tabindex="0">' +
+      '<svg class="tree-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>' +
+      '<svg class="tree-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' +
+      '<span class="tree-label">' + folderName + '</span><span class="tree-count">0</span>' +
+      '<button class="tree-folder-delete-btn" onclick="event.stopPropagation(); if(confirm(\'' + folderName + ' 폴더를 삭제하시겠습니까?\')) { this.closest(\\'.tree-node\\').remove(); showToast(\'폴더가 삭제되었습니다.\'); }" title="폴더 삭제">' +
+      '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>' +
+      '<div class="tree-sub" id="' + nodeId + '-sub"></div>';
+    nav.appendChild(node);
+    showToast('폴더가 생성되었습니다: ' + folderName);
+  }
+
+  // ── Auto save (입력 즉시 자동 저장, debounce) ──
+  var autoSaveTimer;
+  function autoSave() {
+    clearTimeout(autoSaveTimer);
+    var tag = document.getElementById('draftTag');
+    if (tag) { tag.textContent = '저장 중...'; tag.classList.remove('published'); }
+    autoSaveTimer = setTimeout(function() {
+      if (tag) { tag.textContent = '임시저장'; }
+      // 실제 구현에서는 API 호출로 자동 저장
+    }, 800);
+  }
+
+  // ── Publish page (배포 → 읽기 모드 전환) ──
+  function publishPage() {
+    if (confirm('페이지를 배포하시겠습니까? 배포 후 읽기 모드로 전환됩니다.')) {
+      document.body.classList.remove('edit-mode');
+      document.body.classList.add('view-mode');
+      var tag = document.getElementById('draftTag');
+      if (tag) { tag.textContent = '배포됨'; tag.classList.add('published'); }
+      // title display 업데이트
+      var titleInput = document.getElementById('pageTitleInput');
+      var titleDisplay = document.querySelector('.page-title-display');
+      if (titleInput && titleDisplay) titleDisplay.textContent = titleInput.value;
+      // content display 업데이트
+      var editor = document.getElementById('contentEditor');
+      var display = document.querySelector('.content-display');
+      if (editor && display) {
+        display.innerHTML = editor.value.split('\n').map(function(line) { return line.trim() ? '<p>' + line + '</p>' : ''; }).join('');
+      }
+      showToast('페이지가 배포되었습니다.');
+    }
+  }
 
   // ── Page tree toggle ──
   function toggleTreeNode(id, el) {
