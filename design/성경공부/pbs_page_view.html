@@ -554,6 +554,11 @@
           </div>
           <div class="panel-bible-body">
             <div class="bible-select-row">
+              <select class="bible-testament-select" onchange="showToast('신구약이 변경되었습니다.')">
+                <option value="">신구약</option>
+                <option value="old" selected>구약</option>
+                <option value="new">신약</option>
+              </select>
               <select class="bible-book-select" onchange="showToast('성경책이 변경되었습니다.')">
                 <option selected>창세기</option>
                 <option>출애굽기</option>
@@ -563,32 +568,32 @@
                 <option>시편</option>
                 <option>요한복음</option>
               </select>
-              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('장이 변경되었습니다.')">
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
-              <label class="bible-num-label">절</label>
+              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('시작 절이 변경되었습니다.')">
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
+              <label class="bible-num-label">절</label>
               <span class="bible-range-sep">~</span>
-              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('끝 장이 변경되었습니다.')">
                 <option selected>1</option>
                 <option>2</option>
                 <option>3</option>
               </select>
-              <label class="bible-num-label">절</label>
+              <label class="bible-num-label">장</label>
               <select class="bible-num-select" onchange="showToast('끝 절이 변경되었습니다.')">
                 <option selected>3</option>
                 <option>5</option>
                 <option>10</option>
                 <option>전체</option>
               </select>
+              <label class="bible-num-label">절</label>
             </div>
             <div class="tabs">
               <button class="tab active" onclick="changeBible('new', this)">새번역</button>
