@@ -225,7 +225,8 @@ SELECT status, COUNT(*) FROM pbs_page GROUP BY status;
 - [ ] `JWT_SECRET`이 코드에 하드코딩되지 않았는가 (운영은 환경변수)
 - [ ] DB 계정이 `0.0.0.0` 바인딩이면 외부 노출 여부 확인 → 내부망이면 `127.0.0.1` 권장
 - [ ] 방화벽(ufw) 정책 확인 — 현재 비활성 상태
-- [ ] CORS 허용 origin이 운영 도메인만인가
+- [ ] CORS 허용 origin이 운영 도메인만인가 (앱 사용 시 `https://localhost` 포함)
+- [ ] 앱 WebView에서 HTTP API 호출 시 Mixed Content 차단 여부 확인 (`androidScheme`)
 - [ ] 업로드 디렉터리 실행 권한 없음
 - [ ] 관리자 계정 비밀번호 정기 변경
 - [ ] Swagger 운영 노출 여부 결정 (`springdoc.swagger-ui.enabled`)

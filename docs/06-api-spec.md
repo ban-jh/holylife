@@ -18,6 +18,23 @@
 - JWT 만료: **24시간** (`jwt.expiration=86400000`)
 - 면제 경로: `/api/auth/login`, `/api/pbs/**`, `/uploads/**`, Swagger
 
+### CORS (허용 출처)
+| 구분 | Origin |
+|------|--------|
+| 웹 | `http://localhost(:38080)`, `http://192.168.2.15(:38080)`, `http://123.143.232.180(:38080)` |
+| 모바일 앱 (Capacitor) | `https://localhost`, `capacitor://localhost`, `ionic://localhost` |
+
+- `OPTIONS` preflight는 **인증 없이 통과** (`HttpMethod.OPTIONS → permitAll`)
+- 허용 메서드: GET, POST, PUT, DELETE, PATCH, **OPTIONS**
+- 허용 헤더: `*` (요청 헤더를 그대로 echo), 노출 헤더: `Authorization`, `Content-Disposition`
+- `allowCredentials: true` + `allowedOriginPatterns` 사용 → 허용 목록 이외 출처는 **403**
+
+> ⚠️ **WebView 혼합 콘텐츠(Mixed Content)**
+> Capacitor 6+의 기본 `androidScheme`는 `https`라 앱 Origin이 `https://localhost`가 됩니다.
+> 이 상태에서 `http://192.168.2.15:38081` API를 호출하면 CORS가 통과해도 **WebView가 Mixed Content로 차단**합니다.
+> 개발용 HTTP 서버라면 `capacitor.config.ts`에서 `server.androidScheme: 'http'`(Origin → `http://localhost`)로 두거나
+> `android.allowMixedContent: true` / `CapacitorHttp` 플러그인을 사용해야 합니다.
+
 ### 응답 형식
 성공: HTTP 200/201 + JSON 본문 (도메인 DTO)
 오류:

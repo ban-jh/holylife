@@ -42,6 +42,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
+                // CORS 사전 요청(Preflight)은 인증 없이 통과
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                 // 공개 엔드포인트
                 auth.requestMatchers("/api/auth/login").permitAll();
                 // 회원가입(POST /api/users)은 인증 필요 — 관리자만 사용자 등록 (취약점 #6)
@@ -68,16 +70,26 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         // 취약점 #2: CORS 제한 — 특정 origin만 허용
         config.setAllowedOriginPatterns(List.of(
+            // 웹 (Nginx / Vite)
             "http://localhost",
             "http://localhost:80",
             "http://localhost:38080",
             "http://123.143.232.180",
             "http://123.143.232.180:38080",
             "http://192.168.2.15",
-            "http://192.168.2.15:38080"
+            "http://192.168.2.15:38080",
+            // 모바일 앱 (Capacitor WebView)
+            //  - Android: https://localhost (Capacitor 6+ 기본 androidScheme)
+            //  - iOS: capacitor://localhost
+            //  - 구버전/Ionic: ionic://localhost
+            "https://localhost",
+            "https://localhost:38080",
+            "capacitor://localhost",
+            "ionic://localhost"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
