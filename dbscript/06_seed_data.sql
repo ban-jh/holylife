@@ -10,8 +10,10 @@ INSERT INTO roles (role_id, group_code, group_name, group_desc, use_yn) VALUES
 
 -- ---------- users (관리자 계정) ----------
 -- 비밀번호: test12345 (BCrypt 해시)
-INSERT INTO users (user_id, email, password, name, nickname, role_group, account_status, bible_version, qt_source) VALUES
-(1, 'admin@holylife.local', '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqJ3k0z4Z4Z4Z4Z4Z4Z4Z4Z4Z4Z4Z4', '관리자', '관리자', 'SYS_ADMIN', 'A', 'gae', 'duranno');
+INSERT INTO users (user_id, email, password, name, nickname, role_group, account_status,
+                   bible_version, qt_source,
+                   email_notification, two_factor_auth, session_auto_expiry, activity_log) VALUES
+(1, 'admin@holylife.local', '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqJ3k0z4Z4Z4Z4Z4Z4Z4Z4Z4Z4Z4', '관리자', '관리자', 'SYS_ADMIN', 'A', 'gae', 'duranno', 0, 0, 1, 0);
 
 -- ---------- user_roles (사용자-권한 매핑) ----------
 INSERT INTO user_roles (user_id, role_id) VALUES

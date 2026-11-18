@@ -2,33 +2,36 @@
 -- HolyLife Database Schema Script
 -- Database: holylife (MariaDB 10.11)
 --
--- 파일 구성:
---   01_schema_drop.sql       — 기존 테이블 삭제 (선택)
---   02_schema_system.sql     — 시스템 (users, roles, user_roles, menus, permissions, group_codes, common_codes)
---   03_schema_content.sql    — 콘텐츠 (sermons, qts, qt_daily, reading_notes, pbs_folder, pbs_page, pbs_page_section,
---                              pbs_reference, pbs_tag_map, tags, sermon_tags, qt_tags, reference_resources)
---   04_schema_bible.sql      — 성경 (bible_versions, bible_books)
---   05_schema_batch.sql      — Spring Batch 메타 (BATCH_*)
---   06_seed_data.sql         — 초기 데이터 (관리자 계정, 권한, 메뉴, 공통코드, 성경 버전)
---   07_indexes.sql           — 인덱스 생성
---   batch_schema.sql         — Spring Batch 6 공식 스키마 (네이티브 SEQUENCE)
---   pbs_schema.sql           — P.B.S 폴더/페이지/참고자료 스키마
+-- ▶ 이 스크립트는 **현재 운영 DB의 실제 구조**를 그대로 재현합니다.
+--   (information_schema / SHOW CREATE TABLE 기준, 2026-11-14 검증)
+--   검증 결과: 테이블 28개 · 컬럼 244개 · 인덱스 61개 · FK 26개 · 시퀀스 3개 완전 일치
 --
--- 실행 순서: 01 → 02 → 03 → 04 → 05 → 06 → 07
+-- 파일 구성 / 실행 순서
+--   01_schema_drop.sql       — 기존 테이블 삭제 (신규 설치 시 선택)
+--   02_schema_system.sql     — 시스템 7개
+--   03_schema_content.sql    — 콘텐츠 13개 (설교/QT/독서/P.B.S/태그/참고자료)
+--   04_schema_bible.sql      — 성경 2개 (bible_versions, bible_books)
+--   05_schema_batch.sql      — Spring Batch 6 메타 6개 + 네이티브 SEQUENCE 3개
+--   06_seed_data.sql         — 초기 데이터 (관리자, 권한, 메뉴, 공통코드, 성경 버전)
+--   07_indexes.sql           — 추가 인덱스 (선택 · 현재 운영 DB 미적용, 주석 상태)
+--
+-- 실행 예
+--   mysql --default-character-set=utf8mb4 -u shaloman -p holylife < 02_schema_system.sql
+--   (01 → 02 → 03 → 04 → 05 → 06 → 07 순서)
+--
+-- 참고용 단일 파일 (내용은 03/05와 동일)
+--   pbs_schema.sql    — P.B.S 5개 테이블
+--   batch_schema.sql  — Batch 메타 + 시퀀스
 -- ============================================================
 
--- 전체 테이블 목록 (비즈니스 22개 + Batch 메타 6개 + 시퀀스 3개)
---
 -- [시스템] users, roles, user_roles, menus, permissions, group_codes, common_codes
--- [콘텐츠] sermons, sermon_tags, qts, qt_tags, qt_daily, reading_notes,
---          pbs_folder, pbs_page, pbs_page_section, pbs_reference, pbs_tag_map,
---          tags, reference_resources
--- [성경]   bible_versions, bible_books  (개역개정/새번역/NIV 66권, 약 9만 절)
+-- [콘텐츠] sermons, sermon_tags, qts, qt_tags, qt_daily, tags, reference_resources, reading_notes
+-- [P.B.S]  pbs_folder, pbs_page, pbs_page_section, pbs_reference, pbs_tag_map
+-- [성경]   bible_versions, bible_books  (66권 3역본, 90,878절)
 --
 -- [Batch]  BATCH_JOB_INSTANCE, BATCH_JOB_EXECUTION, BATCH_JOB_EXECUTION_PARAMS,
 --          BATCH_JOB_EXECUTION_CONTEXT, BATCH_STEP_EXECUTION, BATCH_STEP_EXECUTION_CONTEXT
--- [Batch 시퀀스 — 네이티브 SEQUENCE]
---          BATCH_JOB_INSTANCE_SEQ, BATCH_JOB_EXECUTION_SEQ, BATCH_STEP_EXECUTION_SEQ
+-- [Batch SEQ] BATCH_JOB_INSTANCE_SEQ, BATCH_JOB_EXECUTION_SEQ, BATCH_STEP_EXECUTION_SEQ
 --
--- 참고: Spring Batch 6는 테이블 기반 시퀀스(BATCH_JOB_SEQ)를 사용하지 않습니다.
---       반드시 batch_schema.sql 의 CREATE SEQUENCE 문을 사용하세요.
+-- ⚠️ Spring Batch 6는 테이블 기반 시퀀스(BATCH_JOB_SEQ)를 사용하지 않습니다.
+--    반드시 05_schema_batch.sql 의 CREATE SEQUENCE 문을 사용하세요.
