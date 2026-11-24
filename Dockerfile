@@ -23,7 +23,7 @@ WORKDIR /app
 # 빌드된 JAR 복사
 COPY --from=builder /build/target/holylife-*-SNAPSHOT.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
 # 프로파일과 DB 접속 정보는 실행 환경에서 주입
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
