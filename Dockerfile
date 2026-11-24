@@ -23,18 +23,7 @@ WORKDIR /app
 # 빌드된 JAR 복사
 COPY --from=builder /build/target/holylife-*-SNAPSHOT.jar app.jar
 
-# DB 덤프 복사 (초기화용)
-COPY docker/init-db.sql /docker-entrypoint-initdb.d/init-db.sql
-
-# application-prod.yml 복사
-COPY src/main/resources/application.yml /app/config/application.yml
-
 EXPOSE 8080
 
-# Spring Boot 실행 — Docker 환경에 맞게 DB 호스트를 mariadb로 설정
-ENTRYPOINT ["java", "-jar", "/app/app.jar", \
-  "--spring.profiles.active=prod", \
-  "--spring.config.additional-location=file:/app/config/", \
-  "--spring.datasource.url=jdbc:mariadb://mariadb:3306/holylife", \
-  "--spring.datasource.username=shaloman", \
-  "--spring.datasource.password=123321"]
+# 프로파일과 DB 접속 정보는 실행 환경에서 주입
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
