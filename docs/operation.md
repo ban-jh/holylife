@@ -1,0 +1,366 @@
+# HolyLife Docker 배포 안내서
+
+이 문서는 Ubuntu 서버에 HolyLife 백엔드와 프론트엔드를 Docker Compose로 배포하는 절차를 설명합니다. 서버의 MariaDB는 기존 별도 DB를 사용하며, 이 안내서에서 MariaDB 컨테이너를 새로 만들지는 않습니다.
+
+> **현재 배포 준비 상태:** 저장소에 백엔드 Dockerfile과 프론트엔드 Dockerfile/Nginx 설정은 있지만, 현재 `docker-compose.yml`에는 프론트엔드 서비스가 없습니다. 또한 백엔드 포트는 `38081`인데 Nginx는 `8080`으로 연결하도록 되어 있습니다. 아래 절차의 4단계에서 두 설정을 반드시 맞춘 뒤 배포하세요.
+
+## 1. 배포 구조와 서버 경로
+
+### 간략 설명
+
+Git 소스와 운영 데이터의 위치를 분리합니다. Docker Compose 명령은 백엔드 디렉터리에서 실행하며, 프론트엔드 빌드 경로는 그 옆의 `frontend` 디렉터리입니다.
+
+### 명령어
+
+```text
+/opt/holylife/
+├── backend/          백엔드 Git 저장소와 docker-compose.yml
+├── frontend/         프론트엔드 Git 저장소
+├── config/.env       DB 접속 정보와 JWT 키 (Git에 올리지 않음)
+├── uploads/          업로드 파일 보관 (컨테이너 교체 후에도 유지)
+└── logs/              백엔드 로그 보관
+```
+
+### 자세한 설명
+
+<details>
+<summary>각 경로가 사용되는 이유</summary>
+
+- `/opt/holylife/backend`: Spring Boot 소스, 백엔드 Dockerfile, Compose 파일을 둡니다.
+- `/opt/holylife/frontend`: Vue 소스, 프론트엔드 Dockerfile, `docker/nginx.conf`를 둡니다.
+- `/opt/holylife/config/.env`: DB 주소/계정/비밀번호와 JWT 서명 키를 둡니다. 저장소 안의 `.env`와 분리해 운영 비밀값이 Git에 올라가지 않게 합니다.
+- `/opt/holylife/uploads`: 사용자가 업로드한 이미지 파일을 둡니다. 백엔드 컨테이너의 `/opt/holylife/uploads`와 연결합니다.
+- `/opt/holylife/logs`: 백엔드 로그를 둡니다. 백엔드 컨테이너의 `/opt/holylife/logs`와 연결합니다.
+
+프론트엔드 컨테이너는 빌드된 웹 파일을 `/usr/share/nginx/html`에서 제공합니다. 백엔드 컨테이너는 JAR을 `/app/app.jar`로 실행합니다. 두 경로는 컨테이너 안의 경로이며 서버의 소스 디렉터리와 다릅니다.
+</details>
+
+## 2. 서버 사전 준비
+
+### 간략 설명
+
+Ubuntu 서버에 Docker와 Docker Compose를 설치합니다. 클라우드 VM을 사용한다면 클라우드 방화벽에서도 웹 접속 포트 80을 허용해야 합니다.
+
+### 명령어
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl git
+curl -fsSL https://get.docker.com | sudo sh
+sudo apt install -y docker-compose-plugin
+sudo systemctl enable --now docker
+sudo docker version
+sudo docker compose version
+```
+
+### 자세한 설명
+
+<details>
+<summary>명령어와 네트워크 설정 설명</summary>
+
+위 명령은 Ubuntu/Debian 계열 서버 기준입니다. 버전 확인 명령에서 Docker Engine과 Compose 버전이 나오면 설치가 끝난 것입니다. 서버 재부팅 뒤에도 Docker가 자동으로 시작되도록 설정합니다.
+
+클라우드 콘솔의 방화벽/보안 규칙과 서버 방화벽에서 외부 접속용 TCP 80번 포트를 허용하세요. HTTPS를 설정할 계획이라면 443번도 열어 둡니다. 백엔드 38081번과 DB 3306번은 인터넷 전체에 공개하지 마세요. DB 서버는 Docker 서버에서만 접속할 수 있게 DB 서버 방화벽과 계정 권한을 제한해야 합니다.
+</details>
+
+## 3. 저장소 내려받기와 데이터 디렉터리 만들기
+
+### 간략 설명
+
+두 저장소를 `/opt/holylife` 아래 형제 디렉터리로 내려받고, 업로드/로그 디렉터리를 만듭니다.
+
+### 명령어
+
+```bash
+sudo mkdir -p /opt/holylife
+sudo chown "$USER":"$USER" /opt/holylife
+cd /opt/holylife
+
+git clone -b main https://github.com/ban-jh/holylife.git backend
+git clone -b main https://github.com/ban-jh/holylifeView.git frontend
+
+mkdir -p /opt/holylife/config /opt/holylife/uploads /opt/holylife/logs
+```
+
+### 자세한 설명
+
+<details>
+<summary>서버에 이미 저장소가 있는 경우</summary>
+
+`git clone`은 저장소 디렉터리가 이미 있으면 실패합니다. 이미 내려받은 저장소가 있다면 다시 clone하지 말고 해당 디렉터리에서 `git status`와 `git pull`로 상태를 확인하세요. 운영 중인 서버라면 로컬 변경사항이 있는지 확인한 뒤 업데이트해야 합니다.
+
+백엔드는 `dev` 브랜치, 프론트엔드는 `main` 브랜치를 기준으로 안내합니다. 실제로 운영할 코드가 다른 브랜치라면 배포 전에 브랜치를 확인하세요.
+</details>
+
+## 4. Compose와 Nginx 설정 맞추기
+
+### 간략 설명
+
+현재 저장소 설정 그대로는 프론트엔드가 Compose에 포함되지 않고 Nginx도 백엔드 포트를 잘못 가리킵니다. 아래 두 파일을 수정해야 전체 구성이 연결됩니다.
+
+### 명령어
+
+백엔드 Compose 파일을 엽니다.
+
+```bash
+nano /opt/holylife/backend/docker-compose.yml
+```
+
+파일 내용을 다음 구성으로 바꿉니다.
+
+```yaml
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: holylife-backend
+    restart: unless-stopped
+    expose:
+      - "38081"
+    volumes:
+      - ../uploads:/opt/holylife/uploads
+      - ../logs:/opt/holylife/logs
+    networks:
+      - holylife-net
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mariadb://${DB_HOST:?DB_HOST를 설정하세요}:${DB_PORT:-3306}/${DB_NAME:?DB_NAME을 설정하세요}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:?DB_USERNAME을 설정하세요}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD를 설정하세요}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET을 설정하세요}
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: holylife-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - holylife-net
+
+networks:
+  holylife-net:
+    driver: bridge
+```
+
+백엔드 포트는 Docker 네트워크에서 `38081`로만 노출합니다. 프론트엔드의 Nginx 설정 파일을 엽니다.
+
+```bash
+nano /opt/holylife/frontend/docker/nginx.conf
+```
+
+파일에서 `proxy_pass http://backend:8080;` 세 줄을 모두 다음 값으로 바꿉니다.
+
+```nginx
+proxy_pass http://backend:38081;
+```
+
+### 자세한 설명
+
+<details>
+<summary>설정을 맞춰야 하는 이유와 저장 방법</summary>
+
+백엔드의 `application.yml`은 서버 포트 `38081`을 사용합니다. 현재 Nginx 설정은 API, Swagger, 업로드 요청을 `backend:8080`으로 보내므로 이대로면 연결에 실패합니다. Compose의 `backend` 서비스가 포트 38081을 내부 네트워크에 제공하고 Nginx도 같은 포트를 사용하도록 맞춥니다.
+
+인터넷에서 공개하는 포트는 프론트엔드의 80번뿐입니다. `expose`는 Docker 네트워크에서만 백엔드를 사용할 수 있게 하므로 38081 포트가 외부에 직접 노출되지 않습니다.
+
+`nano`에서는 `Ctrl+O`, Enter로 저장하고 `Ctrl+X`로 종료합니다. Compose의 상대 볼륨 경로는 Compose 파일 위치(`/opt/holylife/backend`) 기준이므로 `../uploads`와 `../logs`는 `/opt/holylife/uploads`, `/opt/holylife/logs`에 연결됩니다.
+</details>
+
+## 5. DB와 운영 비밀값 설정
+
+### 간략 설명
+
+DB 접속 정보와 JWT 서명 키를 서버의 `.env` 파일에 저장합니다. 이 프로젝트는 별도 MariaDB를 사용하므로 그 DB가 먼저 준비되어야 합니다.
+
+### 명령어
+
+```bash
+nano /opt/holylife/config/.env
+```
+
+다음 형식으로 입력하고 실제 값으로 바꿉니다.
+
+```dotenv
+DB_HOST=DB서버의_접속가능한_주소
+DB_PORT=3306
+DB_NAME=holylife
+DB_USERNAME=DB사용자
+DB_PASSWORD=DB비밀번호
+JWT_SECRET=충분히_길고_임의적인_문자열
+```
+
+```bash
+chmod 600 /opt/holylife/config/.env
+```
+
+### 자세한 설명
+
+<details>
+<summary>DB 주소, 비밀번호, JWT 키 설명</summary>
+
+`DB_HOST`에는 애플리케이션 서버에서 접근할 수 있는 DB 서버 주소를 적습니다. DB가 애플리케이션 서버와 다른 장비에 있다면 `localhost`는 사용할 수 없습니다. DB 서버 방화벽은 애플리케이션 서버의 IP에서 오는 3306 접속만 허용하세요.
+
+`JWT_SECRET`은 로그인 토큰을 서명하는 비밀 키입니다. 운영 환경에서는 저장소의 개발 기본값을 쓰지 말고 별도의 긴 임의 문자열을 사용합니다. 비밀값을 Git에 커밋하거나 공개 채팅에 붙여 넣지 마세요. `chmod 600`은 파일 소유자만 읽고 쓸 수 있게 합니다.
+
+Compose 명령에는 `--env-file /opt/holylife/config/.env`를 붙입니다. 그래야 Compose가 이 파일을 읽어 DB 주소와 비밀값을 컨테이너에 전달합니다.
+</details>
+
+## 6. 데이터베이스 스키마 준비
+
+### 간략 설명
+
+백엔드 시작 전에 MariaDB에 `holylife` 스키마와 테이블이 준비되어 있어야 합니다. 새 DB를 만들 때만 초기 스크립트를 실행합니다.
+
+### 명령어
+
+새 DB에 초기화할 때 DB 서버 또는 DB에 접속 가능한 관리 PC에서 실행합니다.
+
+```bash
+cd /opt/holylife/backend/dbscript
+
+for f in 01_schema_drop.sql 02_schema_system.sql 03_schema_content.sql \
+         04_schema_bible.sql 05_schema_batch.sql 06_seed_data.sql 07_indexes.sql
+do
+  mysql --default-character-set=utf8mb4 -h DB서버주소 -u DB관리자 -p holylife < "$f"
+done
+```
+
+### 자세한 설명
+
+<details>
+<summary>운영 데이터가 있는 경우 주의사항</summary>
+
+위 스크립트 중 `01_schema_drop.sql`은 기존 테이블을 삭제하는 스크립트입니다. **데이터가 있는 운영 DB에 실행하지 마세요.** 처음 설치하는 빈 DB에서만 실행하고, 기존 DB라면 백업을 만든 뒤 필요한 변경 스크립트만 DBA와 확인해야 합니다.
+
+`-p` 뒤에 비밀번호를 직접 적지 마세요. 명령 실행 후 표시되는 프롬프트에 입력하면 터미널 기록에 비밀번호가 남는 것을 줄일 수 있습니다. DB 사용자에게는 필요한 스키마에 대한 권한이 있어야 합니다. UTF-8 문자와 이모지 저장을 위해 `--default-character-set=utf8mb4`를 유지합니다.
+</details>
+
+## 7. 이미지 빌드와 첫 실행
+
+### 간략 설명
+
+Compose 설정과 비밀값을 확인한 다음 프론트엔드와 백엔드 이미지를 빌드하고 서비스를 실행합니다.
+
+### 명령어
+
+```bash
+cd /opt/holylife/backend
+
+sudo docker compose --env-file /opt/holylife/config/.env config
+sudo docker compose --env-file /opt/holylife/config/.env up -d --build
+sudo docker compose ps
+```
+
+### 자세한 설명
+
+<details>
+<summary>처음 실행할 때 확인할 내용</summary>
+
+`config` 명령은 Compose 설정을 검사합니다. `DB_HOST`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`이 없다는 오류가 나오면 `.env` 파일을 확인하세요. 이 출력에 비밀값이 포함될 수 있으므로 전체 결과를 외부에 공유하지 마세요.
+
+`up -d --build`는 Docker 이미지를 새로 만들고 컨테이너를 백그라운드에서 실행합니다. 첫 빌드는 Maven과 npm 패키지를 내려받으므로 시간이 걸릴 수 있습니다. `docker compose ps`에서 `holylife-backend`와 `holylife-frontend`가 실행 중인지 확인합니다.
+
+웹 브라우저에서 `http://서버의_공인_IP/`에 접속합니다. 로그인 화면이 나오면 Nginx 정적 파일 서빙이 동작하는 것입니다. 로그인/API도 별도로 확인해야 합니다. DB 연결 오류는 백엔드 로그에서 확인합니다.
+</details>
+
+## 8. 서비스 상태와 오류 확인
+
+### 간략 설명
+
+컨테이너 상태와 로그를 확인하고, 브라우저에서 접속되지 않을 때 차례로 점검합니다.
+
+### 명령어
+
+```bash
+cd /opt/holylife/backend
+sudo docker compose --env-file /opt/holylife/config/.env ps
+sudo docker compose --env-file /opt/holylife/config/.env logs --tail=100 backend
+sudo docker compose --env-file /opt/holylife/config/.env logs --tail=100 frontend
+curl -I http://localhost/
+```
+
+실시간 백엔드 로그를 볼 때:
+
+```bash
+sudo docker compose --env-file /opt/holylife/config/.env logs -f backend
+```
+
+### 자세한 설명
+
+<details>
+<summary>자주 확인하는 문제</summary>
+
+- 웹 페이지 접속 불가: 클라우드 방화벽과 서버 방화벽에서 TCP 80번이 허용되었는지, 프론트엔드 컨테이너가 실행 중인지 확인합니다.
+- 백엔드가 시작되지 않음: backend 로그에서 DB 주소/계정 오류, `JWT_SECRET` 누락, DB 접근 차단 여부를 확인합니다.
+- 화면은 열리지만 API가 실패: Nginx의 `proxy_pass`가 `backend:38081`인지, backend 서비스가 실행 중인지 확인합니다.
+- 업로드 이미지가 재시작 뒤 사라짐: Compose 볼륨이 `../uploads:/opt/holylife/uploads`로 지정되었는지 확인합니다.
+
+실시간 로그는 `Ctrl+C`를 누르면 화면 출력만 종료됩니다. 컨테이너는 계속 실행됩니다.
+</details>
+
+## 9. 업데이트, 재시작, 중지
+
+### 간략 설명
+
+코드를 갱신한 뒤 이미지를 다시 빌드해 반영합니다. 컨테이너를 중지하거나 재시작할 때도 같은 Compose 파일과 `.env`를 사용합니다.
+
+### 명령어
+
+```bash
+cd /opt/holylife/backend
+git pull
+git -C /opt/holylife/frontend pull
+sudo docker compose --env-file /opt/holylife/config/.env up -d --build
+```
+
+서비스 재시작/중지/시작:
+
+```bash
+sudo docker compose --env-file /opt/holylife/config/.env restart
+sudo docker compose --env-file /opt/holylife/config/.env stop
+sudo docker compose --env-file /opt/holylife/config/.env start
+```
+
+### 자세한 설명
+
+<details>
+<summary>업데이트와 데이터 보존 설명</summary>
+
+두 저장소에서 `git pull`로 새 코드를 받은 후 `up -d --build`를 실행하면 변경된 이미지가 만들어지고 컨테이너에 적용됩니다. Git에 로컬 변경사항이 있으면 pull이 중단될 수 있으니 먼저 `git status`로 확인하세요.
+
+`stop`은 컨테이너를 멈추고, `start`는 다시 시작합니다. `restart`는 컨테이너를 재시작합니다. 업로드와 로그는 호스트 디렉터리에 저장되어 컨테이너를 재생성해도 남습니다. 다만 DB는 별도 백업이 필요합니다.
+
+DB 초기화 SQL을 일반 코드 업데이트처럼 반복 실행하지 마세요. 특히 `01_schema_drop.sql`은 데이터를 삭제할 수 있습니다. 운영 배포 전 DB 백업과 복구 절차를 준비하세요.
+</details>
+
+## 10. HTTPS와 운영 전 확인
+
+### 간략 설명
+
+이 문서의 기본 접속 방식은 HTTP입니다. 실제 서비스에 도메인과 HTTPS를 적용하려면 인증서와 Nginx의 TLS 설정을 추가해야 합니다.
+
+### 명령어
+
+```text
+기본 접속: http://서버의_공인_IP/
+도메인/HTTPS: DNS 연결, 80·443 포트 개방, TLS 인증서 및 Nginx 설정 필요
+```
+
+### 자세한 설명
+
+<details>
+<summary>실서비스 공개 전 점검 목록</summary>
+
+- 운영 DB에 필요한 테이블/시드 데이터가 준비되어 있는지 확인합니다.
+- 업로드와 로그 볼륨이 올바른 호스트 경로에 연결되었는지 확인합니다.
+- `config/.env`의 파일 권한이 제한되어 있고 실제 비밀값이 저장소에 커밋되지 않았는지 확인합니다.
+- 서버 외부에는 웹 포트만 공개하고 backend 및 DB 포트는 공개하지 않습니다.
+- 현재 백엔드 `SecurityConfig`에서 Swagger UI와 API 문서 접근을 허용합니다. 운영에서 Swagger를 비활성화할 필요가 있다면 별도 설정을 적용하세요.
+- HTTP만 사용할 경우 로그인 토큰이 암호화되지 않은 연결을 통해 전송됩니다. 외부 서비스에는 도메인과 HTTPS를 구성한 뒤 공개하세요.
+</details>
