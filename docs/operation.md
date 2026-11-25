@@ -4,6 +4,8 @@
 
 > **포트 구성:** 외부 TCP `38080` → 프론트엔드 Nginx 컨테이너 `8080` → Spring Boot 백엔드 컨테이너 `8081`. 호스트에서 공개하는 서비스 포트는 `38080`뿐이며, 8080/8081은 Docker 내부에서 사용합니다.
 
+> **브랜치 정책:** 개발은 각 저장소의 `dev` 브랜치에서 진행합니다. 서버 배포는 `dev`를 `main`에 병합하고 원격 `main`에 푸시한 다음, 서버에서 `main`을 받아 실행합니다.
+
 ## 1. 배포 구조와 서버 경로
 
 ### 간략 설명
@@ -79,7 +81,7 @@ whoami
 
 ### 간략 설명
 
-Ubuntu 서버에 Docker와 Docker Compose를 설치합니다. 클라우드 VM을 사용한다면 클라우드 방화벽에서도 웹 접속 포트 80을 허용해야 합니다.
+Ubuntu 서버에 Docker와 Docker Compose를 설치합니다. 클라우드 VM을 사용한다면 클라우드 방화벽에서도 웹 접속 포트 38080을 허용해야 합니다.
 
 ### 명령어
 
@@ -212,6 +214,8 @@ Compose의 `SERVER_PORT=8081` 설정이 Spring Boot 포트를 8081로 지정합�
 
 외부 포트는 `38080:8080`으로 연결된 프론트엔드 하나뿐입니다. 백엔드는 `expose: 8081`로 Docker 네트워크에서만 연결할 수 있고, 서버의 공인 IP에서 직접 접근할 수 없습니다.
 
+브라우저에서 로그인할 때 백엔드는 브라우저의 `Origin`도 검사합니다. 현재 운영 주소가 `http://61.77.22.117:38080`이면 백엔드 `SecurityConfig`의 CORS 허용 목록에도 같은 주소가 있어야 합니다. 공인 IP, 도메인 또는 포트가 바뀌면 이 목록을 수정하고 백엔드 이미지를 다시 빌드하세요. 허용 목록에서 빠지면 화면은 실제 CORS 403 오류를 비밀번호 오류로 표시할 수 있습니다.
+
 `nano`에서는 `Ctrl+O`, Enter로 저장하고 `Ctrl+X`로 종료합니다. Compose의 상대 볼륨 경로는 Compose 파일 위치(`/opt/holylife/backend`) 기준이므로 `../uploads`와 `../logs`는 `/opt/holylife/uploads`, `/opt/holylife/logs`에 연결됩니다.
 </details>
 
@@ -249,7 +253,13 @@ chmod 600 /opt/holylife/config/.env
 
 `DB_HOST`에는 백엔드 컨테이너에서 접근할 수 있는 DB 서버 주소를 적습니다. MariaDB가 Docker 호스트(Ubuntu)에 설치되어 있으면 `.env`의 `DB_HOST`를 `host.docker.internal`로 설정합니다. Compose가 이 이름을 호스트 게이트웨이에 연결합니다. `127.0.0.1`은 백엔드 컨테이너 자신을 가리키므로 호스트에 설치된 DB 접속 주소로 사용할 수 없습니다. 별도 DB 서버라면 그 서버의 사설 IP 또는 DNS 이름을 사용하고, DB 방화벽은 애플리케이션 서버에서 오는 3306 접속만 허용하세요.
 
-`JWT_SECRET`은 로그인 토큰을 서명하는 비밀 키입니다. 운영 환경에서는 저장소의 개발 기본값을 쓰지 말고 별도의 긴 임의 문자열을 사용합니다. 비밀값을 Git에 커밋하거나 공개 채팅에 붙여 넣지 마세요. `chmod 600`은 파일 소유자만 읽고 쓸 수 있게 합니다.
+`JWT_SECRET`은 로그인 토큰을 서명하는 비밀 키입니다. HS256 기준 최소 32바이트 이상이어야 하며, 다음 명령은 32바이트를 무작위로 생성해 64자리 16진수로 보여 줍니다.
+
+```bash
+openssl rand -hex 32
+```
+
+운영 환경에서는 저장소의 개발 기본값을 쓰지 말고 생성한 키를 `/opt/holylife/config/.env`에만 저장합니다. 비밀값을 Git에 커밋하거나 공개 채팅에 붙여 넣지 마세요. 키를 교체하면 기존 로그인 토큰은 모두 무효화됩니다. `chmod 600`은 파일 소유자만 읽고 쓸 수 있게 합니다.
 
 Compose 명령에는 `--env-file /opt/holylife/config/.env`를 붙입니다. 그래야 Compose가 이 파일을 읽어 DB 주소와 비밀값을 컨테이너에 전달합니다.
 </details>
@@ -339,9 +349,10 @@ sudo docker compose --env-file /opt/holylife/config/.env logs -f backend
 <details>
 <summary>자주 확인하는 문제</summary>
 
-- 웹 페이지 접속 불가: 클라우드 방화벽과 서버 방화벽에서 TCP 80번이 허용되었는지, 프론트엔드 컨테이너가 실행 중인지 확인합니다.
+- 웹 페이지 접속 불가: 클라우드 방화벽과 서버 방화벽에서 TCP 38080번이 허용되었는지, 프론트엔드 컨테이너가 실행 중인지 확인합니다.
 - 백엔드가 시작되지 않음: backend 로그에서 DB 주소/계정 오류, `JWT_SECRET` 누락, DB 접근 차단 여부를 확인합니다.
 - 화면은 열리지만 API가 실패: Nginx의 `proxy_pass`가 `backend:8081`인지, backend 서비스가 실행 중인지 확인합니다.
+- 브라우저에서 비밀번호 오류가 표시되지만 직접 API 로그인은 됨: 브라우저 주소와 백엔드 `SecurityConfig`의 CORS 허용 origin이 정확히 같은지 확인합니다. 화면은 CORS 오류도 로그인 실패 문구로 표시할 수 있습니다.
 - 업로드 이미지가 재시작 뒤 사라짐: Compose 볼륨이 `../uploads:/opt/holylife/uploads`로 지정되었는지 확인합니다.
 
 실시간 로그는 `Ctrl+C`를 누르면 화면 출력만 종료됩니다. 컨테이너는 계속 실행됩니다.
@@ -356,9 +367,11 @@ sudo docker compose --env-file /opt/holylife/config/.env logs -f backend
 ### 명령어
 
 ```bash
+git -C /opt/holylife/backend switch main
+git -C /opt/holylife/backend pull --ff-only origin main
+git -C /opt/holylife/frontend switch main
+git -C /opt/holylife/frontend pull --ff-only origin main
 cd /opt/holylife/backend
-git pull
-git -C /opt/holylife/frontend pull
 sudo docker compose --env-file /opt/holylife/config/.env up -d --build
 ```
 
@@ -375,7 +388,7 @@ sudo docker compose --env-file /opt/holylife/config/.env start
 <details>
 <summary>업데이트와 데이터 보존 설명</summary>
 
-두 저장소에서 `git pull`로 새 코드를 받은 후 `up -d --build`를 실행하면 변경된 이미지가 만들어지고 컨테이너에 적용됩니다. Git에 로컬 변경사항이 있으면 pull이 중단될 수 있으니 먼저 `git status`로 확인하세요.
+서버는 두 저장소 모두 `main` 브랜치만 사용합니다. `dev`에서 작업한 코드는 운영 반영 전에 `main`에 병합하고 원격 `main`에 푸시해야 합니다. 서버는 `main`을 `--ff-only`로 갱신한 뒤 `up -d --build`를 실행합니다. Git에 서버 로컬 변경사항이 있으면 pull이 중단될 수 있으니 먼저 `git status`로 확인하세요.
 
 `stop`은 컨테이너를 멈추고, `start`는 다시 시작합니다. `restart`는 컨테이너를 재시작합니다. 업로드와 로그는 호스트 디렉터리에 저장되어 컨테이너를 재생성해도 남습니다. 다만 DB는 별도 백업이 필요합니다.
 
@@ -391,7 +404,7 @@ DB 초기화 SQL을 일반 코드 업데이트처럼 반복 실행하지 마세�
 ### 명령어
 
 ```text
-기본 접속: http://서버의_공인_IP/
+기본 접속: http://서버의_공인_IP:38080/
 도메인/HTTPS: DNS 연결, 80·443 포트 개방, TLS 인증서 및 Nginx 설정 필요
 ```
 
@@ -406,4 +419,46 @@ DB 초기화 SQL을 일반 코드 업데이트처럼 반복 실행하지 마세�
 - 서버 외부에는 웹 포트만 공개하고 backend 및 DB 포트는 공개하지 않습니다.
 - 현재 백엔드 `SecurityConfig`에서 Swagger UI와 API 문서 접근을 허용합니다. 운영에서 Swagger를 비활성화할 필요가 있다면 별도 설정을 적용하세요.
 - HTTP만 사용할 경우 로그인 토큰이 암호화되지 않은 연결을 통해 전송됩니다. 외부 서비스에는 도메인과 HTTPS를 구성한 뒤 공개하세요.
+</details>
+
+## 12. Git 브랜치 정책과 서버 반영 절차
+
+### 간략 설명
+
+개발자는 백엔드와 프론트엔드 각 저장소의 `dev` 브랜치에서 작업합니다. 운영 서버에 적용할 때만 `dev`를 `main`에 병합하고, 서버에서는 `main`을 받아 Docker 이미지를 다시 빌드합니다.
+
+### 명령어
+
+개발 작업은 각 저장소에서 진행합니다. 아래 예시는 백엔드 저장소 기준이며, 프론트엔드에서도 같은 순서로 실행합니다.
+
+```bash
+git switch dev
+git pull --ff-only origin dev
+# 파일 수정 후
+git add 변경한_파일
+git commit -m "변경 내용 요약"
+git push origin dev
+```
+
+운영 반영이 승인되면 해당 저장소에서 `dev`를 `main`에 병합하고 푸시합니다.
+
+```bash
+git switch main
+git pull --ff-only origin main
+git merge --no-ff dev
+git push origin main
+```
+
+그 다음 서버에서 [10. 업데이트, 재시작, 중지](#10-업데이트-재시작-중지)의 `main` 갱신 및 Docker 재빌드 명령을 실행합니다.
+
+### 자세한 설명
+
+<details>
+<summary>브랜치별 역할</summary>
+
+- `dev`: 개발과 변경사항 통합을 진행하는 브랜치입니다. 작업 커밋은 먼저 `origin/dev`에 푸시합니다.
+- `main`: 운영 서버에 배포할 코드만 둡니다. 서버는 `main`을 직접 수정하거나 `dev`를 직접 가져오지 않습니다.
+- 병합 전에는 두 저장소 모두 `git status`로 작업 트리가 깨끗한지 확인합니다. 충돌이 나면 내용을 정리하고 병합 커밋을 완료한 뒤 `main`을 푸시합니다.
+- 프론트엔드도 동일한 브랜치 정책을 따릅니다. 원격 저장소에 `dev`가 아직 없다면 최초 한 번 `git push -u origin dev`로 브랜치를 만듭니다.
+- `main`에 푸시한 뒤 서버에서 `main`을 갱신하고 `docker compose ... up -d --build`를 실행해야 실제 운영 서버에 반영됩니다. Git 푸시만으로 서버가 자동 배포되지는 않습니다.
 </details>
